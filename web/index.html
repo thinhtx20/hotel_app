@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Hệ thống Quản lý Khách sạn Luxe Grand Hotel">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Luxe Grand Hotel">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Luxe Grand Hotel</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at center, #1E293B 0%, #0B192C 100%);
+      color: #FFFFFF;
+      font-family: 'Outfit', sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .splash-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    .icon-wrapper {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .icon-glow {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(217, 119, 6, 0.35) 0%, rgba(217, 119, 6, 0) 70%);
+      border-radius: 50%;
+      animation: pulse 2.5s infinite ease-in-out;
+    }
+
+    .icon-box {
+      width: 88px;
+      height: 88px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.6);
+      border-radius: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+    }
+
+    .icon-svg {
+      width: 44px;
+      height: 44px;
+      fill: #FBBF24;
+    }
+
+    .brand-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin: 0 0 10px 0;
+      color: #FFFFFF;
+      text-transform: uppercase;
+    }
+
+    .brand-divider {
+      width: 48px;
+      height: 2.5px;
+      background: linear-gradient(90deg, #D97706, #FBBF24);
+      border-radius: 2px;
+      margin-bottom: 12px;
+    }
+
+    .brand-tagline {
+      font-size: 13.5px;
+      color: rgba(255, 255, 255, 0.65);
+      letter-spacing: 0.5px;
+      margin: 0 0 36px 0;
+      font-weight: 400;
+    }
+
+    .loader {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(251, 191, 36, 0.15);
+      border-top: 3px solid #FBBF24;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.9); opacity: 0.5; }
+      50% { transform: scale(1.15); opacity: 0.85; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash-container">
+    <div class="icon-wrapper">
+      <div class="icon-glow"></div>
+      <div class="icon-box">
+        <svg class="icon-svg" viewBox="0 0 24 24">
+          <path d="M17 11V3H7v4H3v14h18V11h-4zm-6-6h4v14h-4V5zm-6 4h4v10H5V9zm14 10v-6h2v6h-2z"/>
+        </svg>
+      </div>
+    </div>
+    <h1 class="brand-title">Luxe Grand Hotel</h1>
+    <div class="brand-divider"></div>
+    <p class="brand-tagline">Trải nghiệm nghỉ dưỡng đẳng cấp</p>
+    <div class="loader"></div>
+  </div>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
