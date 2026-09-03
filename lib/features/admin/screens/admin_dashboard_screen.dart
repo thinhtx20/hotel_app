@@ -20,13 +20,70 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  /// Các mốc lọc của biểu đồ doanh thu (số ngày gần nhất)
+  static const List<int> _revenueRangeOptions = [1, 7, 14, 30];
+
   Map<String, dynamic>? _dashboardData;
   bool _isLoading = true;
+
+  int _revenueDays = 7;
+  List<_RevenuePoint> _revenueSeries = [];
+  bool _isRevenueLoading = true;
+  bool _revenueLoadFailed = false;
 
   @override
   void initState() {
     super.initState();
     _fetchDashboardData();
+    _fetchRevenueSeries(_revenueDays);
+  }
+
+  Future<void> _refreshAll() async {
+    await Future.wait([
+      _fetchDashboardData(),
+      _fetchRevenueSeries(_revenueDays),
+    ]);
+  }
+
+  /// Lấy chuỗi doanh thu theo số ngày gần nhất: GET /analytics/revenue/daily?days=N
+  Future<void> _fetchRevenueSeries(int days) async {
+    setState(() {
+      _isRevenueLoading = true;
+      _revenueLoadFailed = false;
+    });
+
+    try {
+      final res = await DioClient().dio.get(
+        ApiEndpoints.analyticsRevenueDaily,
+        queryParameters: {'days': days},
+      );
+      final body = res.data;
+      final data = body is Map && body['data'] != null ? body['data'] : body;
+      final rawSeries = data is Map ? data['series'] : null;
+
+      if (res.statusCode == 200 && rawSeries is List) {
+        final series = rawSeries
+            .whereType<Map>()
+            .map((e) => _RevenuePoint.fromJson(e))
+            .toList();
+        // Bỏ qua phản hồi cũ nếu người dùng đã đổi sang mốc lọc khác
+        if (mounted && days == _revenueDays) {
+          setState(() {
+            _revenueSeries = series;
+            _isRevenueLoading = false;
+          });
+        }
+        return;
+      }
+    } catch (_) {}
+
+    if (mounted && days == _revenueDays) {
+      setState(() {
+        _revenueSeries = [];
+        _isRevenueLoading = false;
+        _revenueLoadFailed = true;
+      });
+    }
   }
 
   Future<void> _fetchDashboardData() async {
@@ -70,7 +127,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: CircularProgressIndicator(color: AppColors.secondary),
             )
           : RefreshIndicator(
-              onRefresh: _fetchDashboardData,
+              onRefresh: _refreshAll,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
@@ -336,191 +393,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
               const SizedBox(height: 20),
 
-              // 5. Thẻ Biểu đồ Doanh thu 7 ngày (Area chart 1 đường duy nhất)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
-                  height: 250,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF0F172A).withValues(alpha: 0.06),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    children: [
-                      // Chart Header
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Doanh thu 7 ngày',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: const Row(
-                              children: [
-                                Text(
-                                  '7 ngày',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                SizedBox(width: 2),
-                                Icon(Icons.keyboard_arrow_down_rounded,
-                                    size: 14, color: AppColors.textSecondary),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Chart Area
-                      Expanded(
-                        child: LineChart(
-                          LineChartData(
-                            gridData: FlGridData(
-                              show: true,
-                              drawVerticalLine: false,
-                              horizontalInterval: 50,
-                              getDrawingHorizontalLine: (val) => const FlLine(
-                                color: Color(0xFFF1F5F9),
-                                strokeWidth: 1,
-                              ),
-                            ),
-                            titlesData: FlTitlesData(
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  interval: 50,
-                                  reservedSize: 34,
-                                  getTitlesWidget: (value, meta) {
-                                    String text = '';
-                                    if (value == 0) text = '0';
-                                    if (value == 50) text = '50tr';
-                                    if (value == 100) text = '100tr';
-                                    if (value == 150) text = '150tr';
-                                    return Text(
-                                      text,
-                                      style: const TextStyle(
-                                        color: AppColors.textMuted,
-                                        fontSize: 10,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  interval: 1,
-                                  getTitlesWidget: (value, meta) {
-                                    const labels = [
-                                      'T2',
-                                      'T3',
-                                      'T4',
-                                      'T5',
-                                      'T6',
-                                      'T7',
-                                      'CN'
-                                    ];
-                                    final idx = value.toInt();
-                                    if (idx >= 0 && idx < labels.length) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(top: 6),
-                                        child: Text(
-                                          labels[idx],
-                                          style: const TextStyle(
-                                            color: AppColors.textMuted,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    return const SizedBox.shrink();
-                                  },
-                                ),
-                              ),
-                              rightTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              topTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                            ),
-                            borderData: FlBorderData(show: false),
-                            minX: 0,
-                            maxX: 6,
-                            minY: 0,
-                            maxY: 160,
-                            lineBarsData: [
-                              LineChartBarData(
-                                spots: const [
-                                  FlSpot(0, 68),
-                                  FlSpot(1, 85),
-                                  FlSpot(2, 74),
-                                  FlSpot(3, 98),
-                                  FlSpot(4, 115),
-                                  FlSpot(5, 105),
-                                  FlSpot(6, 128.5),
-                                ],
-                                isCurved: true,
-                                curveSmoothness: 0.35,
-                                color: AppColors.secondary,
-                                barWidth: 2,
-                                isStrokeCapRound: true,
-                                dotData: FlDotData(
-                                  show: true,
-                                  checkToShowDot: (spot, barData) =>
-                                      spot.x == 6, // Chỉ điểm cuối cùng
-                                  getDotPainter: (spot, percent, barData, i) =>
-                                      FlDotCirclePainter(
-                                    radius: 4.5,
-                                    color: AppColors.secondary,
-                                    strokeWidth: 2,
-                                    strokeColor: Colors.white,
-                                  ),
-                                ),
-                                belowBarData: BarAreaData(
-                                  show: true,
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      AppColors.secondary.withValues(alpha: 0.22),
-                                      AppColors.secondary.withValues(alpha: 0.0),
-                                    ],
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              // 5. Thẻ Biểu đồ Doanh thu (lọc 1 / 7 / 14 / 30 ngày)
+              _buildRevenueChartCard(),
               const SizedBox(height: 20),
 
               // 6. Thẻ Cơ cấu Buồng phòng (Stacked Bar + Legend)
@@ -612,6 +486,368 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // ==================== Biểu đồ doanh thu (có bộ lọc) ====================
+
+  /// Làm tròn lên thành số "đẹp" để chia lưới trục Y: 96.2tr -> 100tr
+  double _niceCeil(double value) {
+    if (value <= 0) return 1;
+    final exponent = (math.log(value) / math.ln10).floor();
+    final magnitude = math.pow(10, exponent).toDouble();
+    final fraction = value / magnitude;
+    double nice;
+    if (fraction <= 1) {
+      nice = 1;
+    } else if (fraction <= 2) {
+      nice = 2;
+    } else if (fraction <= 2.5) {
+      nice = 2.5;
+    } else if (fraction <= 5) {
+      nice = 5;
+    } else {
+      nice = 10;
+    }
+    return nice * magnitude;
+  }
+
+  /// Rút gọn số tiền cho trục Y: 96200000 -> "96tr", 1250000000 -> "1,3 tỷ"
+  String _compactMoney(double value) {
+    if (value >= 1000000000) {
+      final v = value / 1000000000;
+      return '${v.toStringAsFixed(v >= 10 ? 0 : 1).replaceAll('.', ',')} tỷ';
+    }
+    if (value >= 1000000) {
+      final v = value / 1000000;
+      return '${v.toStringAsFixed(v >= 10 ? 0 : 1).replaceAll('.', ',')}tr';
+    }
+    if (value >= 1000) return '${(value / 1000).round()}k';
+    return value.round().toString();
+  }
+
+  /// Nhãn trục X: <= 7 ngày dùng thứ trong tuần, dài hơn thì dùng ngày/tháng
+  String _axisLabel(_RevenuePoint point) {
+    if (_revenueDays <= 7 && point.label.isNotEmpty) return point.label;
+    final date = point.date;
+    if (date != null) return '${date.day}/${date.month}';
+    return point.label;
+  }
+
+  String _tooltipLabel(_RevenuePoint point) {
+    final date = point.date;
+    if (date == null) return point.label;
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final prefix = point.label.isNotEmpty ? '${point.label} ' : '';
+    return '$prefix$day/$month';
+  }
+
+  Widget _axisText(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.textMuted,
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRevenueChartCard() {
+    final series = _revenueSeries;
+    final title = _revenueDays == 1
+        ? 'Doanh thu hôm nay'
+        : 'Doanh thu $_revenueDays ngày';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        height: 250,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0F172A).withValues(alpha: 0.06),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          children: [
+            // Chart Header + Bộ lọc khoảng thời gian
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                _buildRevenueRangeFilter(),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Chart Area
+            Expanded(
+              child: _isRevenueLoading
+                  ? const Center(
+                      child: SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    )
+                  : series.isEmpty
+                      ? Center(
+                          child: Text(
+                            _revenueLoadFailed
+                                ? 'Không tải được dữ liệu doanh thu'
+                                : 'Chưa có dữ liệu doanh thu',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        )
+                      : _buildRevenueLineChart(series),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRevenueRangeFilter() {
+    return PopupMenuButton<int>(
+      initialValue: _revenueDays,
+      tooltip: 'Chọn khoảng thời gian',
+      offset: const Offset(0, 34),
+      color: Colors.white,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      onSelected: (days) {
+        if (days == _revenueDays) return;
+        setState(() => _revenueDays = days);
+        _fetchRevenueSeries(days);
+      },
+      itemBuilder: (context) => _revenueRangeOptions.map((days) {
+        final selected = days == _revenueDays;
+        return PopupMenuItem<int>(
+          value: days,
+          height: 42,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '$days ngày',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  color: selected
+                      ? AppColors.secondary
+                      : AppColors.textPrimary,
+                ),
+              ),
+              if (selected)
+                const Icon(Icons.check_rounded,
+                    size: 16, color: AppColors.secondary),
+            ],
+          ),
+        );
+      }).toList(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '$_revenueDays ngày',
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 2),
+            const Icon(Icons.keyboard_arrow_down_rounded,
+                size: 14, color: AppColors.textSecondary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRevenueLineChart(List<_RevenuePoint> series) {
+    final maxRevenue =
+        series.map((e) => e.revenue).reduce((a, b) => a > b ? a : b);
+    final axisMax = _niceCeil(maxRevenue > 0 ? maxRevenue : 1000000);
+    final interval = axisMax / 4;
+
+    // Chỉ có 1 điểm (lọc 1 ngày) -> vẽ đường phẳng để trục X không bị suy biến
+    final isSinglePoint = series.length == 1;
+    final spots = <FlSpot>[
+      for (var i = 0; i < series.length; i++)
+        FlSpot(i.toDouble(), series[i].revenue),
+    ];
+    if (isSinglePoint) spots.add(FlSpot(1, series.first.revenue));
+
+    final maxX = (spots.length - 1).toDouble();
+
+    // Với 14/30 ngày chỉ hiện bớt nhãn để trục X không bị chồng chữ
+    final labelStep = series.length <= 7
+        ? 1
+        : series.length <= 14
+            ? 2
+            : 5;
+
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: interval,
+          getDrawingHorizontalLine: (val) => const FlLine(
+            color: Color(0xFFF1F5F9),
+            strokeWidth: 1,
+          ),
+        ),
+        titlesData: FlTitlesData(
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              interval: interval,
+              reservedSize: 42,
+              getTitlesWidget: (value, meta) {
+                if (value > axisMax + interval * 0.1) {
+                  return const SizedBox.shrink();
+                }
+                return Text(
+                  _compactMoney(value),
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 10,
+                  ),
+                );
+              },
+            ),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              interval: isSinglePoint ? 0.5 : 1,
+              reservedSize: 26,
+              getTitlesWidget: (value, meta) {
+                if (isSinglePoint) {
+                  // Căn giữa nhãn duy nhất dưới đường phẳng
+                  if ((value - 0.5).abs() > 0.01) return const SizedBox.shrink();
+                  return _axisText(_axisLabel(series.first));
+                }
+
+                final idx = value.round();
+                if ((value - idx).abs() > 0.01) return const SizedBox.shrink();
+                if (idx < 0 || idx >= series.length) {
+                  return const SizedBox.shrink();
+                }
+                // Đếm ngược từ ngày mới nhất để nhãn cuối luôn hiển thị
+                if ((series.length - 1 - idx) % labelStep != 0) {
+                  return const SizedBox.shrink();
+                }
+                return _axisText(_axisLabel(series[idx]));
+              },
+            ),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        lineTouchData: LineTouchData(
+          handleBuiltInTouches: true,
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (_) => AppColors.primary.withValues(alpha: 0.92),
+            tooltipBorderRadius: BorderRadius.circular(10),
+            tooltipPadding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            fitInsideHorizontally: true,
+            fitInsideVertically: true,
+            getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
+              final idx = spot.x.round().clamp(0, series.length - 1);
+              final point = series[idx];
+              return LineTooltipItem(
+                '${_tooltipLabel(point)}\n${Formatters.formatCurrency(point.revenue)}',
+                const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        minX: 0,
+        maxX: maxX,
+        minY: 0,
+        maxY: axisMax * 1.06,
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots,
+            isCurved: true,
+            curveSmoothness: 0.35,
+            preventCurveOverShooting: true,
+            color: AppColors.secondary,
+            barWidth: 2,
+            isStrokeCapRound: true,
+            dotData: FlDotData(
+              show: true,
+              // Chỉ tô điểm cuối cùng (ngày mới nhất)
+              checkToShowDot: (spot, barData) => spot.x == maxX,
+              getDotPainter: (spot, percent, barData, i) =>
+                  FlDotCirclePainter(
+                radius: 4.5,
+                color: AppColors.secondary,
+                strokeWidth: 2,
+                strokeColor: Colors.white,
+              ),
+            ),
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.secondary.withValues(alpha: 0.22),
+                  AppColors.secondary.withValues(alpha: 0.0),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -786,4 +1022,26 @@ class _GaugeArcPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _GaugeArcPainter oldDelegate) =>
       oldDelegate.percent != percent;
+}
+
+/// Một điểm trên biểu đồ doanh thu theo ngày
+class _RevenuePoint {
+  final DateTime? date;
+  final String label;
+  final double revenue;
+
+  const _RevenuePoint({
+    required this.date,
+    required this.label,
+    required this.revenue,
+  });
+
+  factory _RevenuePoint.fromJson(Map json) {
+    final rawRevenue = json['revenue'] ?? json['amount'] ?? 0;
+    return _RevenuePoint(
+      date: DateTime.tryParse('${json['date']}'),
+      label: '${json['label'] ?? ''}',
+      revenue: (num.tryParse('$rawRevenue') ?? 0).toDouble(),
+    );
+  }
 }

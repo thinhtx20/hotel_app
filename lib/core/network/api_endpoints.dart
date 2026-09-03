@@ -35,6 +35,7 @@ class ApiEndpoints {
   // Analytics
   static const String analyticsDashboard = '/analytics/dashboard';
   static const String analyticsRevenue = '/analytics/revenue';
+  static const String analyticsRevenueDaily = '/analytics/revenue/daily';
   static const String analyticsOccupancyByType = '/analytics/occupancy-by-type';
 
   // Users
