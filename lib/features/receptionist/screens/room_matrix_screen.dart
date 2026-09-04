@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/constants/role_enum.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../di/injection_container.dart';
 import '../../../shared/models/room_model.dart';
+import '../../../shared/repositories/room_repository.dart';
 import '../../../shared/widgets/status_badge.dart';
-import '../../auth/bloc/auth_bloc.dart';
-import '../../auth/bloc/auth_event.dart';
+import '../../../shared/widgets/logout_confirmation_dialog.dart';
 
 class RoomMatrixScreen extends StatefulWidget {
-  const RoomMatrixScreen({super.key});
+  final DioClient? dioClient;
+  const RoomMatrixScreen({super.key, this.dioClient});
 
   @override
   State<RoomMatrixScreen> createState() => _RoomMatrixScreenState();
 }
 
 class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
+  DioClient get _dioClient => widget.dioClient ?? DioClient();
   List<RoomModel> _rooms = [];
   bool _isLoading = true;
   String _lastUpdatedTime = '09:42';
+  final Set<String> _updatingRoomIds = {};
 
   @override
   void initState() {
@@ -28,17 +31,19 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
     _fetchRooms();
   }
 
-  Future<void> _fetchRooms() async {
-    setState(() => _isLoading = true);
+  Future<void> _fetchRooms({bool isSilent = false}) async {
+    if (!isSilent && _rooms.isEmpty) {
+      setState(() => _isLoading = true);
+    }
     final now = DateTime.now();
     _lastUpdatedTime =
         '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
 
     try {
-      final res = await DioClient().dio.get(ApiEndpoints.rooms);
+      final res = await _dioClient.dio.get(ApiEndpoints.rooms);
       if (res.statusCode == 200 && res.data['success'] == true) {
         final list = res.data['data'] as List?;
-        if (list != null && list.isNotEmpty && mounted) {
+        if (list != null && mounted) {
           setState(() {
             _rooms = list.map((e) => RoomModel.fromJson(e)).toList();
             _isLoading = false;
@@ -50,81 +55,126 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
 
     // Fallback data strictly adhering to 07-room-matrix.md
     if (mounted) {
-      setState(() {
-        _isLoading = false;
-        _rooms = [
-          // Tầng 1 (6 phòng)
-          RoomModel(id: '101', roomNumber: '101', floor: 1, status: RoomStatus.available, pricePerNight: 1200000),
-          RoomModel(id: '102', roomNumber: '102', floor: 1, status: RoomStatus.available, pricePerNight: 1200000),
-          RoomModel(id: '103', roomNumber: '103', floor: 1, status: RoomStatus.occupied, pricePerNight: 1400000),
-          RoomModel(id: '104', roomNumber: '104', floor: 1, status: RoomStatus.cleaning, pricePerNight: 1200000),
-          RoomModel(id: '105', roomNumber: '105', floor: 1, status: RoomStatus.available, pricePerNight: 1200000),
-          RoomModel(id: '106', roomNumber: '106', floor: 1, status: RoomStatus.reserved, pricePerNight: 1500000),
+      if (_rooms.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _rooms = [
+            // Tầng 1 (6 phòng)
+            RoomModel(id: '101', roomNumber: '101', floor: 1, status: RoomStatus.available, pricePerNight: 1200000),
+            RoomModel(id: '102', roomNumber: '102', floor: 1, status: RoomStatus.available, pricePerNight: 1200000),
+            RoomModel(id: '103', roomNumber: '103', floor: 1, status: RoomStatus.occupied, pricePerNight: 1400000),
+            RoomModel(id: '104', roomNumber: '104', floor: 1, status: RoomStatus.cleaning, pricePerNight: 1200000),
+            RoomModel(id: '105', roomNumber: '105', floor: 1, status: RoomStatus.available, pricePerNight: 1200000),
+            RoomModel(id: '106', roomNumber: '106', floor: 1, status: RoomStatus.reserved, pricePerNight: 1500000),
 
-          // Tầng 2 (6 phòng)
-          RoomModel(id: '201', roomNumber: '201', floor: 2, status: RoomStatus.occupied, pricePerNight: 1800000),
-          RoomModel(id: '202', roomNumber: '202', floor: 2, status: RoomStatus.occupied, pricePerNight: 1800000),
-          RoomModel(id: '203', roomNumber: '203', floor: 2, status: RoomStatus.available, pricePerNight: 1800000),
-          RoomModel(id: '204', roomNumber: '204', floor: 2, status: RoomStatus.maintenance, pricePerNight: 1800000),
-          RoomModel(id: '205', roomNumber: '205', floor: 2, status: RoomStatus.reserved, pricePerNight: 4200000),
-          RoomModel(id: '206', roomNumber: '206', floor: 2, status: RoomStatus.available, pricePerNight: 1800000),
+            // Tầng 2 (6 phòng)
+            RoomModel(id: '201', roomNumber: '201', floor: 2, status: RoomStatus.occupied, pricePerNight: 1800000),
+            RoomModel(id: '202', roomNumber: '202', floor: 2, status: RoomStatus.occupied, pricePerNight: 1800000),
+            RoomModel(id: '203', roomNumber: '203', floor: 2, status: RoomStatus.available, pricePerNight: 1800000),
+            RoomModel(id: '204', roomNumber: '204', floor: 2, status: RoomStatus.maintenance, pricePerNight: 1800000),
+            RoomModel(id: '205', roomNumber: '205', floor: 2, status: RoomStatus.reserved, pricePerNight: 4200000),
+            RoomModel(id: '206', roomNumber: '206', floor: 2, status: RoomStatus.available, pricePerNight: 1800000),
 
-          // Tầng 3 (4 phòng mẫu)
-          RoomModel(id: '301', roomNumber: '301', floor: 3, status: RoomStatus.available, pricePerNight: 2000000),
-          RoomModel(id: '302', roomNumber: '302', floor: 3, status: RoomStatus.occupied, pricePerNight: 2000000),
-          RoomModel(id: '303', roomNumber: '303', floor: 3, status: RoomStatus.cleaning, pricePerNight: 2000000),
-          RoomModel(id: '304', roomNumber: '304', floor: 3, status: RoomStatus.available, pricePerNight: 2000000),
-        ];
-      });
+            // Tầng 3 (4 phòng mẫu)
+            RoomModel(id: '301', roomNumber: '301', floor: 3, status: RoomStatus.available, pricePerNight: 2000000),
+            RoomModel(id: '302', roomNumber: '302', floor: 3, status: RoomStatus.occupied, pricePerNight: 2000000),
+            RoomModel(id: '303', roomNumber: '303', floor: 3, status: RoomStatus.cleaning, pricePerNight: 2000000),
+            RoomModel(id: '304', roomNumber: '304', floor: 3, status: RoomStatus.available, pricePerNight: 2000000),
+          ];
+        });
+      } else {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
+  Future<void> _updateRoomStatus(RoomModel room, RoomStatus newStatus) async {
+    if (room.status == newStatus) return;
 
-  Future<void> _updateRoomStatus(String roomId, String newStatus) async {
-    try {
-      final res = await DioClient().dio.patch(
-        ApiEndpoints.updateRoomStatus(roomId),
-        data: {'status': newStatus},
-      );
-      if (res.statusCode == 200 && res.data['success'] == true) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã cập nhật trạng thái phòng sang $newStatus'),
-            backgroundColor: AppColors.primary,
-          ),
-        );
-        _fetchRooms();
-        return;
-      }
-    } catch (_) {}
+    final oldStatus = room.status;
+    final roomId = room.id;
 
-    // Local state fallback update
+    // 1. Cập nhật lạc quan (Optimistic Update) ngay lập tức trên UI
     setState(() {
+      _updatingRoomIds.add(roomId);
       final idx = _rooms.indexWhere((r) => r.id == roomId);
       if (idx != -1) {
-        RoomStatus st = RoomStatus.available;
-        if (newStatus == 'OCCUPIED') st = RoomStatus.occupied;
-        if (newStatus == 'CLEANING') st = RoomStatus.cleaning;
-        if (newStatus == 'MAINTENANCE') st = RoomStatus.maintenance;
-        if (newStatus == 'RESERVED') st = RoomStatus.reserved;
-        _rooms[idx] = RoomModel(
-          id: _rooms[idx].id,
-          roomNumber: _rooms[idx].roomNumber,
-          floor: _rooms[idx].floor,
-          status: st,
-          pricePerNight: _rooms[idx].pricePerNight,
-          roomTypeName: _rooms[idx].roomTypeName,
-        );
+        _rooms[idx] = _rooms[idx].copyWith(status: newStatus);
       }
     });
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Đã cập nhật trạng thái phòng sang $newStatus'),
-        backgroundColor: AppColors.primary,
-      ),
-    );
+
+    // Đồng bộ tức thời tới RoomRepository cho các màn khác (Dashboard, Huy hiệu duyệt phòng)
+    if (sl.isRegistered<RoomRepository>()) {
+      sl<RoomRepository>().updateRoomStatus(roomId, newStatus);
+    }
+
+    try {
+      final res = await _dioClient.dio.patch(
+        ApiEndpoints.updateRoomStatus(roomId),
+        data: {'status': newStatus.code},
+      );
+      if (res.statusCode == 200 || res.statusCode == 204) {
+        if (!mounted) return;
+        setState(() {
+          _updatingRoomIds.remove(roomId);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text('Đã cập nhật phòng ${room.roomNumber} sang ${newStatus.label}'),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.emerald,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+    } catch (_) {
+      // Khi gặp lỗi kết nối hoặc API thất bại: rollback về trạng thái ban đầu
+      if (mounted) {
+        setState(() {
+          _updatingRoomIds.remove(roomId);
+          final idx = _rooms.indexWhere((r) => r.id == roomId);
+          if (idx != -1) {
+            _rooms[idx] = _rooms[idx].copyWith(status: oldStatus);
+          }
+        });
+        if (sl.isRegistered<RoomRepository>()) {
+          sl<RoomRepository>().updateRoomStatus(roomId, oldStatus);
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text('Không thể cập nhật phòng ${room.roomNumber}. Đã khôi phục trạng thái cũ.'),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.rose,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+        return;
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _updatingRoomIds.remove(roomId);
+      });
+    }
   }
 
   void _showRoomDetailSheet(RoomModel room) {
@@ -190,34 +240,37 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
               children: [
                 _buildActionButton(
                   ctx: ctx,
-                  roomId: room.id,
+                  room: room,
                   label: 'Sẵn sàng',
-                  statusKey: 'AVAILABLE',
-                  color: AppColors.available,
+                  status: RoomStatus.available,
                   icon: Icons.check_circle_outline,
                 ),
                 _buildActionButton(
                   ctx: ctx,
-                  roomId: room.id,
+                  room: room,
                   label: 'Dọn dẹp',
-                  statusKey: 'CLEANING',
-                  color: AppColors.cleaning,
+                  status: RoomStatus.cleaning,
                   icon: Icons.cleaning_services_outlined,
                 ),
                 _buildActionButton(
                   ctx: ctx,
-                  roomId: room.id,
+                  room: room,
                   label: 'Có khách',
-                  statusKey: 'OCCUPIED',
-                  color: AppColors.occupied,
+                  status: RoomStatus.occupied,
                   icon: Icons.person_outline,
                 ),
                 _buildActionButton(
                   ctx: ctx,
-                  roomId: room.id,
+                  room: room,
+                  label: 'Đặt cọc',
+                  status: RoomStatus.reserved,
+                  icon: Icons.vpn_key_outlined,
+                ),
+                _buildActionButton(
+                  ctx: ctx,
+                  room: room,
                   label: 'Bảo trì',
-                  statusKey: 'MAINTENANCE',
-                  color: AppColors.maintenance,
+                  status: RoomStatus.maintenance,
                   icon: Icons.build_outlined,
                 ),
               ],
@@ -231,26 +284,37 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
 
   Widget _buildActionButton({
     required BuildContext ctx,
-    required String roomId,
+    required RoomModel room,
     required String label,
-    required String statusKey,
-    required Color color,
+    required RoomStatus status,
     required IconData icon,
   }) {
+    final isCurrent = room.status == status;
+    final color = Color(status.colorValue);
+
     return ElevatedButton.icon(
-      onPressed: () {
-        Navigator.pop(ctx);
-        _updateRoomStatus(roomId, statusKey);
-      },
+      onPressed: isCurrent
+          ? () => Navigator.pop(ctx)
+          : () {
+              Navigator.pop(ctx);
+              _updateRoomStatus(room, status);
+            },
       style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        elevation: 0,
+        backgroundColor: isCurrent ? color.withValues(alpha: 0.15) : color,
+        foregroundColor: isCurrent ? color : Colors.white,
+        elevation: isCurrent ? 0 : 1,
+        side: isCurrent ? BorderSide(color: color, width: 1.5) : null,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       ),
-      icon: Icon(icon, size: 16),
-      label: Text(label, style: const TextStyle(fontSize: 13)),
+      icon: Icon(isCurrent ? Icons.check : icon, size: 16),
+      label: Text(
+        isCurrent ? '$label (Hiện tại)' : label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+        ),
+      ),
     );
   }
 
@@ -276,7 +340,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: RefreshIndicator(
-        onRefresh: _fetchRooms,
+        onRefresh: () => _fetchRooms(isSilent: true),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
@@ -333,14 +397,12 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                                   children: [
                                     _buildGlassCircleBtn(
                                       icon: Icons.refresh,
-                                      onTap: _fetchRooms,
+                                      onTap: () => _fetchRooms(isSilent: true),
                                     ),
                                     const SizedBox(width: 8),
                                     _buildGlassCircleBtn(
                                       icon: Icons.logout,
-                                      onTap: () => context
-                                          .read<AuthBloc>()
-                                          .add(AuthLogoutRequested()),
+                                      onTap: () => LogoutConfirmationDialog.show(context),
                                     ),
                                   ],
                                 ),
@@ -417,10 +479,32 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
               const SizedBox(height: 52),
 
               // 3. Danh sách tầng & Lưới phòng 3 cột
-              if (_isLoading)
+              if (_isLoading && _rooms.isEmpty)
                 const Padding(
                   padding: EdgeInsets.all(40),
                   child: CircularProgressIndicator(color: AppColors.secondary),
+                )
+              else if (_rooms.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(40),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.meeting_room_outlined,
+                          size: 48, color: AppColors.textSecondary),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Không có dữ liệu buồng phòng',
+                        style: TextStyle(
+                            fontSize: 15, color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        onPressed: () => _fetchRooms(),
+                        icon: const Icon(Icons.refresh, size: 16),
+                        label: const Text('Tải lại'),
+                      ),
+                    ],
+                  ),
                 )
               else
                 ...sortedFloors.map((floor) {
@@ -493,6 +577,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
   }
 
   Widget _buildRoomTile(RoomModel room) {
+    final isUpdating = _updatingRoomIds.contains(room.id);
     final statusColor = Color(room.status.colorValue);
     final statusInk = Color(room.status.inkValue);
     final iconData = room.status.icon;
@@ -500,13 +585,17 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => _showRoomDetailSheet(room),
+        onTap: isUpdating ? null : () => _showRoomDetailSheet(room),
         borderRadius: BorderRadius.circular(16),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
           decoration: BoxDecoration(
             color: statusColor.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: statusColor, width: 1.5),
+            border: Border.all(
+              color: isUpdating ? statusColor.withValues(alpha: 0.4) : statusColor,
+              width: 1.5,
+            ),
             boxShadow: [
               BoxShadow(
                 color: statusColor.withValues(alpha: 0.12),
@@ -516,38 +605,60 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
             ],
           ),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Stack(
             children: [
-              // Top Right Icon
-              Align(
-                alignment: Alignment.topRight,
-                child: Icon(
-                  iconData,
-                  size: 14,
-                  color: statusColor,
-                ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Top Right Icon hoặc Loading Indicator cục bộ cho riêng phòng này
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: isUpdating
+                        ? SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: statusColor,
+                            ),
+                          )
+                        : Icon(
+                            iconData,
+                            size: 14,
+                            color: statusColor,
+                          ),
+                  ),
+                  // Room Number
+                  Text(
+                    room.roomNumber,
+                    style: TextStyle(
+                      color: statusInk,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  // Status Label
+                  Text(
+                    room.status.label,
+                    style: TextStyle(
+                      color: statusInk,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-              // Room Number
-              Text(
-                room.roomNumber,
-                style: TextStyle(
-                  color: statusInk,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
+              if (isUpdating)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
                 ),
-              ),
-              // Status Label
-              Text(
-                room.status.label,
-                style: TextStyle(
-                  color: statusInk,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
           ),
         ),

@@ -138,12 +138,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     try {
       final refreshToken = await _tokenStorage.getRefreshToken();
-      if (refreshToken != null) {
-        await _dioClient.dio.post(
-          ApiEndpoints.logout,
-          data: {'refreshToken': refreshToken},
-        );
-      }
+      await _dioClient.dio.post(
+        ApiEndpoints.logout,
+        data: refreshToken != null ? {'refreshToken': refreshToken} : {},
+      );
     } catch (_) {
       // Ignore network errors when logging out
     } finally {

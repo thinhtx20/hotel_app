@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hotel_app/core/constants/role_enum.dart';
@@ -60,7 +59,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     // Verify 4 tabs exist
-    expect(find.text('Tổng quan'), findsOneWidget);
+    expect(find.text('Tổng quan'), findsWidgets);
     expect(find.text('Duyệt phòng'), findsOneWidget);
     expect(find.text('Sơ đồ phòng'), findsOneWidget);
     expect(find.text('Thu ngân'), findsOneWidget);

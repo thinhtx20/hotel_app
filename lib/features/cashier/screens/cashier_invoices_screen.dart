@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/models/invoice_model.dart';
-import '../../auth/bloc/auth_bloc.dart';
-import '../../auth/bloc/auth_event.dart';
+import '../../../shared/widgets/logout_confirmation_dialog.dart';
 
 class CashierInvoicesScreen extends StatefulWidget {
   const CashierInvoicesScreen({super.key});
@@ -19,6 +17,7 @@ class CashierInvoicesScreen extends StatefulWidget {
 class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
   int _selectedTabIndex = 0; // 0: Chưa thanh toán, 1: Thanh toán 1 phần, 2: Đã hoàn tất, 3: Tất cả
   List<InvoiceModel> _invoices = [];
+  num _todayRevenue = 0;
   bool _isLoading = true;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -48,9 +47,41 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
       final res = await DioClient().dio.get(ApiEndpoints.invoices);
       if (res.statusCode == 200 && res.data['success'] == true) {
         final list = res.data['data'] as List?;
-        if (list != null && list.isNotEmpty && mounted) {
+        if (list != null && mounted) {
+          final invoices = list.map((e) => InvoiceModel.fromJson(e)).toList();
+
+          // Lấy todayRevenue chính xác từ endpoint summary của backend
+          num summaryTodayRevenue = 0;
+          try {
+            final summaryRes =
+                await DioClient().dio.get(ApiEndpoints.invoiceSummary);
+            if (summaryRes.statusCode == 200 &&
+                summaryRes.data['success'] == true) {
+              final sData = summaryRes.data['data'];
+              if (sData != null && sData['todayRevenue'] != null) {
+                summaryTodayRevenue = (sData['todayRevenue'] as num?) ?? 0;
+              }
+            }
+          } catch (_) {}
+
+          // Kiểm tra thêm các giao dịch thu tiền trong ngày hôm nay (hỗ trợ offline/optimistic update)
+          final now = DateTime.now();
+          num localTodayPaid = 0;
+          for (final inv in invoices) {
+            for (final txn in inv.transactions) {
+              if (txn.timestamp.year == now.year &&
+                  txn.timestamp.month == now.month &&
+                  txn.timestamp.day == now.day) {
+                localTodayPaid += txn.amount;
+              }
+            }
+          }
+
           setState(() {
-            _invoices = list.map((e) => InvoiceModel.fromJson(e)).toList();
+            _invoices = invoices;
+            _todayRevenue = summaryTodayRevenue > 0
+                ? summaryTodayRevenue
+                : localTodayPaid;
             _isLoading = false;
           });
           return;
@@ -62,6 +93,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
     if (mounted) {
       setState(() {
         _isLoading = false;
+        _todayRevenue = 0;
         _invoices = [
           InvoiceModel(
             id: 'INV-2026-003',
@@ -231,20 +263,22 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
       case 0:
         return _invoices
             .where((i) =>
-                i.paymentStatus.toUpperCase() != 'PAID' &&
-                i.remainingAmount > 0)
+                i.paymentStatus.toUpperCase() == 'UNPAID' ||
+                (i.paidAmount == 0 && i.remainingAmount > 0))
             .length;
       case 1:
         return _invoices
             .where((i) =>
                 i.paymentStatus.toUpperCase() == 'PARTIAL' ||
-                (i.paidAmount > 0 && i.remainingAmount > 0))
+                (i.paidAmount > 0 &&
+                    i.remainingAmount > 0 &&
+                    i.paymentStatus.toUpperCase() != 'UNPAID'))
             .length;
       case 2:
         return _invoices
             .where((i) =>
                 i.paymentStatus.toUpperCase() == 'PAID' ||
-                i.remainingAmount <= 0)
+                (i.remainingAmount <= 0 && i.finalAmount > 0))
             .length;
       case 3:
         return _invoices.length;
@@ -259,22 +293,24 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
       case 0:
         list = _invoices
             .where((i) =>
-                i.paymentStatus.toUpperCase() != 'PAID' &&
-                i.remainingAmount > 0)
+                i.paymentStatus.toUpperCase() == 'UNPAID' ||
+                (i.paidAmount == 0 && i.remainingAmount > 0))
             .toList();
         break;
       case 1:
         list = _invoices
             .where((i) =>
                 i.paymentStatus.toUpperCase() == 'PARTIAL' ||
-                (i.paidAmount > 0 && i.remainingAmount > 0))
+                (i.paidAmount > 0 &&
+                    i.remainingAmount > 0 &&
+                    i.paymentStatus.toUpperCase() != 'UNPAID'))
             .toList();
         break;
       case 2:
         list = _invoices
             .where((i) =>
                 i.paymentStatus.toUpperCase() == 'PAID' ||
-                i.remainingAmount <= 0)
+                (i.remainingAmount <= 0 && i.finalAmount > 0))
             .toList();
         break;
       default:
@@ -1296,6 +1332,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                                     paymentMethod: selectedMethod,
                                     transactions: updatedTxns,
                                   );
+                                  _todayRevenue += amt;
                                 }
                               });
                             }
@@ -1685,7 +1722,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                       ),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<String>(
-                        value: selectedRoom,
+                        initialValue: selectedRoom,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: const Color(0xFFF8FAFC),
@@ -1728,7 +1765,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                       ),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<String>(
-                        value: selectedCategory,
+                        initialValue: selectedCategory,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: const Color(0xFFF8FAFC),
@@ -1907,7 +1944,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
   @override
   Widget build(BuildContext context) {
     final filtered = _getFilteredInvoices();
-    final todayRevenue = _invoices.fold<num>(
+    final totalPaid = _invoices.fold<num>(
       0,
       (sum, inv) => sum + inv.paidAmount,
     );
@@ -1915,6 +1952,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
       0,
       (sum, inv) => sum + inv.remainingAmount,
     );
+    final pendingCount = _invoices.where((i) => i.remainingAmount > 0).length;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -2005,9 +2043,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                               const SizedBox(width: 8),
                               _buildGlassCircleBtn(
                                 icon: Icons.logout,
-                                onTap: () => context
-                                    .read<AuthBloc>()
-                                    .add(AuthLogoutRequested()),
+                                onTap: () => LogoutConfirmationDialog.show(context),
                               ),
                             ],
                           ),
@@ -2045,9 +2081,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                                         fit: BoxFit.scaleDown,
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          Formatters.formatCurrency(
-                                            todayRevenue > 0 ? todayRevenue : 42350000,
-                                          ),
+                                          Formatters.formatCurrency(_todayRevenue),
                                           style: const TextStyle(
                                             color: AppColors.secondaryLight,
                                             fontSize: 26,
@@ -2094,7 +2128,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                                       const Icon(Icons.pending_actions_rounded, size: 14, color: AppColors.secondaryLight),
                                       const SizedBox(width: 6),
                                       Text(
-                                        'Chờ thu: ${Formatters.formatCurrency(totalRemaining)}',
+                                        'Chờ thu: ${Formatters.formatCurrency(totalRemaining)} ($pendingCount HĐ)',
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 11,
@@ -2104,10 +2138,11 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                                     ],
                                   ),
                                   Text(
-                                    '${_invoices.length} hóa đơn',
+                                    'Tổng thu: ${Formatters.formatCurrency(totalPaid)}',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.7),
+                                      color: Colors.white.withValues(alpha: 0.8),
                                       fontSize: 11,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
@@ -2192,6 +2227,8 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                           children: [
                             Text(
                               title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: isSelected
@@ -2205,26 +2242,25 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                             if (count > 0) ...[
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 1),
-                                constraints: const BoxConstraints(
-                                    minWidth: 18, minHeight: 18),
+                                height: 20,
+                                constraints: const BoxConstraints(minWidth: 20),
+                                padding: const EdgeInsets.symmetric(horizontal: 5),
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? Colors.white
                                       : const Color(0xFFE2E8F0),
-                                  borderRadius: BorderRadius.circular(999),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    '$count',
-                                    style: TextStyle(
-                                      color: isSelected
-                                          ? AppColors.secondary
-                                          : AppColors.textSecondary,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '$count',
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? AppColors.secondary
+                                        : AppColors.textSecondary,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.0,
                                   ),
                                 ),
                               ),

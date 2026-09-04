@@ -56,7 +56,8 @@ class DioClient {
           // Bắt lỗi 401 để tự động Refresh Token
           if (error.response?.statusCode == 401 &&
               !error.requestOptions.path.contains('/auth/login') &&
-              !error.requestOptions.path.contains('/auth/refresh-token')) {
+              !error.requestOptions.path.contains('/auth/refresh-token') &&
+              !error.requestOptions.path.contains('/auth/logout')) {
             final refreshed = await _handleRefreshToken();
             if (refreshed) {
               final retryToken = await _tokenStorage.getAccessToken();

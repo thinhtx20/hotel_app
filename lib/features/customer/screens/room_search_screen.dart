@@ -112,13 +112,20 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
       );
       if (res.statusCode == 200 && res.data['success'] == true) {
         final list = res.data['data'] as List?;
-        if (list != null && list.isNotEmpty) {
+        if (list != null) {
           rawList = list.map((e) => RoomModel.fromJson(e)).toList();
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+              _results = _syncWithRepository(rawList);
+            });
+          }
+          return;
         }
       }
     } catch (_) {}
 
-    // Fallback standard design cards from 05-search.md
+    // Fallback standard design cards from 05-search.md if offline or network error
     if (rawList.isEmpty) {
       rawList = [
         RoomModel(

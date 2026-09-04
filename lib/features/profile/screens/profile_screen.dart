@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/network/api_endpoints.dart';
+import '../../../core/network/api_error.dart';
+import '../../../core/network/dio_client.dart';
+import '../../../core/storage/token_storage.dart';
+import '../../../shared/models/user_model.dart';
 import '../../../shared/widgets/app_error_display.dart';
+import '../../../shared/widgets/logout_confirmation_dialog.dart';
 import '../../auth/bloc/auth_bloc.dart';
-import '../../auth/bloc/auth_event.dart';
 import '../../auth/bloc/auth_state.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -27,6 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bool hideCurrent = true;
     bool hideNew = true;
     bool hideConfirm = true;
+    bool isChanging = false;
 
     showModalBottomSheet(
       context: context,
@@ -146,39 +153,75 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {
-                      final current = currentPassController.text;
-                      final newP = newPassController.text;
-                      final confirmP = confirmPassController.text;
+                    onPressed: isChanging
+                        ? null
+                        : () async {
+                            final current = currentPassController.text;
+                            final newP = newPassController.text;
+                            final confirmP = confirmPassController.text;
 
-                      if (current.isEmpty || newP.isEmpty || confirmP.isEmpty) {
-                        AppNotification.showWarning(
-                          context,
-                          'Vui lòng nhập đầy đủ thông tin mật khẩu',
-                        );
-                        return;
-                      }
-                      if (newP.length < 6) {
-                        AppNotification.showWarning(
-                          context,
-                          'Mật khẩu mới phải có ít nhất 6 ký tự',
-                        );
-                        return;
-                      }
-                      if (newP != confirmP) {
-                        AppNotification.showWarning(
-                          context,
-                          'Mật khẩu xác nhận không trùng khớp',
-                        );
-                        return;
-                      }
+                            if (current.isEmpty || newP.isEmpty || confirmP.isEmpty) {
+                              AppNotification.showWarning(
+                                context,
+                                'Vui lòng nhập đầy đủ thông tin mật khẩu',
+                              );
+                              return;
+                            }
+                            if (newP.length < 6) {
+                              AppNotification.showWarning(
+                                context,
+                                'Mật khẩu mới phải có ít nhất 6 ký tự',
+                              );
+                              return;
+                            }
+                            if (newP != confirmP) {
+                              AppNotification.showWarning(
+                                context,
+                                'Mật khẩu xác nhận không trùng khớp',
+                              );
+                              return;
+                            }
 
-                      Navigator.pop(ctx);
-                      AppNotification.showSuccess(
-                        context,
-                        'Đã đổi mật khẩu thành công!',
-                      );
-                    },
+                            setModalState(() => isChanging = true);
+                            try {
+                              final res = await DioClient().dio.post(
+                                ApiEndpoints.changePassword,
+                                data: {
+                                  'oldPassword': current,
+                                  'newPassword': newP,
+                                },
+                              );
+                              if (mounted &&
+                                  ctx.mounted &&
+                                  (res.statusCode == 200 || res.statusCode == 201) &&
+                                  res.data['success'] == true) {
+                                Navigator.pop(ctx);
+                                if (context.mounted) {
+                                  AppNotification.showSuccess(
+                                    context,
+                                    'Đổi mật khẩu thành công!',
+                                  );
+                                }
+                                return;
+                              }
+                            } on DioException catch (e) {
+                              final err = ApiError.fromDioException(e);
+                              if (context.mounted) {
+                                AppNotification.showError(context, err.displayMessage);
+                              }
+                            } catch (_) {
+                              if (context.mounted) {
+                                AppNotification.showError(
+                                  context,
+                                  'Không thể đổi mật khẩu. Vui lòng kiểm tra lại.',
+                                );
+                              }
+                            } finally {
+                              if (mounted) {
+                                setModalState(() => isChanging = false);
+                              }
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
@@ -187,13 +230,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: Text(
-                      'Cập nhật mật khẩu',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: isChanging
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Cập nhật mật khẩu',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -206,105 +258,143 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showEditPhoneModal(BuildContext context, String currentPhone) {
     final phoneController = TextEditingController(text: currentPhone);
+    bool isSaving = false;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          top: 24,
-          left: 20,
-          right: 20,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Row(
-              children: [
-                Icon(Icons.phone_android_rounded,
-                    color: Color(0xFF3B82F6), size: 24),
-                SizedBox(width: 10),
-                Text(
-                  'Cập Nhật Số Điện Thoại',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            top: 24,
+            left: 20,
+            right: 20,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: 'Số điện thoại liên hệ',
-                prefixIcon: const Icon(Icons.phone_outlined, size: 20),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () {
-                  final phone = phoneController.text.trim();
-                  if (phone.isEmpty || phone.length < 9) {
-                    AppNotification.showWarning(
-                      context,
-                      'Vui lòng nhập số điện thoại hợp lệ',
-                    );
-                    return;
-                  }
-                  setState(() {
-                    _customPhone = phone;
-                  });
-                  Navigator.pop(ctx);
-                  AppNotification.showSuccess(
-                    context,
-                    'Đã cập nhật số điện thoại: $phone',
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
+              const SizedBox(height: 16),
+              const Row(
+                children: [
+                  Icon(Icons.phone_android_rounded,
+                      color: Color(0xFF3B82F6), size: 24),
+                  SizedBox(width: 10),
+                  Text(
+                    'Cập Nhật Số Điện Thoại',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: 'Số điện thoại liên hệ',
+                  prefixIcon: const Icon(Icons.phone_outlined, size: 20),
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Lưu thay đổi',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+                          final phone = phoneController.text.trim();
+                          if (phone.isEmpty || phone.length < 9) {
+                            AppNotification.showWarning(
+                              context,
+                              'Vui lòng nhập số điện thoại hợp lệ',
+                            );
+                            return;
+                          }
+
+                          setModalState(() => isSaving = true);
+                          try {
+                            final res = await DioClient().dio.patch(
+                              ApiEndpoints.usersMe,
+                              data: {'phone': phone},
+                            );
+                            if (res.data != null && res.data['success'] == true) {
+                              final raw = res.data['data'];
+                              if (raw != null) {
+                                final updatedUser = UserModel.fromJson(raw);
+                                await TokenStorage().saveUser(updatedUser);
+                              }
+                            }
+                          } catch (_) {
+                            // Local fallback if offline
+                          }
+
+                          if (mounted) {
+                            setState(() {
+                              _customPhone = phone;
+                            });
+                            if (ctx.mounted) {
+                              Navigator.pop(ctx);
+                            }
+                            if (context.mounted) {
+                              AppNotification.showSuccess(
+                                context,
+                                'Đã cập nhật số điện thoại: $phone',
+                              );
+                            }
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Lưu thay đổi',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1052,9 +1142,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: double.infinity,
                     height: 52,
                     child: OutlinedButton.icon(
-                      onPressed: () {
-                        context.read<AuthBloc>().add(AuthLogoutRequested());
-                      },
+                      onPressed: () => LogoutConfirmationDialog.show(context),
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: AppColors.error,

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hotel_app/core/constants/role_enum.dart';
 import 'package:hotel_app/features/auth/bloc/auth_bloc.dart';
 import 'package:hotel_app/features/auth/bloc/auth_state.dart';
 import 'package:hotel_app/features/splash/splash_screen.dart';
-import 'package:hotel_app/shared/models/user_model.dart';
 
 class MockAuthBloc extends Fake implements AuthBloc {
   final AuthState _state;

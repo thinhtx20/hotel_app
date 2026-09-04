@@ -42,15 +42,17 @@ class PaymentTransactionModel {
   });
 
   factory PaymentTransactionModel.fromJson(Map<String, dynamic> json) {
+    final dateStr = json['timestamp'] ?? json['paidAt'];
     return PaymentTransactionModel(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? 'TXN-${DateTime.now().millisecondsSinceEpoch}',
       amount: json['amount'] ?? 0,
-      paymentMethod: json['paymentMethod'] ?? 'CASH',
-      timestamp: json['timestamp'] != null
-          ? DateTime.tryParse(json['timestamp']) ?? DateTime.now()
+      paymentMethod: json['paymentMethod']?.toString() ?? 'CASH',
+      timestamp: dateStr != null
+          ? DateTime.tryParse(dateStr.toString()) ?? DateTime.now()
           : DateTime.now(),
-      cashierName: json['cashierName'],
-      notes: json['notes'],
+      cashierName: json['cashierName']?.toString() ??
+          json['issuedBy']?['fullName']?.toString(),
+      notes: json['notes']?.toString(),
     );
   }
 }
@@ -143,28 +145,31 @@ class InvoiceModel {
     final parsedItems = (json['items'] as List?)
         ?.map((e) => InvoiceItemModel.fromJson(e as Map<String, dynamic>))
         .toList();
-    final parsedTxns = (json['transactions'] as List?)
+    final rawPayments = json['payments'] as List? ?? json['transactions'] as List?;
+    final parsedTxns = rawPayments
         ?.map((e) => PaymentTransactionModel.fromJson(e as Map<String, dynamic>))
         .toList();
 
     return InvoiceModel(
-      id: json['id'] ?? '',
-      invoiceCode: json['invoiceCode'],
-      bookingId: json['bookingId'] ?? json['booking']?['id'],
-      roomNumber: json['booking']?['room']?['roomNumber'] ?? json['roomNumber'],
-      customerName: json['booking']?['customer']?['fullName'] ?? json['customerName'],
+      id: json['id']?.toString() ?? '',
+      invoiceCode: json['invoiceCode']?.toString(),
+      bookingId: json['bookingId']?.toString() ?? json['booking']?['id']?.toString(),
+      roomNumber: json['roomNumber']?.toString() ?? json['booking']?['room']?['roomNumber']?.toString(),
+      customerName: json['customerName']?.toString() ?? json['booking']?['customer']?['fullName']?.toString(),
       roomAmount: json['roomAmount'] ?? 0,
       servicesAmount: json['servicesAmount'] ?? 0,
       discount: json['discount'] ?? 0,
       tax: json['tax'] ?? 0,
       finalAmount: json['finalAmount'] ?? 0,
       paidAmount: json['paidAmount'] ?? 0,
-      paymentStatus: json['paymentStatus'] ?? 'UNPAID',
-      paymentMethod: json['paymentMethod'],
-      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt']) : null,
+      paymentStatus: json['paymentStatus']?.toString() ?? 'UNPAID',
+      paymentMethod: json['paymentMethod']?.toString(),
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString())
+          : (json['paidAt'] != null ? DateTime.tryParse(json['paidAt'].toString()) : null),
       items: parsedItems,
       transactions: parsedTxns,
-      notes: json['notes'],
+      notes: json['notes']?.toString(),
     );
   }
 

@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/role_enum.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
+import '../../features/admin/screens/occupancy_detail_screen.dart';
+import '../../features/admin/screens/pending_bookings_screen.dart';
 import '../../features/admin/screens/room_approval_screen.dart';
+import '../../features/admin/screens/today_check_ins_screen.dart';
+import '../../features/admin/screens/today_check_outs_screen.dart';
 import '../../features/admin/widgets/admin_tab_scaffold.dart';
 import '../../features/auth/bloc/auth_bloc.dart';
 import '../../features/auth/bloc/auth_state.dart';
@@ -176,6 +180,22 @@ class AppRouter {
         GoRoute(
           path: '/room-approval',
           builder: (context, state) => const RoomApprovalScreen(),
+        ),
+        GoRoute(
+          path: '/admin/occupancy-detail',
+          builder: (context, state) => const OccupancyDetailScreen(),
+        ),
+        GoRoute(
+          path: '/admin/today-check-ins',
+          builder: (context, state) => const TodayCheckInsScreen(),
+        ),
+        GoRoute(
+          path: '/admin/today-check-outs',
+          builder: (context, state) => const TodayCheckOutsScreen(),
+        ),
+        GoRoute(
+          path: '/admin/pending-bookings',
+          builder: (context, state) => const PendingBookingsScreen(),
         ),
       ],
     );

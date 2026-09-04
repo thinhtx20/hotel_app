@@ -119,6 +119,30 @@ void main() {
 
       expect(find.text('Tạo Hóa Đơn / Thêm Phụ Phí'), findsOneWidget);
     });
+
+    testWidgets('tab switching filters invoices correctly', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: CashierInvoicesScreen(),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+
+      // Tap tab 'Thanh toán 1 phần'
+      final partialTab = find.text('Thanh toán 1 phần');
+      expect(partialTab, findsOneWidget);
+      await tester.tap(partialTab);
+      await tester.pump();
+
+      // Tap tab 'Đã hoàn tất'
+      final paidTab = find.text('Đã hoàn tất');
+      expect(paidTab, findsOneWidget);
+      await tester.tap(paidTab);
+      await tester.pump();
+    });
   });
 }
+
 

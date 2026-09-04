@@ -79,6 +79,16 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_selectedRoomType == null || _selectedRoomType!.id.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng chọn hạng phòng hợp lệ trước khi tạo'),
+          backgroundColor: AppColors.rose,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     final roomNumber = _roomNumberController.text.trim();
@@ -94,7 +104,7 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
       floor: floor,
       status: RoomStatus.pendingApproval,
       pricePerNight: price,
-      roomTypeId: _selectedRoomType?.id,
+      roomTypeId: _selectedRoomType!.id,
       roomTypeName: _selectedRoomType?.name ?? 'Phòng Tiêu Chuẩn',
       images: imageUrl.isNotEmpty
           ? [imageUrl]

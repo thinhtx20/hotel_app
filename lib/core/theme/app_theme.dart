@@ -162,7 +162,7 @@ class AppTheme {
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: AppRadius.sheetR),
-        showDragHandle: true,
+        showDragHandle: false,
         dragHandleColor: AppColors.border,
       ),
       dialogTheme: DialogThemeData(

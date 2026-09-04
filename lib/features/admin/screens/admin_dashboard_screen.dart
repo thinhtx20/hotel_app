@@ -1,16 +1,16 @@
 import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/network/dio_client.dart';
-import '../../../di/injection_container.dart';
-import '../../../shared/repositories/room_repository.dart';
-import '../../auth/bloc/auth_bloc.dart';
-import '../../auth/bloc/auth_event.dart';
+import '../../../shared/widgets/logout_confirmation_dialog.dart';
+import 'occupancy_detail_screen.dart';
+import 'today_check_ins_screen.dart';
+import 'today_check_outs_screen.dart';
+import 'pending_bookings_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -19,12 +19,14 @@ class AdminDashboardScreen extends StatefulWidget {
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
 }
 
-class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+class _AdminDashboardScreenState extends State<AdminDashboardScreen>
+    with SingleTickerProviderStateMixin {
   /// Các mốc lọc của biểu đồ doanh thu (số ngày gần nhất)
   static const List<int> _revenueRangeOptions = [1, 7, 14, 30];
 
   Map<String, dynamic>? _dashboardData;
-  bool _isLoading = true;
+  bool _isStatsLoading = true;
+  late final AnimationController _refreshIconController;
 
   int _revenueDays = 7;
   List<_RevenuePoint> _revenueSeries = [];
@@ -34,8 +36,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   void initState() {
     super.initState();
+    _refreshIconController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
     _fetchDashboardData();
     _fetchRevenueSeries(_revenueDays);
+  }
+
+  @override
+  void dispose() {
+    _refreshIconController.dispose();
+    super.dispose();
   }
 
   Future<void> _refreshAll() async {
@@ -87,53 +99,102 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Future<void> _fetchDashboardData() async {
-    setState(() => _isLoading = true);
+    if (mounted) {
+      setState(() => _isStatsLoading = true);
+      _refreshIconController.repeat();
+    }
     try {
       final res = await DioClient().dio.get(ApiEndpoints.analyticsDashboard);
       if (res.statusCode == 200 && res.data['success'] == true) {
         if (mounted) {
           setState(() {
             _dashboardData = res.data['data'];
-            _isLoading = false;
+            _isStatsLoading = false;
           });
+          _refreshIconController.stop();
+          _refreshIconController.reset();
           return;
         }
       }
     } catch (_) {}
 
     if (mounted) {
-      setState(() => _isLoading = false);
+      setState(() => _isStatsLoading = false);
+      _refreshIconController.stop();
+      _refreshIconController.reset();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final rawRevenue = _dashboardData?['totalRevenueToday'];
+    final rawRevenue = _dashboardData?['todayRevenue'] ?? _dashboardData?['totalRevenueToday'];
     final revenueToday = rawRevenue != null
         ? Formatters.formatCurrency(num.tryParse('$rawRevenue') ?? 0)
-        : '128.500.000 ₫';
-    final occupancy = _dashboardData?['occupancyRate'] != null
-        ? '${_dashboardData!['occupancyRate']}%'
-        : '78%';
-    final occupiedRooms = _dashboardData?['occupiedRooms'] ?? 14;
-    final totalRooms = _dashboardData?['totalRooms'] ?? 20;
+        : '0 ₫';
+    final num? revenueChangePercent = _dashboardData?['revenueChangePercent'] as num?;
+
+    final num? rawRate = _dashboardData?['occupancyRate'] as num?;
+    final int occupiedRooms = (_dashboardData?['occupiedRooms'] as num?)?.toInt() ??
+        (_dashboardData?['rooms']?['occupied'] as num?)?.toInt() ??
+        0;
+    final int totalRooms = (_dashboardData?['totalRooms'] as num?)?.toInt() ??
+        (_dashboardData?['rooms']?['total'] as num?)?.toInt() ??
+        0;
+
+    final String occupancyStr;
+    if (rawRate != null) {
+      occupancyStr = rawRate % 1 == 0
+          ? '${rawRate.toInt()}%'
+          : '${rawRate.toStringAsFixed(1)}%';
+    } else if (totalRooms > 0) {
+      final calculated = (occupiedRooms / totalRooms * 100);
+      occupancyStr = calculated % 1 == 0
+          ? '${calculated.toInt()}%'
+          : '${calculated.toStringAsFixed(1)}%';
+    } else {
+      occupancyStr = '0%';
+    }
+
+    final double occupancyFraction = totalRooms > 0
+        ? (occupiedRooms / totalRooms).clamp(0.0, 1.0)
+        : (rawRate != null ? (rawRate / 100.0).clamp(0.0, 1.0) : 0.0);
+
+    final int checkIns = (_dashboardData?['checkInsToday'] as num?)?.toInt() ??
+        (_dashboardData?['todayCheckIns'] as num?)?.toInt() ??
+        (_dashboardData?['todayActivity']?['expectedCheckIns'] as num?)?.toInt() ??
+        0;
+    final int checkOuts = (_dashboardData?['checkOutsToday'] as num?)?.toInt() ??
+        (_dashboardData?['todayCheckOuts'] as num?)?.toInt() ??
+        (_dashboardData?['todayActivity']?['expectedCheckOuts'] as num?)?.toInt() ??
+        0;
+    final int pendingBookings = (_dashboardData?['pendingBookings'] as num?)?.toInt() ?? 0;
+
+    final breakdown = _dashboardData?['roomStatusBreakdown'] as Map?;
+    final int occupiedCount = (breakdown?['OCCUPIED'] as num?)?.toInt() ?? occupiedRooms;
+    final int availableCount = (breakdown?['AVAILABLE'] as num?)?.toInt() ??
+        (_dashboardData?['availableRooms'] as num?)?.toInt() ??
+        0;
+    final int cleaningCount = (breakdown?['CLEANING'] as num?)?.toInt() ??
+        (_dashboardData?['cleaningRooms'] as num?)?.toInt() ??
+        0;
+    final int reservedCount = (breakdown?['RESERVED'] as num?)?.toInt() ??
+        (_dashboardData?['reservedRooms'] as num?)?.toInt() ??
+        0;
+    final int maintenanceCount = (breakdown?['MAINTENANCE'] as num?)?.toInt() ??
+        (_dashboardData?['maintenanceRooms'] as num?)?.toInt() ??
+        0;
 
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.secondary),
-            )
-          : RefreshIndicator(
-              onRefresh: _refreshAll,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
+      body: RefreshIndicator(
+        onRefresh: _refreshAll,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               // 1. Dải Navy đầu màn + Thống kê doanh thu hôm nay
               Stack(
                 clipBehavior: Clip.none,
@@ -186,14 +247,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   children: [
                                     _buildGlassCircleBtn(
                                       icon: Icons.refresh,
-                                      onTap: _fetchDashboardData,
+                                      onTap: () {
+                                        _fetchDashboardData();
+                                        _fetchRevenueSeries(_revenueDays);
+                                      },
+                                      customIcon: RotationTransition(
+                                        turns: _refreshIconController,
+                                        child: const Icon(
+                                          Icons.refresh,
+                                          color: Colors.white,
+                                          size: 18,
+                                        ),
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
                                     _buildGlassCircleBtn(
                                       icon: Icons.logout,
-                                      onTap: () => context
-                                          .read<AuthBloc>()
-                                          .add(AuthLogoutRequested()),
+                                      onTap: () => LogoutConfirmationDialog.show(context),
                                     ),
                                   ],
                                 ),
@@ -217,51 +287,80 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               spacing: 8,
                               runSpacing: 4,
                               children: [
-                                FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    revenueToday,
-                                    style: const TextStyle(
-                                      color: AppColors.secondaryLight,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: -0.5,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981)
-                                        .withValues(alpha: 0.20),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.arrow_upward_rounded,
-                                          size: 12, color: Color(0xFF10B981)),
-                                      SizedBox(width: 2),
-                                      Text(
-                                        '+12,4%',
-                                        style: TextStyle(
-                                          color: Color(0xFF10B981),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
+                                _isStatsLoading
+                                    ? _buildShimmerBox(
+                                        width: 170,
+                                        height: 30,
+                                        borderRadius: 8,
+                                        baseColor: Colors.white.withValues(alpha: 0.15),
+                                        highlightColor: Colors.white.withValues(alpha: 0.35),
+                                      )
+                                    : FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          revenueToday,
+                                          style: const TextStyle(
+                                            color: AppColors.secondaryLight,
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: -0.5,
+                                          ),
                                         ),
                                       ),
-                                    ],
+                                if (_isStatsLoading)
+                                  _buildShimmerBox(
+                                    width: 60,
+                                    height: 22,
+                                    borderRadius: 999,
+                                    baseColor: Colors.white.withValues(alpha: 0.15),
+                                    highlightColor: Colors.white.withValues(alpha: 0.35),
+                                  )
+                                else if (revenueChangePercent != null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: (revenueChangePercent >= 0
+                                              ? const Color(0xFF10B981)
+                                              : const Color(0xFFEF4444))
+                                          .withValues(alpha: 0.20),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          revenueChangePercent >= 0
+                                              ? Icons.arrow_upward_rounded
+                                              : Icons.arrow_downward_rounded,
+                                          size: 12,
+                                          color: revenueChangePercent >= 0
+                                              ? const Color(0xFF10B981)
+                                              : const Color(0xFFEF4444),
+                                        ),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          '${revenueChangePercent >= 0 ? '+' : ''}${revenueChangePercent.toStringAsFixed(1).replaceAll('.', ',')}%',
+                                          style: TextStyle(
+                                            color: revenueChangePercent >= 0
+                                                ? const Color(0xFF10B981)
+                                                : const Color(0xFFEF4444),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  'so với hôm qua',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.45),
-                                    fontSize: 12,
+                                  Text(
+                                    'so với hôm qua',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.45),
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             ),
                           ],
@@ -275,66 +374,96 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     bottom: -40,
                     left: 20,
                     right: 20,
-                    child: Container(
-                      height: 112,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFF0F172A).withValues(alpha: 0.08),
-                            blurRadius: 20,
-                            offset: const Offset(0, 4),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const OccupancyDetailScreen(),
                           ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Tỷ lệ lấp đầy',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                occupancy,
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '$occupiedRooms / $totalRooms phòng đang có khách',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-
-                            ],
-                          ),
-                          // Gauge Arc Ring (76px diameter)
-                          SizedBox(
-                            width: 76,
-                            height: 76,
-                            child: CustomPaint(
-                              painter: _GaugeArcPainter(percent: 0.78),
+                        );
+                      },
+                      child: Container(
+                        height: 112,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  const Color(0xFF0F172A).withValues(alpha: 0.08),
+                              blurRadius: 20,
+                              offset: const Offset(0, 4),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Row(
+                                  children: [
+                                    Text(
+                                      'Tỷ lệ lấp đầy',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    SizedBox(width: 4),
+                                    Icon(
+                                      Icons.chevron_right_rounded,
+                                      size: 14,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                _isStatsLoading
+                                    ? _buildShimmerBox(width: 80, height: 28, borderRadius: 6)
+                                    : Text(
+                                        occupancyStr,
+                                        style: const TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                const SizedBox(height: 2),
+                                _isStatsLoading
+                                    ? _buildShimmerBox(width: 150, height: 14, borderRadius: 4)
+                                    : Text(
+                                        '$occupiedRooms / $totalRooms phòng đang có khách',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                              ],
+                            ),
+                            // Gauge Arc Ring (76px diameter)
+                            SizedBox(
+                              width: 76,
+                              height: 76,
+                              child: TweenAnimationBuilder<double>(
+                                tween: Tween<double>(
+                                  begin: 0.0,
+                                  end: _isStatsLoading ? 0.0 : occupancyFraction,
+                                ),
+                                duration: const Duration(milliseconds: 650),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, val, _) => CustomPaint(
+                                  painter: _GaugeArcPainter(percent: val),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -364,28 +493,52 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   children: [
                     Expanded(
                       child: _buildSmallKpiCard(
-                        value: '12',
+                        value: '$checkIns',
                         label: 'Lượt nhận phòng',
                         icon: Icons.vpn_key_outlined,
                         color: AppColors.secondary,
+                        isLoading: _isStatsLoading,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const TodayCheckInsScreen(),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildSmallKpiCard(
-                        value: '8',
+                        value: '$checkOuts',
                         label: 'Lượt trả phòng',
                         icon: Icons.logout_outlined,
                         color: const Color(0xFF3B82F6),
+                        isLoading: _isStatsLoading,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const TodayCheckOutsScreen(),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildSmallKpiCard(
-                        value: '4',
+                        value: '$pendingBookings',
                         label: 'Đơn chờ duyệt',
                         icon: Icons.schedule_outlined,
                         color: const Color(0xFFEF4444),
+                        isLoading: _isStatsLoading,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const PendingBookingsScreen(),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -431,33 +584,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         borderRadius: BorderRadius.circular(7),
                         child: SizedBox(
                           height: 14,
-                          child: Row(
-                            children: const [
-                              Expanded(
-                                flex: 55,
-                                child: ColoredBox(color: AppColors.occupied),
-                              ),
-                              SizedBox(width: 2),
-                              Expanded(
-                                flex: 25,
-                                child: ColoredBox(color: AppColors.available),
-                              ),
-                              SizedBox(width: 2),
-                              Expanded(
-                                flex: 10,
-                                child: ColoredBox(color: AppColors.cleaning),
-                              ),
-                              SizedBox(width: 2),
-                              Expanded(
-                                flex: 5,
-                                child: ColoredBox(color: AppColors.reserved),
-                              ),
-                              SizedBox(width: 2),
-                              Expanded(
-                                flex: 5,
-                                child: ColoredBox(color: AppColors.maintenance),
-                              ),
-                            ],
+                          child: _buildRoomBreakdownBar(
+                            occupied: occupiedCount,
+                            available: availableCount,
+                            cleaning: cleaningCount,
+                            reserved: reservedCount,
+                            maintenance: maintenanceCount,
+                            isLoading: _isStatsLoading,
                           ),
                         ),
                       ),
@@ -469,11 +602,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         spacing: 14,
                         runSpacing: 8,
                         children: [
-                          _buildLegendItem('Đang có khách', '11', AppColors.occupied),
-                          _buildLegendItem('Phòng trống', '5', AppColors.available),
-                          _buildLegendItem('Đang dọn dẹp', '2', AppColors.cleaning),
-                          _buildLegendItem('Đã đặt cọc', '1', AppColors.reserved),
-                          _buildLegendItem('Bảo trì', '1', AppColors.maintenance),
+                          _buildLegendItem('Đang có khách', '$occupiedCount', AppColors.occupied, isLoading: _isStatsLoading),
+                          _buildLegendItem('Phòng trống', '$availableCount', AppColors.available, isLoading: _isStatsLoading),
+                          _buildLegendItem('Đang dọn dẹp', '$cleaningCount', AppColors.cleaning, isLoading: _isStatsLoading),
+                          _buildLegendItem('Đã đặt cọc', '$reservedCount', AppColors.reserved, isLoading: _isStatsLoading),
+                          _buildLegendItem('Bảo trì', '$maintenanceCount', AppColors.maintenance, isLoading: _isStatsLoading),
                         ],
                       ),
                     ],
@@ -852,70 +985,157 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
+  Widget _buildShimmerBox({
+    required double width,
+    required double height,
+    double borderRadius = 6,
+    Color? baseColor,
+    Color? highlightColor,
+  }) {
+    return Shimmer.fromColors(
+      baseColor: baseColor ?? const Color(0xFFE2E8F0),
+      highlightColor: highlightColor ?? const Color(0xFFF8FAFC),
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(borderRadius),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoomBreakdownBar({
+    required int occupied,
+    required int available,
+    required int cleaning,
+    required int reserved,
+    required int maintenance,
+    required bool isLoading,
+  }) {
+    if (isLoading) {
+      return _buildShimmerBox(
+        width: double.infinity,
+        height: 14,
+        borderRadius: 7,
+      );
+    }
+
+    final total = occupied + available + cleaning + reserved + maintenance;
+    if (total == 0) {
+      return const ColoredBox(color: Color(0xFFE2E8F0));
+    }
+
+    final slices = <Widget>[];
+    void addSlice(int count, Color color) {
+      if (count > 0) {
+        if (slices.isNotEmpty) {
+          slices.add(const SizedBox(width: 2));
+        }
+        slices.add(
+          Expanded(
+            flex: count,
+            child: ColoredBox(color: color),
+          ),
+        );
+      }
+    }
+
+    addSlice(occupied, AppColors.occupied);
+    addSlice(available, AppColors.available);
+    addSlice(cleaning, AppColors.cleaning);
+    addSlice(reserved, AppColors.reserved);
+    addSlice(maintenance, AppColors.maintenance);
+
+    return Row(children: slices);
+  }
+
   Widget _buildSmallKpiCard({
     required String value,
     required String label,
     required IconData icon,
     required Color color,
+    bool isLoading = false,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 96),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 96),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0F172A).withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
             ),
-            child: Icon(icon, color: color, size: 16),
-          ),
-          const SizedBox(height: 8),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 16),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 14,
+                  color: AppColors.textMuted.withValues(alpha: 0.7),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            isLoading
+                ? _buildShimmerBox(width: 36, height: 22, borderRadius: 4)
+                : FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      value,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                    ),
+                  ),
+            const SizedBox(height: 2),
+            Text(
+              label,
               style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                fontSize: 10.5,
+                color: AppColors.textSecondary,
               ),
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 10.5,
-              color: AppColors.textSecondary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-
-
-  Widget _buildLegendItem(String label, String count, Color color) {
+  Widget _buildLegendItem(
+    String label,
+    String count,
+    Color color, {
+    bool isLoading = false,
+  }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -935,14 +1155,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             color: AppColors.textSecondary,
           ),
         ),
-        Text(
-          count,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
+        isLoading
+            ? _buildShimmerBox(width: 18, height: 14, borderRadius: 3)
+            : Text(
+                count,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
       ],
     );
   }
@@ -950,6 +1172,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildGlassCircleBtn({
     required IconData icon,
     required VoidCallback onTap,
+    Widget? customIcon,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -964,7 +1187,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             width: 1,
           ),
         ),
-        child: Icon(icon, color: Colors.white, size: 18),
+        child: customIcon ?? Icon(icon, color: Colors.white, size: 18),
       ),
     );
   }
