@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/utils/formatters.dart';
+import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/role_enum.dart';
+import '../../../core/constants/role_permissions.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
 import '../../../shared/models/room_model.dart';
 import '../../../shared/repositories/room_repository.dart';
-import '../../../shared/widgets/status_badge.dart';
+import '../../../shared/widgets/app_bottom_sheet.dart';
+import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/logout_confirmation_dialog.dart';
+import '../../../shared/widgets/motion/pressable_scale.dart';
+import '../../../shared/widgets/skeletons/room_matrix_skeleton.dart';
 
 class RoomMatrixScreen extends StatefulWidget {
   final DioClient? dioClient;
@@ -93,6 +100,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
 
     final oldStatus = room.status;
     final roomId = room.id;
+    final palette = context.palette;
 
     // 1. Cập nhật lạc quan (Optimistic Update) ngay lập tức trên UI
     setState(() {
@@ -103,7 +111,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
       }
     });
 
-    // Đồng bộ tức thời tới RoomRepository cho các màn khác (Dashboard, Huy hiệu duyệt phòng)
+    // Đồng bộ tức thời tới RoomRepository cho các màn khác
     if (sl.isRegistered<RoomRepository>()) {
       sl<RoomRepository>().updateRoomStatus(roomId, newStatus);
     }
@@ -123,15 +131,15 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
             content: Row(
               children: [
                 const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text('Đã cập nhật phòng ${room.roomNumber} sang ${newStatus.label}'),
                 ),
               ],
             ),
-            backgroundColor: AppColors.emerald,
+            backgroundColor: palette.success,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardSmall)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -155,15 +163,15 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
             content: Row(
               children: [
                 const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text('Không thể cập nhật phòng ${room.roomNumber}. Đã khôi phục trạng thái cũ.'),
                 ),
               ],
             ),
-            backgroundColor: AppColors.rose,
+            backgroundColor: palette.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardSmall)),
           ),
         );
         return;
@@ -177,15 +185,73 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
     }
   }
 
+  Color _getStatusColor(RoomStatus status, AppPalette palette) {
+    switch (status) {
+      case RoomStatus.available:
+        return palette.statusAvailable;
+      case RoomStatus.occupied:
+        return palette.statusOccupied;
+      case RoomStatus.reserved:
+        return palette.statusReserved;
+      case RoomStatus.cleaning:
+        return palette.statusCleaning;
+      case RoomStatus.maintenance:
+        return palette.statusMaintenance;
+      case RoomStatus.pendingApproval:
+        return palette.warning;
+      case RoomStatus.rejected:
+        return palette.error;
+    }
+  }
+
+  Color _getStatusInk(RoomStatus status, AppPalette palette) {
+    switch (status) {
+      case RoomStatus.available:
+        return palette.statusAvailableInk;
+      case RoomStatus.occupied:
+        return palette.statusOccupiedInk;
+      case RoomStatus.reserved:
+        return palette.statusReservedInk;
+      case RoomStatus.cleaning:
+        return palette.statusCleaningInk;
+      case RoomStatus.maintenance:
+        return palette.statusMaintenanceInk;
+      case RoomStatus.pendingApproval:
+        return palette.warningInk;
+      case RoomStatus.rejected:
+        return palette.errorInk;
+    }
+  }
+
+  IconData _getRoomStatusIcon(RoomStatus status) {
+    switch (status) {
+      case RoomStatus.available:
+        return Icons.check_circle_outline;
+      case RoomStatus.occupied:
+        return Icons.person_outline;
+      case RoomStatus.reserved:
+        return Icons.vpn_key_outlined;
+      case RoomStatus.cleaning:
+        return Icons.cleaning_services_outlined;
+      case RoomStatus.maintenance:
+        return Icons.build_outlined;
+      case RoomStatus.pendingApproval:
+        return Icons.hourglass_top_outlined;
+      case RoomStatus.rejected:
+        return Icons.cancel_outlined;
+    }
+  }
+
   void _showRoomDetailSheet(RoomModel room) {
-    showModalBottomSheet(
+    final palette = context.palette;
+    final statusColor = _getStatusColor(room.status, palette);
+    final statusInk = _getStatusInk(room.status, palette);
+    // `PATCH /rooms/:id/status` chỉ mở cho ADMIN và RECEPTIONIST (§3.4).
+    final canChangeStatus = context.readRole.canChangeRoomStatus;
+
+    AppBottomSheet.show(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) => SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      builder: (ctx) => AppBottomSheet(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,25 +261,24 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
               children: [
                 Text(
                   'Phòng ${room.roomNumber}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: palette.ink,
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Color(room.status.colorValue).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(999),
+                    color: statusColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
                   ),
                   child: Text(
                     room.status.label,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
-                      color: Color(room.status.inkValue),
+                      color: statusInk,
                     ),
                   ),
                 ),
@@ -222,60 +287,75 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
             const SizedBox(height: 6),
             Text(
               'Tầng ${room.floor} • Hạng ${room.roomTypeName ?? "Tiêu Chuẩn"} • ${Formatters.formatCurrency(room.pricePerNight)}/đêm',
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              style: TextStyle(color: palette.inkMuted, fontSize: 13),
             ),
-            const Divider(height: 28, color: AppColors.border),
-            const Text(
-              'Thao tác nhanh 1 chạm:',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-                color: AppColors.textPrimary,
+            Divider(height: 28, color: palette.divider),
+            if (!canChangeStatus)
+              Row(
+                children: [
+                  Icon(Icons.lock_outline_rounded, size: 16, color: palette.inkMuted),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Vai trò của bạn chỉ được xem sơ đồ phòng.',
+                      style: TextStyle(fontSize: 13, color: palette.inkMuted),
+                    ),
+                  ),
+                ],
+              )
+            else ...[
+              Text(
+                'Thao tác nhanh 1 chạm:',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: palette.ink,
+                ),
               ),
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _buildActionButton(
-                  ctx: ctx,
-                  room: room,
-                  label: 'Sẵn sàng',
-                  status: RoomStatus.available,
-                  icon: Icons.check_circle_outline,
-                ),
-                _buildActionButton(
-                  ctx: ctx,
-                  room: room,
-                  label: 'Dọn dẹp',
-                  status: RoomStatus.cleaning,
-                  icon: Icons.cleaning_services_outlined,
-                ),
-                _buildActionButton(
-                  ctx: ctx,
-                  room: room,
-                  label: 'Có khách',
-                  status: RoomStatus.occupied,
-                  icon: Icons.person_outline,
-                ),
-                _buildActionButton(
-                  ctx: ctx,
-                  room: room,
-                  label: 'Đặt cọc',
-                  status: RoomStatus.reserved,
-                  icon: Icons.vpn_key_outlined,
-                ),
-                _buildActionButton(
-                  ctx: ctx,
-                  room: room,
-                  label: 'Bảo trì',
-                  status: RoomStatus.maintenance,
-                  icon: Icons.build_outlined,
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.md),
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: [
+                  _buildActionButton(
+                    ctx: ctx,
+                    room: room,
+                    label: 'Sẵn sàng',
+                    status: RoomStatus.available,
+                    icon: Icons.check_circle_outline,
+                  ),
+                  _buildActionButton(
+                    ctx: ctx,
+                    room: room,
+                    label: 'Dọn dẹp',
+                    status: RoomStatus.cleaning,
+                    icon: Icons.cleaning_services_outlined,
+                  ),
+                  _buildActionButton(
+                    ctx: ctx,
+                    room: room,
+                    label: 'Có khách',
+                    status: RoomStatus.occupied,
+                    icon: Icons.person_outline,
+                  ),
+                  _buildActionButton(
+                    ctx: ctx,
+                    room: room,
+                    label: 'Đặt cọc',
+                    status: RoomStatus.reserved,
+                    icon: Icons.vpn_key_outlined,
+                  ),
+                  _buildActionButton(
+                    ctx: ctx,
+                    room: room,
+                    label: 'Bảo trì',
+                    status: RoomStatus.maintenance,
+                    icon: Icons.build_outlined,
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
           ],
         ),
       ),
@@ -289,8 +369,9 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
     required RoomStatus status,
     required IconData icon,
   }) {
+    final palette = context.palette;
     final isCurrent = room.status == status;
-    final color = Color(status.colorValue);
+    final color = _getStatusColor(status, palette);
 
     return ElevatedButton.icon(
       onPressed: isCurrent
@@ -304,8 +385,8 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
         foregroundColor: isCurrent ? color : Colors.white,
         elevation: isCurrent ? 0 : 1,
         side: isCurrent ? BorderSide(color: color, width: 1.5) : null,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
       ),
       icon: Icon(isCurrent ? Icons.check : icon, size: 16),
       label: Text(
@@ -320,6 +401,8 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+
     // Thống kê nhanh
     final availableCount =
         _rooms.where((r) => r.status == RoomStatus.available).length;
@@ -338,183 +421,155 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.canvas,
+      // Thanh chú thích 5 màu ghim cố định dưới đáy màn hình
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
+        decoration: BoxDecoration(
+          color: palette.surface,
+          border: Border(top: BorderSide(color: palette.border)),
+          boxShadow: palette.isDark ? null : AppShadows.soft,
+        ),
+        child: SafeArea(
+          top: false,
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: AppSpacing.md,
+            runSpacing: 6,
+            children: [
+              _buildLegendItem('Phòng trống', palette.statusAvailable),
+              _buildLegendItem('Đang có khách', palette.statusOccupied),
+              _buildLegendItem('Đã đặt cọc', palette.statusReserved),
+              _buildLegendItem('Đang dọn dẹp', palette.statusCleaning),
+              _buildLegendItem('Bảo trì', palette.statusMaintenance),
+            ],
+          ),
+        ),
+      ),
       body: RefreshIndicator(
+        color: palette.accent,
         onRefresh: () => _fetchRooms(isSilent: true),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
               // 1. Dải Navy đầu màn + Thống kê nhanh
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    height: 196 + topPadding,
-                    decoration: const BoxDecoration(
-                      gradient: AppGradients.navy,
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(28),
-                        bottomRight: Radius.circular(28),
-                      ),
-                    ),
-                    child: SafeArea(
-                      bottom: false,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 10),
-                            // Header Row
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Sơ Đồ Buồng Phòng',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: -0.3,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Cập nhật lúc $_lastUpdatedTime',
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.50),
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    _buildGlassCircleBtn(
-                                      icon: Icons.refresh,
-                                      onTap: () => _fetchRooms(isSilent: true),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _buildGlassCircleBtn(
-                                      icon: Icons.logout,
-                                      onTap: () => LogoutConfirmationDialog.show(context),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-
-                            // 3 Quick Stat Boxes
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildQuickStatBox(
-                                    value: '$availableCount',
-                                    label: 'TRỐNG',
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: _buildQuickStatBox(
-                                    value: '$occupiedCount',
-                                    label: 'CÓ KHÁCH',
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: _buildQuickStatBox(
-                                    value: '$cleaningCount',
-                                    label: 'DỌN DẸP',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.only(top: topPadding + AppSpacing.sm, bottom: AppSpacing.lg),
+                decoration: const BoxDecoration(
+                  gradient: AppGradients.navy,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(AppRadius.sheet),
+                    bottomRight: Radius.circular(AppRadius.sheet),
                   ),
-
-                  // 2. Thẻ chú thích 5 màu đè lên dải navy
-                  Positioned(
-                    bottom: -32,
-                    left: 20,
-                    right: 20,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFF0F172A).withValues(alpha: 0.08),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Sơ Đồ Buồng Phòng',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Cập nhật lúc $_lastUpdatedTime',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.60),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              _buildGlassCircleBtn(
+                                icon: Icons.refresh,
+                                onTap: () => _fetchRooms(isSilent: true),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              _buildGlassCircleBtn(
+                                icon: Icons.logout,
+                                onTap: () => LogoutConfirmationDialog.show(context),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 12,
-                        runSpacing: 6,
-                        children: [
-                          _buildLegendItem('Phòng trống', AppColors.available),
-                          _buildLegendItem('Đang có khách', AppColors.occupied),
-                          _buildLegendItem('Đã đặt cọc', AppColors.reserved),
-                          _buildLegendItem('Đang dọn dẹp', AppColors.cleaning),
-                          _buildLegendItem('Bảo trì', AppColors.maintenance),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 52),
+                      const SizedBox(height: AppSpacing.lg),
 
-              // 3. Danh sách tầng & Lưới phòng 3 cột
-              if (_isLoading && _rooms.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(40),
-                  child: CircularProgressIndicator(color: AppColors.secondary),
-                )
-              else if (_rooms.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(40),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.meeting_room_outlined,
-                          size: 48, color: AppColors.textSecondary),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Không có dữ liệu buồng phòng',
-                        style: TextStyle(
-                            fontSize: 15, color: AppColors.textSecondary),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: () => _fetchRooms(),
-                        icon: const Icon(Icons.refresh, size: 16),
-                        label: const Text('Tải lại'),
+                      // 3 Quick Stat Boxes
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildQuickStatBox(
+                              value: '$availableCount',
+                              label: 'TRỐNG',
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: _buildQuickStatBox(
+                              value: '$occupiedCount',
+                              label: 'CÓ KHÁCH',
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: _buildQuickStatBox(
+                              value: '$cleaningCount',
+                              label: 'DỌN DẸP',
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // 2. Danh sách tầng & Lưới phòng 3 cột
+              if (_isLoading && _rooms.isEmpty)
+                const RoomMatrixSkeleton()
+              else if (_rooms.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xxxl),
+                  child: AppEmptyState(
+                    title: 'Không có dữ liệu buồng phòng',
+                    description: 'Hiện tại chưa có danh sách phòng nào được thiết lập.',
+                    actionText: 'Tải lại',
+                    onAction: () => _fetchRooms(),
+                  ),
                 )
               else
-                ...sortedFloors.map((floor) {
+                ...sortedFloors.asMap().entries.map((entry) {
+                  final floorIndex = entry.key;
+                  final floor = entry.value;
                   final floorRooms = floors[floor]!;
                   final freeRooms = floorRooms
                       .where((r) => r.status == RoomStatus.available)
                       .length;
-                  return Padding(
+
+                  final floorSection = Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
+                      horizontal: AppSpacing.screen,
+                      vertical: AppSpacing.sm,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -523,29 +578,29 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                           children: [
                             Text(
                               'TẦNG $floor',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.primary,
+                                color: palette.isDark ? palette.accent : AppColors.primary,
                                 letterSpacing: 1.0,
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            const Expanded(
-                              child: Divider(color: AppColors.border, height: 1),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Divider(color: palette.divider, height: 1),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.md),
                             Text(
                               '$freeRooms/${floorRooms.length} trống',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
-                                color: AppColors.textSecondary,
+                                color: palette.inkMuted,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.md),
 
                         // 3-Column Grid with depth
                         GridView.builder(
@@ -567,8 +622,14 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                       ],
                     ),
                   );
+
+                  // Staggered fade in cho từng tầng khi tải
+                  return floorSection
+                      .animate()
+                      .fadeIn(duration: AppDurations.normal, delay: (floorIndex * 40).ms)
+                      .slideY(begin: 0.05, curve: AppMotion.enter);
                 }),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xl),
             ],
           ),
         ),
@@ -577,34 +638,37 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
   }
 
   Widget _buildRoomTile(RoomModel room) {
+    final palette = context.palette;
     final isUpdating = _updatingRoomIds.contains(room.id);
-    final statusColor = Color(room.status.colorValue);
-    final statusInk = Color(room.status.inkValue);
-    final iconData = room.status.icon;
+    final statusColor = _getStatusColor(room.status, palette);
+    final statusInk = _getStatusInk(room.status, palette);
+    final iconData = _getRoomStatusIcon(room.status);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: isUpdating ? null : () => _showRoomDetailSheet(room),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.image),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+          duration: AppDurations.normal,
           decoration: BoxDecoration(
-            color: statusColor.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(16),
+            color: statusColor.withValues(alpha: palette.isDark ? 0.18 : 0.08),
+            borderRadius: BorderRadius.circular(AppRadius.image),
             border: Border.all(
               color: isUpdating ? statusColor.withValues(alpha: 0.4) : statusColor,
               width: 1.5,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: statusColor.withValues(alpha: 0.12),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
+            boxShadow: palette.isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: statusColor.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
           child: Stack(
             children: [
               Column(
@@ -654,8 +718,8 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(14),
+                      color: palette.surface.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(AppRadius.image),
                     ),
                   ),
                 ),
@@ -668,10 +732,10 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
 
   Widget _buildQuickStatBox({required String value, required String label}) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadius.field),
       ),
       child: Column(
         children: [
@@ -699,6 +763,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
   }
 
   Widget _buildLegendItem(String label, Color color) {
+    final palette = context.palette;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -713,9 +778,9 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
         const SizedBox(width: 5),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
-            color: AppColors.textPrimary,
+            color: palette.ink,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -727,7 +792,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return PressableScale(
       onTap: onTap,
       child: Container(
         width: 38,

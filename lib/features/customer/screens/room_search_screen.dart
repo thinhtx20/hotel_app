@@ -1,14 +1,22 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/constants/app_colors.dart';
-import '../../../core/utils/formatters.dart';
+import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/role_enum.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
 import '../../../shared/models/room_model.dart';
 import '../../../shared/repositories/room_repository.dart';
+import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/app_search_field.dart';
+import '../../../shared/widgets/motion/pressable_scale.dart';
+import '../../../shared/widgets/skeletons/room_card_skeleton.dart';
 import '../../../shared/widgets/status_badge.dart';
 import '../widgets/create_booking_modal.dart';
 
@@ -26,7 +34,7 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
   bool _isLoading = false;
   final RoomRepository _roomRepository = sl<RoomRepository>();
 
-  final List<String> _filters = [
+  final List<String> _filters = const [
     'Còn trống',
     'Giá thấp nhất',
     'Tầng cao',
@@ -61,7 +69,7 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
           content: Row(
             children: [
               const Icon(Icons.info_outline, color: Colors.white),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   'Phòng ${room.roomNumber} đã có người đặt, vui lòng chọn phòng khác.',
@@ -173,34 +181,52 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.canvas,
       body: SafeArea(
         child: Column(
           children: [
             // 1. Top Bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screen,
+                vertical: AppSpacing.md,
+              ),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: AppColors.primary),
-                    onPressed: () {
+                  PressableScale(
+                    onTap: () {
                       if (context.canPop()) {
                         context.pop();
                       } else {
                         context.go('/customer');
                       }
                     },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: palette.surface,
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        border: Border.all(color: palette.border),
+                      ),
+                      child: Icon(
+                        Icons.arrow_back_rounded,
+                        color: palette.ink,
+                        size: 20,
+                      ),
+                    ),
                   ),
-                  const SizedBox(width: 4),
-                  const Expanded(
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
                     child: Text(
                       'Tìm Kiếm Phòng',
-                      style: TextStyle(
-                        fontSize: 20,
+                      style: textTheme.titleLarge?.copyWith(
+                        color: palette.ink,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -213,13 +239,13 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border),
+                          color: palette.surface,
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          border: Border.all(color: palette.border),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.tune_rounded,
-                          color: AppColors.primary,
+                          color: palette.ink,
                           size: 20,
                         ),
                       ),
@@ -229,8 +255,8 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
                         child: Container(
                           width: 6,
                           height: 6,
-                          decoration: const BoxDecoration(
-                            color: AppColors.secondary,
+                          decoration: BoxDecoration(
+                            color: palette.accent,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -241,95 +267,47 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
               ),
             ),
 
-            // 2. Search Input (54px, #F1F5F9, 16px radius, no border)
+            // 2. Search Input Field
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                height: 54,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.search,
-                      color: AppColors.textMuted,
-                      size: 22,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        onSubmitted: _performSearch,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.primary,
-                        ),
-                        decoration: const InputDecoration(
-                          hintText: 'Tìm theo view biển, ban công...',
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ),
-                    if (_searchController.text.isNotEmpty)
-                      GestureDetector(
-                        onTap: () {
-                          _searchController.clear();
-                          _performSearch('');
-                        },
-                        child: Container(
-                          width: 22,
-                          height: 22,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFE2E8F0),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            size: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+              child: AppSearchField(
+                controller: _searchController,
+                hintText: 'Tìm theo view biển, ban công...',
+                onSubmitted: _performSearch,
+                onClear: () => _performSearch(''),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
 
             // 3. Horizontal Filter Chips
             SizedBox(
               height: 36,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
                 itemCount: _filters.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
                 itemBuilder: (context, idx) {
                   final label = _filters[idx];
                   final isSelected = idx == _selectedFilterIndex;
-                  return GestureDetector(
+                  return PressableScale(
                     onTap: () => setState(() => _selectedFilterIndex = idx),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                      ),
                       decoration: BoxDecoration(
                         gradient: isSelected ? AppGradients.gold : null,
-                        color: isSelected ? null : Colors.white,
-                        borderRadius: BorderRadius.circular(999),
+                        color: isSelected ? null : palette.surface,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
                         border: isSelected
                             ? null
-                            : Border.all(color: AppColors.border, width: 1),
+                            : Border.all(color: palette.border, width: 1),
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
-                                  color: AppColors.secondary
-                                      .withValues(alpha: 0.25),
+                                  color: palette.accent.withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),
@@ -341,7 +319,7 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
                         children: [
                           if (isSelected) ...[
                             const Icon(
-                              Icons.check,
+                              Icons.check_rounded,
                               color: Colors.white,
                               size: 14,
                             ),
@@ -354,9 +332,7 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
                               fontWeight: isSelected
                                   ? FontWeight.w600
                                   : FontWeight.w400,
-                              color: isSelected
-                                  ? Colors.white
-                                  : AppColors.textSecondary,
+                              color: isSelected ? Colors.white : palette.inkMuted,
                             ),
                           ),
                         ],
@@ -366,65 +342,86 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
 
             // 4. Results Header: "Tìm thấy X phòng" + "Sắp xếp"
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'Tìm thấy ${_results.length} phòng',
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: palette.ink,
                     ),
                   ),
                   Row(
-                    children: const [
+                    children: [
                       Text(
                         'Sắp xếp',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: palette.inkMuted,
                         ),
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Icon(
                         Icons.swap_vert_rounded,
                         size: 18,
-                        color: AppColors.textSecondary,
+                        color: palette.inkMuted,
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: AppSpacing.md),
 
-            // 5. Results List (horizontal card layout 116px height)
+            // 5. Results List
             Expanded(
               child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.secondary,
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                      child: Column(
+                        children: const [
+                          RoomCardSkeleton(),
+                          SizedBox(height: AppSpacing.md),
+                          RoomCardSkeleton(),
+                        ],
                       ),
                     )
-                  : RefreshIndicator(
-                      onRefresh: () => _performSearch(_searchController.text),
-                      child: ListView.separated(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 4),
-                        itemCount: _results.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final room = _results[index];
-                          return _buildHorizontalRoomCard(room, index);
-                        },
-                      ),
-                    ),
+                  : _results.isEmpty
+                      ? AppEmptyState(
+                          icon: Icons.search_off_rounded,
+                          title: 'Không tìm thấy phòng',
+                          description:
+                              'Không có phòng nào phù hợp với từ khóa "${_searchController.text}". Hãy thử từ khóa khác!',
+                          actionText: 'Xem tất cả phòng',
+                          onAction: () {
+                            _searchController.clear();
+                            _performSearch('');
+                          },
+                        )
+                      : RefreshIndicator(
+                          color: palette.accent,
+                          backgroundColor: palette.surface,
+                          onRefresh: () =>
+                              _performSearch(_searchController.text),
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.screen,
+                              vertical: AppSpacing.xs,
+                            ),
+                            itemCount: _results.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: AppSpacing.md),
+                            itemBuilder: (context, index) {
+                              final room = _results[index];
+                              return _buildHorizontalRoomCard(room, index);
+                            },
+                          ),
+                        ),
             ),
           ],
         ),
@@ -433,13 +430,16 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
   }
 
   Widget _buildHorizontalRoomCard(RoomModel room, int index) {
-    final images = [
+    final palette = context.palette;
+    final textTheme = Theme.of(context).textTheme;
+
+    final images = const [
       'https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=400&q=80',
       'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&q=80',
       'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=400&q=80',
     ];
 
-    final tags = [
+    final tags = const [
       ['Ban công', 'Wifi'],
       ['Bể bơi riêng', 'Bồn tắm'],
       ['2 giường', 'Bếp nhỏ'],
@@ -459,41 +459,33 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
             ? '1.650.000 ₫'
             : (index == 1 ? '4.200.000 ₫' : '2.100.000 ₫'));
 
-    return Container(
-      constraints: const BoxConstraints(minHeight: 116),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(10),
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      onTap: () => _onBookPressed(room),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 96x96 square room image (14px radius)
+          // 96x96 square room image with Hero transition
           ClipRRect(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadius.md),
             child: SizedBox(
               width: 96,
               height: 96,
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) =>
-                    Container(color: AppColors.surfaceMuted),
-                errorWidget: (context, url, error) =>
-                    Container(color: AppColors.surfaceMuted),
+              child: Hero(
+                tag: 'room-image-${room.id}',
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  fadeInDuration: const Duration(milliseconds: 250),
+                  placeholder: (context, url) =>
+                      Container(color: palette.surfaceMuted),
+                  errorWidget: (context, url, error) =>
+                      Container(color: palette.surfaceMuted),
+                ),
               ),
             ),
           ),
-
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
 
           // Details Column
           Expanded(
@@ -508,32 +500,30 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
                     Expanded(
                       child: Text(
                         'Phòng ${room.roomNumber}',
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: palette.ink,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: AppSpacing.xs),
                     RoomStatusBadge(status: room.status),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
 
                 // Row 2: Room Type
                 Text(
                   room.roomTypeName ?? 'Deluxe Hướng Biển',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: palette.inkMuted,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.xs),
 
                 // Row 3: Utility chips
                 Wrap(
@@ -542,24 +532,26 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
                   children: currentTags.map((tag) {
                     return Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(4),
+                        color: palette.surfaceMuted,
+                        borderRadius: BorderRadius.circular(AppRadius.xs),
                       ),
                       child: Text(
                         tag,
-                        style: const TextStyle(
+                        style: textTheme.bodySmall?.copyWith(
                           fontSize: 10,
-                          color: AppColors.textSecondary,
+                          color: palette.inkMuted,
                         ),
                       ),
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.xs),
 
-                // Row 4: Price + Circular Action Button / Status Badge Button
+                // Row 4: Price + Action Button
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -575,70 +567,79 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 priceStr,
-                                style: const TextStyle(
-                                  fontSize: 15,
+                                style: textTheme.bodyMedium?.copyWith(
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.secondary,
+                                  color: palette.accent,
                                 ),
                               ),
                             ),
                           ),
                           const SizedBox(width: 2),
-                          const Text(
+                          Text(
                             '/đêm',
-                            style: TextStyle(
+                            style: textTheme.bodySmall?.copyWith(
                               fontSize: 11,
-                              color: AppColors.textMuted,
+                              color: palette.inkMuted,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    GestureDetector(
-                      onTap: () => _onBookPressed(room),
-                      child: isBooked
-                          ? Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: AppColors.secondary.withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                  color: AppColors.secondary.withValues(alpha: 0.4),
-                                ),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.bookmark_added_rounded,
-                                      size: 14, color: AppColors.secondary),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Đã đặt',
-                                    style: TextStyle(
-                                      color: AppColors.secondary,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : Container(
-                              width: 32,
-                              height: 32,
-                              decoration: const BoxDecoration(
-                                color: AppColors.primary,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.north_east,
-                                color: AppColors.secondaryLight,
-                                size: 16,
+                    const SizedBox(width: AppSpacing.xs),
+                    isBooked
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: palette.accent.withValues(alpha: 0.14),
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.pill),
+                              border: Border.all(
+                                color: palette.accent.withValues(alpha: 0.4),
                               ),
                             ),
-                    ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.bookmark_added_rounded,
+                                  size: 14,
+                                  color: palette.accent,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Đã đặt',
+                                  style: TextStyle(
+                                    color: palette.accent,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              gradient: AppGradients.gold,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: palette.accent.withValues(alpha: 0.25),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.north_east_rounded,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
                   ],
                 ),
               ],

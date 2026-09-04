@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/network/api_error.dart';
+import '../../core/theme/app_palette.dart';
 
 /// Bộ hiển thị thông báo & lỗi chuyên biệt theo phong cách Modern Luxury.
 /// Tự động trích xuất và hiển thị trọn vẹn thông điệp do Backend NestJS trả về.
@@ -602,6 +603,7 @@ class AppErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final apiError = ApiError.fromDynamic(error);
+    final palette = context.palette;
 
     return Center(
       child: Padding(
@@ -613,10 +615,10 @@ class AppErrorView extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: AppColors.errorSurface,
+                color: palette.errorSurface,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.error.withValues(alpha: 0.15),
+                  color: palette.error.withValues(alpha: 0.25),
                   width: 2,
                 ),
               ),
@@ -624,18 +626,18 @@ class AppErrorView extends StatelessWidget {
                 apiError.isNetworkError
                     ? Icons.wifi_off_rounded
                     : Icons.error_outline_rounded,
-                color: AppColors.errorInk,
+                color: palette.error,
                 size: 36,
               ),
             ),
             const SizedBox(height: 18),
             Text(
               title ?? (apiError.isNetworkError ? 'Mất kết nối' : 'Không thể tải dữ liệu'),
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: palette.ink,
               ),
               textAlign: TextAlign.center,
             ),
@@ -644,10 +646,10 @@ class AppErrorView extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 320),
               child: Text(
                 apiError.displayMessage,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Outfit',
                   fontSize: 14,
-                  color: AppColors.textSecondary,
+                  color: palette.inkMuted,
                   height: 1.4,
                 ),
                 textAlign: TextAlign.center,
@@ -666,7 +668,7 @@ class AppErrorView extends StatelessWidget {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
+                  backgroundColor: palette.accent,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
@@ -682,3 +684,7 @@ class AppErrorView extends StatelessWidget {
     );
   }
 }
+
+/// Alias cho AppErrorView theo chuẩn kịch bản thiết kế UI-REVAMP-PLAN.md
+typedef AppErrorState = AppErrorView;
+

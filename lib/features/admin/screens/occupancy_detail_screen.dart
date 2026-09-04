@@ -1,12 +1,17 @@
 import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/role_enum.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/models/room_model.dart';
+import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/motion/pressable_scale.dart';
 
 /// Màn hình Chi tiết Tỷ lệ Lấp đầy (Occupancy Detail Screen)
 /// Phục vụ khi người dùng nhấn vào thẻ "Tỷ lệ lấp đầy" từ Admin Dashboard
@@ -21,7 +26,6 @@ class OccupancyDetailScreen extends StatefulWidget {
 class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
   DioClient get _dioClient => widget.dioClient ?? DioClient();
 
-  bool _isLoading = true;
   int _selectedFloor = -1; // -1: Tất cả
   RoomStatus? _selectedStatus; // null: Tất cả
   final TextEditingController _searchController = TextEditingController();
@@ -54,10 +58,7 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
   }
 
   Future<void> _fetchOccupancyDetail() async {
-    setState(() => _isLoading = true);
-
     try {
-      // 1. Thử gọi API chi tiết /analytics/occupancy/detail
       final res = await _dioClient.dio.get(
         ApiEndpoints.analyticsOccupancyDetail,
         options: Options(
@@ -73,10 +74,12 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
           if (summary != null) {
             _totalRooms = (summary['totalRooms'] as num?)?.toInt() ?? 20;
             _occupiedRooms = (summary['occupiedRooms'] as num?)?.toInt() ?? 4;
-            _availableRooms = (summary['availableRooms'] as num?)?.toInt() ?? 10;
+            _availableRooms =
+                (summary['availableRooms'] as num?)?.toInt() ?? 10;
             _cleaningRooms = (summary['cleaningRooms'] as num?)?.toInt() ?? 2;
             _reservedRooms = (summary['reservedRooms'] as num?)?.toInt() ?? 3;
-            _maintenanceRooms = (summary['maintenanceRooms'] as num?)?.toInt() ?? 1;
+            _maintenanceRooms =
+                (summary['maintenanceRooms'] as num?)?.toInt() ?? 1;
           }
 
           final byType = data['byRoomType'] as List?;
@@ -95,15 +98,12 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
                 .toList();
           }
 
-          setState(() => _isLoading = false);
+          setState(() {});
           return;
         }
       }
-    } catch (_) {
-      // Fallback nếu API chưa deploy hoặc timeout
-    }
+    } catch (_) {}
 
-    // 2. Thử lấy danh sách phòng từ /rooms để tính toán
     try {
       final resRooms = await _dioClient.dio.get(
         ApiEndpoints.rooms,
@@ -122,23 +122,28 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
 
           _rooms = parsedRooms;
           _totalRooms = parsedRooms.length;
-          _occupiedRooms = parsedRooms.where((r) => r.status == RoomStatus.occupied).length;
-          _availableRooms = parsedRooms.where((r) => r.status == RoomStatus.available).length;
-          _cleaningRooms = parsedRooms.where((r) => r.status == RoomStatus.cleaning).length;
-          _reservedRooms = parsedRooms.where((r) => r.status == RoomStatus.reserved).length;
-          _maintenanceRooms = parsedRooms.where((r) => r.status == RoomStatus.maintenance).length;
+          _occupiedRooms =
+              parsedRooms.where((r) => r.status == RoomStatus.occupied).length;
+          _availableRooms =
+              parsedRooms.where((r) => r.status == RoomStatus.available).length;
+          _cleaningRooms =
+              parsedRooms.where((r) => r.status == RoomStatus.cleaning).length;
+          _reservedRooms =
+              parsedRooms.where((r) => r.status == RoomStatus.reserved).length;
+          _maintenanceRooms = parsedRooms
+              .where((r) => r.status == RoomStatus.maintenance)
+              .length;
 
           _buildTypeStatsFromRooms(parsedRooms);
-          setState(() => _isLoading = false);
+          setState(() {});
           return;
         }
       }
     } catch (_) {}
 
-    // 3. Fallback dữ liệu Luxury chuẩn
     if (mounted) {
       _applyFallbackData();
-      setState(() => _isLoading = false);
+      setState(() {});
     }
   }
 
@@ -150,7 +155,8 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
     }
 
     _roomTypeStats = map.entries.map((entry) {
-      final occ = entry.value.where((r) => r.status == RoomStatus.occupied).length;
+      final occ =
+          entry.value.where((r) => r.status == RoomStatus.occupied).length;
       final total = entry.value.length;
       final rate = total > 0 ? (occ / total * 100) : 0.0;
       final price = entry.value.first.pricePerNight;
@@ -205,32 +211,152 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
 
     _rooms = [
       // Tầng 1
-      RoomModel(id: '101', roomNumber: '101', floor: 1, status: RoomStatus.available, pricePerNight: 1200000, roomTypeName: 'Standard Queen Double'),
-      RoomModel(id: '102', roomNumber: '102', floor: 1, status: RoomStatus.available, pricePerNight: 1200000, roomTypeName: 'Standard Queen Double'),
-      RoomModel(id: '103', roomNumber: '103', floor: 1, status: RoomStatus.occupied, pricePerNight: 1200000, roomTypeName: 'Standard Queen Double'),
-      RoomModel(id: '104', roomNumber: '104', floor: 1, status: RoomStatus.cleaning, pricePerNight: 1200000, roomTypeName: 'Standard Queen Double'),
-      RoomModel(id: '105', roomNumber: '105', floor: 1, status: RoomStatus.available, pricePerNight: 1200000, roomTypeName: 'Standard Queen Double'),
-      RoomModel(id: '106', roomNumber: '106', floor: 1, status: RoomStatus.reserved, pricePerNight: 1200000, roomTypeName: 'Standard Queen Double'),
+      RoomModel(
+          id: '101',
+          roomNumber: '101',
+          floor: 1,
+          status: RoomStatus.available,
+          pricePerNight: 1200000,
+          roomTypeName: 'Standard Queen Double'),
+      RoomModel(
+          id: '102',
+          roomNumber: '102',
+          floor: 1,
+          status: RoomStatus.available,
+          pricePerNight: 1200000,
+          roomTypeName: 'Standard Queen Double'),
+      RoomModel(
+          id: '103',
+          roomNumber: '103',
+          floor: 1,
+          status: RoomStatus.occupied,
+          pricePerNight: 1200000,
+          roomTypeName: 'Standard Queen Double'),
+      RoomModel(
+          id: '104',
+          roomNumber: '104',
+          floor: 1,
+          status: RoomStatus.cleaning,
+          pricePerNight: 1200000,
+          roomTypeName: 'Standard Queen Double'),
+      RoomModel(
+          id: '105',
+          roomNumber: '105',
+          floor: 1,
+          status: RoomStatus.available,
+          pricePerNight: 1200000,
+          roomTypeName: 'Standard Queen Double'),
+      RoomModel(
+          id: '106',
+          roomNumber: '106',
+          floor: 1,
+          status: RoomStatus.reserved,
+          pricePerNight: 1200000,
+          roomTypeName: 'Standard Queen Double'),
 
       // Tầng 2
-      RoomModel(id: '201', roomNumber: '201', floor: 2, status: RoomStatus.occupied, pricePerNight: 1800000, roomTypeName: 'Superior City View'),
-      RoomModel(id: '202', roomNumber: '202', floor: 2, status: RoomStatus.available, pricePerNight: 1800000, roomTypeName: 'Superior City View'),
-      RoomModel(id: '203', roomNumber: '203', floor: 2, status: RoomStatus.available, pricePerNight: 1800000, roomTypeName: 'Superior City View'),
-      RoomModel(id: '204', roomNumber: '204', floor: 2, status: RoomStatus.maintenance, pricePerNight: 1800000, roomTypeName: 'Superior City View'),
-      RoomModel(id: '205', roomNumber: '205', floor: 2, status: RoomStatus.reserved, pricePerNight: 1800000, roomTypeName: 'Superior City View'),
-      RoomModel(id: '206', roomNumber: '206', floor: 2, status: RoomStatus.available, pricePerNight: 1800000, roomTypeName: 'Superior City View'),
+      RoomModel(
+          id: '201',
+          roomNumber: '201',
+          floor: 2,
+          status: RoomStatus.occupied,
+          pricePerNight: 1800000,
+          roomTypeName: 'Superior City View'),
+      RoomModel(
+          id: '202',
+          roomNumber: '202',
+          floor: 2,
+          status: RoomStatus.available,
+          pricePerNight: 1800000,
+          roomTypeName: 'Superior City View'),
+      RoomModel(
+          id: '203',
+          roomNumber: '203',
+          floor: 2,
+          status: RoomStatus.available,
+          pricePerNight: 1800000,
+          roomTypeName: 'Superior City View'),
+      RoomModel(
+          id: '204',
+          roomNumber: '204',
+          floor: 2,
+          status: RoomStatus.maintenance,
+          pricePerNight: 1800000,
+          roomTypeName: 'Superior City View'),
+      RoomModel(
+          id: '205',
+          roomNumber: '205',
+          floor: 2,
+          status: RoomStatus.reserved,
+          pricePerNight: 1800000,
+          roomTypeName: 'Superior City View'),
+      RoomModel(
+          id: '206',
+          roomNumber: '206',
+          floor: 2,
+          status: RoomStatus.available,
+          pricePerNight: 1800000,
+          roomTypeName: 'Superior City View'),
 
       // Tầng 3
-      RoomModel(id: '301', roomNumber: '301', floor: 3, status: RoomStatus.available, pricePerNight: 2400000, roomTypeName: 'Deluxe Ocean Panorama'),
-      RoomModel(id: '302', roomNumber: '302', floor: 3, status: RoomStatus.occupied, pricePerNight: 2400000, roomTypeName: 'Deluxe Ocean Panorama'),
-      RoomModel(id: '303', roomNumber: '303', floor: 3, status: RoomStatus.cleaning, pricePerNight: 2400000, roomTypeName: 'Deluxe Ocean Panorama'),
-      RoomModel(id: '304', roomNumber: '304', floor: 3, status: RoomStatus.occupied, pricePerNight: 2400000, roomTypeName: 'Deluxe Ocean Panorama'),
-      RoomModel(id: '305', roomNumber: '305', floor: 3, status: RoomStatus.available, pricePerNight: 2400000, roomTypeName: 'Deluxe Ocean Panorama'),
-      RoomModel(id: '306', roomNumber: '306', floor: 3, status: RoomStatus.reserved, pricePerNight: 2400000, roomTypeName: 'Deluxe Ocean Panorama'),
+      RoomModel(
+          id: '301',
+          roomNumber: '301',
+          floor: 3,
+          status: RoomStatus.available,
+          pricePerNight: 2400000,
+          roomTypeName: 'Deluxe Ocean Panorama'),
+      RoomModel(
+          id: '302',
+          roomNumber: '302',
+          floor: 3,
+          status: RoomStatus.occupied,
+          pricePerNight: 2400000,
+          roomTypeName: 'Deluxe Ocean Panorama'),
+      RoomModel(
+          id: '303',
+          roomNumber: '303',
+          floor: 3,
+          status: RoomStatus.cleaning,
+          pricePerNight: 2400000,
+          roomTypeName: 'Deluxe Ocean Panorama'),
+      RoomModel(
+          id: '304',
+          roomNumber: '304',
+          floor: 3,
+          status: RoomStatus.occupied,
+          pricePerNight: 2400000,
+          roomTypeName: 'Deluxe Ocean Panorama'),
+      RoomModel(
+          id: '305',
+          roomNumber: '305',
+          floor: 3,
+          status: RoomStatus.available,
+          pricePerNight: 2400000,
+          roomTypeName: 'Deluxe Ocean Panorama'),
+      RoomModel(
+          id: '306',
+          roomNumber: '306',
+          floor: 3,
+          status: RoomStatus.reserved,
+          pricePerNight: 2400000,
+          roomTypeName: 'Deluxe Ocean Panorama'),
 
       // Tầng 5 (Penthouse)
-      RoomModel(id: '501', roomNumber: '501', floor: 5, status: RoomStatus.available, pricePerNight: 5500000, roomTypeName: 'Presidential Penthouse'),
-      RoomModel(id: '502', roomNumber: '502', floor: 5, status: RoomStatus.available, pricePerNight: 5500000, roomTypeName: 'Presidential Penthouse'),
+      RoomModel(
+          id: '501',
+          roomNumber: '501',
+          floor: 5,
+          status: RoomStatus.available,
+          pricePerNight: 5500000,
+          roomTypeName: 'Presidential Penthouse'),
+      RoomModel(
+          id: '502',
+          roomNumber: '502',
+          floor: 5,
+          status: RoomStatus.available,
+          pricePerNight: 5500000,
+          roomTypeName: 'Presidential Penthouse'),
     ];
   }
 
@@ -245,7 +371,8 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
         final matchNum = room.roomNumber.toLowerCase().contains(query);
-        final matchType = (room.roomTypeName ?? '').toLowerCase().contains(query);
+        final matchType =
+            (room.roomTypeName ?? '').toLowerCase().contains(query);
         if (!matchNum && !matchType) return false;
       }
       return true;
@@ -259,6 +386,9 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+    final textTheme = Theme.of(context).textTheme;
+
     final double occupancyRate = _totalRooms > 0
         ? (_occupiedRooms / _totalRooms * 100)
         : 0.0;
@@ -267,7 +397,7 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
         : '${occupancyRate.toStringAsFixed(1)}%';
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.canvas,
       body: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
@@ -277,7 +407,8 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
             pinned: true,
             backgroundColor: AppColors.primary,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white, size: 20),
               onPressed: () => Navigator.of(context).pop(),
             ),
             actions: [
@@ -321,68 +452,68 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
           // 2. Nội dung chính
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppSpacing.screen),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Thẻ Hero Tỷ lệ lấp đầy
-                  _buildHeroCard(rateStr, occupancyRate / 100.0),
-                  const SizedBox(height: 20),
+                  _buildHeroCard(palette, textTheme, rateStr, occupancyRate / 100.0),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // Cơ cấu buồng phòng theo 5 trạng thái
-                  _buildStatusBreakdownPills(),
-                  const SizedBox(height: 24),
+                  _buildStatusBreakdownPills(palette),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // Tỷ lệ lấp đầy theo từng loại phòng
-                  const Text(
+                  Text(
                     'TỶ LỆ LẤP ĐẦY THEO LOẠI PHÒNG',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textMuted,
+                      color: palette.inkMuted,
                       letterSpacing: 1.0,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _buildRoomTypeBreakdownCards(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.md),
+                  _buildRoomTypeBreakdownCards(palette, textTheme),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // Tiêu đề danh sách phòng & bộ lọc
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'DANH SÁCH BUỒNG PHÒNG',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textMuted,
+                          color: palette.inkMuted,
                           letterSpacing: 1.0,
                         ),
                       ),
                       Text(
                         '${_filteredRooms.length} phòng',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.secondary,
+                          color: palette.accent,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
 
                   // Thanh tìm kiếm
-                  _buildSearchBar(),
-                  const SizedBox(height: 12),
+                  _buildSearchBar(palette),
+                  const SizedBox(height: AppSpacing.md),
 
                   // Filter Chips (Tầng & Trạng thái)
-                  _buildFilterChips(),
-                  const SizedBox(height: 16),
+                  _buildFilterChips(palette),
+                  const SizedBox(height: AppSpacing.lg),
 
                   // Danh sách phòng dạng Grid
-                  _buildRoomGrid(),
-                  const SizedBox(height: 32),
+                  _buildRoomGrid(palette, textTheme),
+                  const SizedBox(height: AppSpacing.xxxl),
                 ],
               ),
             ),
@@ -393,20 +524,10 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
   }
 
   /// Thẻ Hero hiển thị tổng quan tỷ lệ lấp đầy
-  Widget _buildHeroCard(String rateStr, double fraction) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+  Widget _buildHeroCard(
+      AppPalette palette, TextTheme textTheme, String rateStr, double fraction) {
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -414,30 +535,28 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Công suất phòng hiện tại',
-                  style: TextStyle(
-                    fontSize: 13,
+                  style: textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
+                    color: palette.inkMuted,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   rateStr,
-                  style: const TextStyle(
+                  style: textTheme.titleLarge?.copyWith(
                     fontSize: 36,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: palette.ink,
                     letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '$_occupiedRooms / $_totalRooms phòng đang đón khách',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: palette.inkMuted,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -449,11 +568,15 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
             width: 88,
             height: 88,
             child: CustomPaint(
-              painter: _DetailGaugeArcPainter(percent: fraction.clamp(0.0, 1.0)),
+              painter: _DetailGaugeArcPainter(
+                percent: fraction.clamp(0.0, 1.0),
+                accentColor: palette.accent,
+                trackColor: palette.surfaceMuted,
+              ),
               child: Center(
                 child: Icon(
                   Icons.hotel_rounded,
-                  color: AppColors.secondary.withValues(alpha: 0.8),
+                  color: palette.accent.withValues(alpha: 0.85),
                   size: 28,
                 ),
               ),
@@ -465,29 +588,32 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
   }
 
   /// 5 Pills thống kê trạng thái phòng
-  Widget _buildStatusBreakdownPills() {
+  Widget _buildStatusBreakdownPills(AppPalette palette) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
       children: [
-        _buildMiniStatusPill('Có khách', _occupiedRooms, AppColors.occupied),
-        _buildMiniStatusPill('Trống', _availableRooms, AppColors.available),
-        _buildMiniStatusPill('Dọn dẹp', _cleaningRooms, AppColors.cleaning),
-        _buildMiniStatusPill('Đặt cọc', _reservedRooms, AppColors.reserved),
-        _buildMiniStatusPill('Bảo trì', _maintenanceRooms, AppColors.maintenance),
+        _buildMiniStatusPill(palette, 'Có khách', _occupiedRooms, AppColors.occupied),
+        _buildMiniStatusPill(palette, 'Trống', _availableRooms, AppColors.available),
+        _buildMiniStatusPill(palette, 'Dọn dẹp', _cleaningRooms, AppColors.cleaning),
+        _buildMiniStatusPill(palette, 'Đặt cọc', _reservedRooms, AppColors.reserved),
+        _buildMiniStatusPill(
+            palette, 'Bảo trì', _maintenanceRooms, AppColors.maintenance),
       ],
     );
   }
 
-  Widget _buildMiniStatusPill(String label, int count, Color color) {
+  Widget _buildMiniStatusPill(
+      AppPalette palette, String label, int count, Color color) {
     final isSelected = _selectedStatus != null &&
         ((label == 'Có khách' && _selectedStatus == RoomStatus.occupied) ||
             (label == 'Trống' && _selectedStatus == RoomStatus.available) ||
             (label == 'Dọn dẹp' && _selectedStatus == RoomStatus.cleaning) ||
             (label == 'Đặt cọc' && _selectedStatus == RoomStatus.reserved) ||
-            (label == 'Bảo trì' && _selectedStatus == RoomStatus.maintenance));
+            (label == 'Bảo trì' &&
+                _selectedStatus == RoomStatus.maintenance));
 
-    return InkWell(
+    return PressableScale(
       onTap: () {
         setState(() {
           if (isSelected) {
@@ -501,14 +627,13 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
           }
         });
       },
-      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.15) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? color.withValues(alpha: 0.18) : palette.surface,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
           border: Border.all(
-            color: isSelected ? color : AppColors.border,
+            color: isSelected ? color : palette.border,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -523,14 +648,14 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
             const SizedBox(width: 6),
             Text(
               '$label: ',
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 12, color: palette.inkMuted),
             ),
             Text(
               '$count',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: isSelected ? color : AppColors.textPrimary,
+                color: isSelected ? color : palette.ink,
               ),
             ),
           ],
@@ -540,14 +665,12 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
   }
 
   /// Danh sách tỷ lệ lấp đầy theo loại phòng
-  Widget _buildRoomTypeBreakdownCards() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+  Widget _buildRoomTypeBreakdownCards(AppPalette palette, TextTheme textTheme) {
+    return AppCard(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.screen,
+        vertical: AppSpacing.md,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Column(
         children: _roomTypeStats.map((stat) {
           final isLast = stat == _roomTypeStats.last;
@@ -564,19 +687,18 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
                         Expanded(
                           child: Text(
                             stat.roomTypeName,
-                            style: const TextStyle(
-                              fontSize: 13.5,
+                            style: textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+                              color: palette.ink,
                             ),
                           ),
                         ),
                         Text(
                           '${stat.occupiedRooms}/${stat.totalRooms} phòng (${stat.occupancyRate.toStringAsFixed(0)}%)',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.secondary,
+                            color: palette.accent,
                           ),
                         ),
                       ],
@@ -586,17 +708,19 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: stat.totalRooms > 0
-                            ? (stat.occupiedRooms / stat.totalRooms).clamp(0.0, 1.0)
+                            ? (stat.occupiedRooms / stat.totalRooms)
+                                .clamp(0.0, 1.0)
                             : 0,
-                        backgroundColor: const Color(0xFFF1F5F9),
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.secondary),
+                        backgroundColor: palette.surfaceMuted,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(palette.accent),
                         minHeight: 7,
                       ),
                     ),
                   ],
                 ),
               ),
-              if (!isLast) const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              if (!isLast) Divider(height: 1, color: palette.border),
             ],
           );
         }).toList(),
@@ -604,39 +728,40 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(AppPalette palette) {
     return TextField(
       controller: _searchController,
+      style: TextStyle(fontSize: 14, color: palette.ink),
       decoration: InputDecoration(
         hintText: 'Tìm theo số phòng hoặc loại phòng...',
-        hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-        prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.textMuted),
+        hintStyle: TextStyle(fontSize: 13, color: palette.inkFaint),
+        prefixIcon: Icon(Icons.search, size: 20, color: palette.inkMuted),
         suffixIcon: _searchQuery.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear, size: 18, color: AppColors.textMuted),
+                icon: Icon(Icons.clear, size: 18, color: palette.inkMuted),
                 onPressed: () => _searchController.clear(),
               )
             : null,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: palette.surface,
         contentPadding: const EdgeInsets.symmetric(vertical: 10),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderSide: BorderSide(color: palette.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderSide: BorderSide(color: palette.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.secondary, width: 1.5),
+          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderSide: BorderSide(color: palette.accent, width: 1.5),
         ),
       ),
     );
   }
 
-  Widget _buildFilterChips() {
+  Widget _buildFilterChips(AppPalette palette) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -646,27 +771,27 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
             label: const Text('Tất cả tầng'),
             selected: _selectedFloor == -1,
             onSelected: (val) => setState(() => _selectedFloor = -1),
-            selectedColor: AppColors.primary,
-            backgroundColor: Colors.white,
+            selectedColor: palette.accent,
+            backgroundColor: palette.surface,
             labelStyle: TextStyle(
               fontSize: 12,
-              color: _selectedFloor == -1 ? Colors.white : AppColors.textPrimary,
+              color: _selectedFloor == -1 ? Colors.white : palette.ink,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           ..._availableFloors.map((floor) {
             return Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.only(right: AppSpacing.sm),
               child: ChoiceChip(
                 label: Text('Tầng $floor'),
                 selected: _selectedFloor == floor,
                 onSelected: (val) => setState(() => _selectedFloor = floor),
-                selectedColor: AppColors.primary,
-                backgroundColor: Colors.white,
+                selectedColor: palette.accent,
+                backgroundColor: palette.surface,
                 labelStyle: TextStyle(
                   fontSize: 12,
-                  color: _selectedFloor == floor ? Colors.white : AppColors.textPrimary,
+                  color: _selectedFloor == floor ? Colors.white : palette.ink,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -677,19 +802,21 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
     );
   }
 
-  Widget _buildRoomGrid() {
+  Widget _buildRoomGrid(AppPalette palette, TextTheme textTheme) {
     final rooms = _filteredRooms;
     if (rooms.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
         alignment: Alignment.center,
         child: Column(
           children: [
-            Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade400),
+            Icon(Icons.search_off_rounded, size: 48, color: palette.inkFaint),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Không tìm thấy phòng phù hợp',
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              style: textTheme.bodyMedium?.copyWith(
+                color: palette.inkMuted,
+              ),
             ),
           ],
         ),
@@ -708,60 +835,44 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
       ),
       itemBuilder: (context, index) {
         final room = rooms[index];
-        return _buildRoomGridItem(room);
+        return _buildRoomGridItem(palette, textTheme, room);
       },
     );
   }
 
-  Widget _buildRoomGridItem(RoomModel room) {
+  Widget _buildRoomGridItem(
+      AppPalette palette, TextTheme textTheme, RoomModel room) {
     Color statusBgColor;
     Color statusTextColor;
     switch (room.status) {
       case RoomStatus.occupied:
-        statusBgColor = AppColors.occupied.withValues(alpha: 0.12);
+        statusBgColor = AppColors.occupied.withValues(alpha: 0.15);
         statusTextColor = AppColors.occupied;
         break;
       case RoomStatus.available:
-        statusBgColor = AppColors.available.withValues(alpha: 0.12);
+        statusBgColor = AppColors.available.withValues(alpha: 0.15);
         statusTextColor = AppColors.available;
         break;
       case RoomStatus.cleaning:
-        statusBgColor = AppColors.cleaning.withValues(alpha: 0.12);
+        statusBgColor = AppColors.cleaning.withValues(alpha: 0.15);
         statusTextColor = AppColors.cleaning;
         break;
       case RoomStatus.reserved:
-        statusBgColor = AppColors.reserved.withValues(alpha: 0.12);
+        statusBgColor = AppColors.reserved.withValues(alpha: 0.15);
         statusTextColor = AppColors.reserved;
         break;
       case RoomStatus.maintenance:
-        statusBgColor = AppColors.maintenance.withValues(alpha: 0.12);
+        statusBgColor = AppColors.maintenance.withValues(alpha: 0.15);
         statusTextColor = AppColors.maintenance;
         break;
       default:
-        statusBgColor = AppColors.secondary.withValues(alpha: 0.12);
-        statusTextColor = AppColors.secondary;
+        statusBgColor = palette.accent.withValues(alpha: 0.15);
+        statusTextColor = palette.accent;
         break;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: room.status == RoomStatus.occupied
-              ? AppColors.occupied.withValues(alpha: 0.4)
-              : AppColors.border,
-          width: room.status == RoomStatus.occupied ? 1.5 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -771,17 +882,16 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
             children: [
               Text(
                 'P.${room.roomNumber}',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: palette.ink,
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
                   color: statusBgColor,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppRadius.xs),
                 ),
                 child: Text(
                   room.status.label,
@@ -796,9 +906,9 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
           ),
           Text(
             room.roomTypeName ?? 'Phòng Tiêu chuẩn',
-            style: const TextStyle(
+            style: textTheme.bodySmall?.copyWith(
               fontSize: 11,
-              color: AppColors.textSecondary,
+              color: palette.inkMuted,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -808,14 +918,17 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
             children: [
               Text(
                 'Tầng ${room.floor}',
-                style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                style: textTheme.bodySmall?.copyWith(
+                  fontSize: 11,
+                  color: palette.inkFaint,
+                ),
               ),
               Text(
                 Formatters.formatCurrency(room.pricePerNight),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.secondary,
+                  fontWeight: FontWeight.w700,
+                  color: palette.accent,
                 ),
               ),
             ],
@@ -854,7 +967,14 @@ class _RoomTypeOccupancy {
 
 class _DetailGaugeArcPainter extends CustomPainter {
   final double percent;
-  _DetailGaugeArcPainter({required this.percent});
+  final Color accentColor;
+  final Color trackColor;
+
+  _DetailGaugeArcPainter({
+    required this.percent,
+    required this.accentColor,
+    required this.trackColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -862,15 +982,13 @@ class _DetailGaugeArcPainter extends CustomPainter {
     final radius = (size.width - 12) / 2;
 
     final trackPaint = Paint()
-      ..color = AppColors.secondary.withValues(alpha: 0.15)
+      ..color = trackColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 9
       ..strokeCap = StrokeCap.round;
 
     final valuePaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [AppColors.secondary, AppColors.secondaryLight],
-      ).createShader(Rect.fromCircle(center: center, radius: radius))
+      ..color = accentColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 9
       ..strokeCap = StrokeCap.round;
@@ -897,5 +1015,7 @@ class _DetailGaugeArcPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DetailGaugeArcPainter oldDelegate) =>
-      oldDelegate.percent != percent;
+      oldDelegate.percent != percent ||
+      oldDelegate.accentColor != accentColor ||
+      oldDelegate.trackColor != trackColor;
 }

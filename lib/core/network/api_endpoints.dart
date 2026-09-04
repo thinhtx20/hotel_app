@@ -38,6 +38,10 @@ class ApiEndpoints {
 
   // Invoices
   static const String invoices = '/invoices';
+
+  /// Hóa đơn của chính tài khoản đang đăng nhập — endpoint duy nhất ở nhóm
+  /// hóa đơn mà CUSTOMER gọi được (xem `design/FE-ROLE-MATRIX.md` §3.6).
+  static const String invoicesMy = '/invoices/my';
   static const String invoiceSummary = '/invoices/summary';
   static String invoiceDetail(String id) => '/invoices/$id';
   static String payInvoice(String id) => '/invoices/$id/pay';

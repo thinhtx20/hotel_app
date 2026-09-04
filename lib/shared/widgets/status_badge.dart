@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/app_dimens.dart';
 import '../../core/constants/role_enum.dart';
 
 /// Biểu tượng đi kèm từng trạng thái — trạng thái không bao giờ chỉ được
@@ -31,6 +32,12 @@ extension RoomStatusVisuals on RoomStatus {
 
   /// Màu trên nền navy.
   Color get onDark => Color(onDarkValue);
+
+  /// Màu chữ tự động chọn đúng theo độ sáng màn hình (Dark/Light mode).
+  Color inkOn(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? onDark : ink;
+  }
 }
 
 class RoomStatusBadge extends StatelessWidget {
@@ -48,16 +55,16 @@ class RoomStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dot = status.fill;
-    final label = onDarkSurface ? status.onDark : status.ink;
+    final label = onDarkSurface ? status.onDark : status.inkOn(context);
     final background = onDarkSurface
         ? Colors.white.withValues(alpha: 0.16)
         : status.fill.withValues(alpha: 0.12);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs + 1),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: AppRadius.pillR,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -67,7 +74,7 @@ class RoomStatusBadge extends StatelessWidget {
             height: 7,
             decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: AppSpacing.sm - 2),
           Text(
             status.label,
             style: TextStyle(
@@ -81,3 +88,4 @@ class RoomStatusBadge extends StatelessWidget {
     );
   }
 }
+

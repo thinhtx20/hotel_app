@@ -20,6 +20,13 @@ class AppSpacing {
 
 /// Bán kính bo góc.
 class AppRadius {
+  static const double xs = 4;
+  static const double sm = 8;
+  static const double md = 12;
+  static const double lg = 16;
+  static const double xl = 20;
+  static const double xxl = 28;
+
   static const double card = 20;
   static const double cardSmall = 16;
   static const double button = 12;
@@ -83,3 +90,13 @@ class AppDurations {
   static const Duration slow = Duration(milliseconds: 400);
   static const Duration shimmer = Duration(milliseconds: 1200);
 }
+
+/// Token chuyển động — xem `design/UI-REVAMP-PLAN.md` mục 3.4.
+class AppMotion {
+  static const Curve enter = Curves.easeOutCubic;   // vật thể đi vào
+  static const Curve exit = Curves.easeInCubic;     // vật thể đi ra
+  static const Curve emphasis = Curves.easeOutBack; // nhấn mạnh, dùng dè dặt
+  static const Duration stagger = Duration(milliseconds: 40); // lệch giữa các item
+  static const int staggerMaxItems = 12; // quá số này thì hiện thẳng, tránh giật
+}
+

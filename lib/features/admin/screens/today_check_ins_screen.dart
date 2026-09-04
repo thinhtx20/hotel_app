@@ -1,11 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/role_permissions.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/models/booking_model.dart';
+import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/motion/pressable_scale.dart';
 
 /// Màn hình Chi tiết Lượt nhận phòng hôm nay (Today Check-Ins Screen)
 /// Phục vụ khi nhấn vào thẻ "Lượt nhận phòng" trên Admin Dashboard
@@ -20,7 +26,6 @@ class TodayCheckInsScreen extends StatefulWidget {
 class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
   DioClient get _dioClient => widget.dioClient ?? DioClient();
 
-  bool _isLoading = true;
   int _selectedTabIndex = 0; // 0: Tất cả, 1: Chờ nhận, 2: Đã nhận
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -44,10 +49,7 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
   }
 
   Future<void> _fetchCheckIns() async {
-    setState(() => _isLoading = true);
-
     try {
-      // 1. Thử gọi endpoint chuyên biệt /bookings/today/check-ins
       final res = await _dioClient.dio.get(
         ApiEndpoints.todayCheckIns,
         options: Options(
@@ -65,14 +67,12 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
                 .whereType<Map>()
                 .map((e) => BookingModel.fromJson(Map<String, dynamic>.from(e)))
                 .toList();
-            _isLoading = false;
           });
           return;
         }
       }
     } catch (_) {}
 
-    // 2. Thử gọi /bookings và lọc ngày hôm nay
     try {
       final resAll = await _dioClient.dio.get(
         ApiEndpoints.bookings,
@@ -89,18 +89,17 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
               .whereType<Map>()
               .map((e) => BookingModel.fromJson(Map<String, dynamic>.from(e)))
               .where((b) {
-                // Lọc các booking có check-in là hôm nay hoặc đang chờ check-in
                 final isTodayCheckIn = b.checkInDate.year == now.year &&
                     b.checkInDate.month == now.month &&
                     b.checkInDate.day == now.day;
-                return isTodayCheckIn || (b.status == 'CONFIRMED' || b.status == 'CHECKED_IN');
+                return isTodayCheckIn ||
+                    (b.status == 'CONFIRMED' || b.status == 'CHECKED_IN');
               })
               .toList();
 
           if (todayList.isNotEmpty) {
             setState(() {
               _bookings = todayList;
-              _isLoading = false;
             });
             return;
           }
@@ -108,10 +107,9 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
       }
     } catch (_) {}
 
-    // 3. Fallback danh sách khách nhận phòng sang trọng chuẩn
     if (mounted) {
       _applyFallbackBookings();
-      setState(() => _isLoading = false);
+      setState(() {});
     }
   }
 
@@ -134,7 +132,8 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
         totalAmount: 5400000,
         depositAmount: 2000000,
         status: 'CONFIRMED',
-        specialRequests: 'Yêu cầu phòng tầng cao, view biển trực diện và setup giường đôi lớn.',
+        specialRequests:
+            'Yêu cầu phòng tầng cao, view biển trực diện và setup giường đôi lớn.',
       ),
       BookingModel(
         id: 'bk_ci_02',
@@ -188,7 +187,8 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
         totalAmount: 22000000,
         depositAmount: 10000000,
         status: 'CONFIRMED',
-        specialRequests: 'Xe đưa đón sân bay VIP và rượu champagne ướp lạnh.',
+        specialRequests:
+            'Xe đưa đón sân bay VIP và rượu champagne ướp lạnh.',
       ),
     ];
   }
@@ -211,15 +211,26 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
   }
 
   Future<void> _performCheckIn(BookingModel booking) async {
+    final palette = context.palette;
+    final textTheme = Theme.of(context).textTheme;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        backgroundColor: palette.surface,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.card)),
+        title: Row(
           children: [
-            Icon(Icons.vpn_key_rounded, color: AppColors.secondary, size: 26),
-            SizedBox(width: 10),
-            Text('Xác nhận Nhận phòng', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            Icon(Icons.vpn_key_rounded, color: palette.accent, size: 26),
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              'Xác nhận Nhận phòng',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: palette.ink,
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -228,31 +239,53 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
           children: [
             Text(
               'Thực hiện thủ tục nhận phòng cho khách hàng ${booking.customerName ?? ''} vào phòng ${booking.roomNumber ?? ''}?',
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              style: textTheme.bodyMedium?.copyWith(
+                color: palette.inkMuted,
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                color: palette.surfaceMuted,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                border: Border.all(color: palette.border),
               ),
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Mã đặt phòng:', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                      Text(booking.bookingCode ?? booking.id, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      Text(
+                        'Mã đặt phòng:',
+                        style: TextStyle(fontSize: 12, color: palette.inkMuted),
+                      ),
+                      Text(
+                        booking.bookingCode ?? booking.id,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: palette.ink,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Tổng tiền:', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                      Text(Formatters.formatCurrency(booking.totalAmount), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.secondary)),
+                      Text(
+                        'Tổng tiền:',
+                        style: TextStyle(fontSize: 12, color: palette.inkMuted),
+                      ),
+                      Text(
+                        Formatters.formatCurrency(booking.totalAmount),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: palette.accent,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -263,15 +296,25 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(
+              'Hủy',
+              style: TextStyle(color: palette.inkMuted),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              backgroundColor: palette.accent,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.sm)),
             ),
-            child: const Text('Xác nhận', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: const Text(
+              'Xác nhận',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
@@ -289,7 +332,6 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
       }
     } catch (_) {}
 
-    // Cập nhật lạc quan trên UI kể cả khi BE chưa có route
     _onCheckInSuccess(booking.id);
   }
 
@@ -327,7 +369,7 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
         content: const Row(
           children: [
             Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-            SizedBox(width: 10),
+            SizedBox(width: AppSpacing.sm),
             Expanded(child: Text('Đã làm thủ tục nhận phòng thành công!')),
           ],
         ),
@@ -340,11 +382,13 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final checkedInCount = _bookings.where((b) => b.status == 'CHECKED_IN').length;
+    final palette = context.palette;
+    final checkedInCount =
+        _bookings.where((b) => b.status == 'CHECKED_IN').length;
     final totalExpected = _bookings.length;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.canvas,
       body: CustomScrollView(
         slivers: [
           // 1. Navy App Bar
@@ -353,7 +397,8 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
             pinned: true,
             backgroundColor: AppColors.primary,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white, size: 20),
               onPressed: () => Navigator.of(context).pop(),
             ),
             actions: [
@@ -395,16 +440,16 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
           // 2. Nội dung
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppSpacing.screen),
               child: Column(
                 children: [
                   // Thanh tìm kiếm
-                  _buildSearchBar(),
-                  const SizedBox(height: 12),
+                  _buildSearchBar(palette),
+                  const SizedBox(height: AppSpacing.md),
 
                   // Tabs lọc (Tất cả, Chờ nhận phòng, Đã nhận phòng)
-                  _buildTabs(checkedInCount, totalExpected - checkedInCount),
-                  const SizedBox(height: 16),
+                  _buildTabs(palette, checkedInCount, totalExpected - checkedInCount),
+                  const SizedBox(height: AppSpacing.md),
                 ],
               ),
             ),
@@ -412,14 +457,15 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
 
           // 3. Danh sách Booking Cards
           _filteredBookings.isEmpty
-              ? SliverToBoxAdapter(child: _buildEmptyState())
+              ? SliverToBoxAdapter(child: _buildEmptyState(palette))
               : SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final booking = _filteredBookings[index];
-                        return _buildCheckInCard(booking);
+                        return _buildCheckInCard(palette, booking);
                       },
                       childCount: _filteredBookings.length,
                     ),
@@ -431,67 +477,68 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(AppPalette palette) {
     return TextField(
       controller: _searchController,
+      style: TextStyle(fontSize: 14, color: palette.ink),
       decoration: InputDecoration(
         hintText: 'Tìm theo tên khách, SĐT, số phòng, mã đơn...',
-        hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-        prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.textMuted),
+        hintStyle: TextStyle(fontSize: 13, color: palette.inkFaint),
+        prefixIcon: Icon(Icons.search, size: 20, color: palette.inkMuted),
         suffixIcon: _searchQuery.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear, size: 18, color: AppColors.textMuted),
+                icon: Icon(Icons.clear, size: 18, color: palette.inkMuted),
                 onPressed: () => _searchController.clear(),
               )
             : null,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: palette.surface,
         contentPadding: const EdgeInsets.symmetric(vertical: 10),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderSide: BorderSide(color: palette.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderSide: BorderSide(color: palette.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.secondary, width: 1.5),
+          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderSide: BorderSide(color: palette.accent, width: 1.5),
         ),
       ),
     );
   }
 
-  Widget _buildTabs(int checkedInCount, int pendingCount) {
+  Widget _buildTabs(AppPalette palette, int checkedInCount, int pendingCount) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        color: palette.surface,
+        borderRadius: BorderRadius.circular(AppRadius.field),
+        border: Border.all(color: palette.border),
       ),
       padding: const EdgeInsets.all(4),
       child: Row(
         children: [
-          _buildTabItem(0, 'Tất cả (${_bookings.length})'),
-          _buildTabItem(1, 'Chờ nhận ($pendingCount)'),
-          _buildTabItem(2, 'Đã nhận ($checkedInCount)'),
+          _buildTabItem(palette, 0, 'Tất cả (${_bookings.length})'),
+          _buildTabItem(palette, 1, 'Chờ nhận ($pendingCount)'),
+          _buildTabItem(palette, 2, 'Đã nhận ($checkedInCount)'),
         ],
       ),
     );
   }
 
-  Widget _buildTabItem(int index, String title) {
+  Widget _buildTabItem(AppPalette palette, int index, String title) {
     final isSelected = _selectedTabIndex == index;
     return Expanded(
-      child: GestureDetector(
+      child: PressableScale(
         onTap: () => setState(() => _selectedTabIndex = index),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 9),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
+            color: isSelected ? palette.accent : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           alignment: Alignment.center,
           child: Text(
@@ -499,7 +546,7 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
             style: TextStyle(
               fontSize: 12.5,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? Colors.white : AppColors.textSecondary,
+              color: isSelected ? Colors.white : palette.inkMuted,
             ),
           ),
         ),
@@ -507,239 +554,281 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
     );
   }
 
-  Widget _buildCheckInCard(BookingModel booking) {
+  Widget _buildCheckInCard(AppPalette palette, BookingModel booking) {
+    final textTheme = Theme.of(context).textTheme;
     final isCheckedIn = booking.status == 'CHECKED_IN';
     final isProcessing = _processingIds.contains(booking.id);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isCheckedIn ? AppColors.border : AppColors.secondary.withValues(alpha: 0.3),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Row đầu: Phòng, Loại phòng & Badge trạng thái
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'P.${booking.roomNumber ?? '---'}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: AppCard(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Row đầu: Phòng, Loại phòng & Badge trạng thái
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: palette.accent,
+                        borderRadius: BorderRadius.circular(AppRadius.xs),
+                      ),
+                      child: Text(
+                        'P.${booking.roomNumber ?? '---'}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    booking.roomTypeName ?? 'Phòng Tiêu chuẩn',
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      booking.roomTypeName ?? 'Phòng Tiêu chuẩn',
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: palette.ink,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isCheckedIn
-                      ? AppColors.emerald.withValues(alpha: 0.12)
-                      : AppColors.secondary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  ],
                 ),
-                child: Text(
-                  isCheckedIn ? 'Đã nhận phòng' : 'Chờ nhận phòng',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: isCheckedIn ? AppColors.emerald : AppColors.secondary,
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isCheckedIn
+                        ? AppColors.emerald.withValues(alpha: 0.15)
+                        : palette.accent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(AppRadius.xs),
                   ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Thông tin khách hàng & Giờ check-in
-          Row(
-            children: [
-              const Icon(Icons.person_outline_rounded, size: 16, color: AppColors.textSecondary),
-              const SizedBox(width: 6),
-              Text(
-                booking.customerName ?? 'Khách vãng lai',
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-              ),
-              const Spacer(),
-              if (booking.customerPhone != null) ...[
-                InkWell(
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: booking.customerPhone!));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Đã sao chép SĐT: ${booking.customerPhone}'),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.phone_outlined, size: 14, color: AppColors.secondary),
-                      const SizedBox(width: 4),
-                      Text(
-                        booking.customerPhone!,
-                        style: const TextStyle(fontSize: 12, color: AppColors.secondary, fontWeight: FontWeight.w500),
-                      ),
-                    ],
+                  child: Text(
+                    isCheckedIn ? 'Đã nhận phòng' : 'Chờ nhận phòng',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color:
+                          isCheckedIn ? AppColors.emerald : palette.accent,
+                    ),
                   ),
                 ),
               ],
-            ],
-          ),
-          const SizedBox(height: 6),
+            ),
+            const SizedBox(height: AppSpacing.md),
 
-          Row(
-            children: [
-              const Icon(Icons.access_time_rounded, size: 16, color: AppColors.textMuted),
-              const SizedBox(width: 6),
-              Text(
-                isCheckedIn && booking.actualCheckIn != null
-                    ? 'Nhận lúc: ${Formatters.formatDateTime(booking.actualCheckIn!)}'
-                    : 'Dự kiến: ${Formatters.formatDateTime(booking.checkInDate)}',
-                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-              ),
-              const Spacer(),
-              Text(
-                '${booking.guestCount} khách · ${booking.nightsCount} đêm',
-                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-              ),
-            ],
-          ),
-
-          // Yêu cầu đặc biệt (nếu có)
-          if (booking.specialRequests != null && booking.specialRequests!.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.info_outline, size: 14, color: AppColors.textSecondary),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      booking.specialRequests!,
-                      style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+            // Thông tin khách hàng & Giờ check-in
+            Row(
+              children: [
+                Icon(Icons.person_outline_rounded,
+                    size: 16, color: palette.inkMuted),
+                const SizedBox(width: 6),
+                Text(
+                  booking.customerName ?? 'Khách vãng lai',
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: palette.ink,
+                  ),
+                ),
+                const Spacer(),
+                if (booking.customerPhone != null) ...[
+                  InkWell(
+                    onTap: () {
+                      Clipboard.setData(
+                          ClipboardData(text: booking.customerPhone!));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content:
+                              Text('Đã sao chép SĐT: ${booking.customerPhone}'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Icon(Icons.phone_outlined,
+                            size: 14, color: palette.accent),
+                        const SizedBox(width: 4),
+                        Text(
+                          booking.customerPhone!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: palette.accent,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
+              ],
+            ),
+            const SizedBox(height: 6),
+
+            Row(
+              children: [
+                Icon(Icons.access_time_rounded,
+                    size: 16, color: palette.inkFaint),
+                const SizedBox(width: 6),
+                Text(
+                  isCheckedIn && booking.actualCheckIn != null
+                      ? 'Nhận lúc: ${Formatters.formatDateTime(booking.actualCheckIn!)}'
+                      : 'Dự kiến: ${Formatters.formatDateTime(booking.checkInDate)}',
+                  style: TextStyle(fontSize: 12, color: palette.inkMuted),
+                ),
+                const Spacer(),
+                Text(
+                  '${booking.guestCount} khách · ${booking.nightsCount} đêm',
+                  style: TextStyle(fontSize: 12, color: palette.inkFaint),
+                ),
+              ],
+            ),
+
+            // Yêu cầu đặc biệt (nếu có)
+            if (booking.specialRequests != null &&
+                booking.specialRequests!.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: palette.surfaceMuted,
+                  borderRadius: BorderRadius.circular(AppRadius.xs),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 14, color: palette.inkMuted),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        booking.specialRequests!,
+                        style: TextStyle(fontSize: 11.5, color: palette.inkMuted),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+            ],
+            const SizedBox(height: AppSpacing.md),
+            Divider(height: 1, color: palette.border),
+            const SizedBox(height: AppSpacing.sm),
+
+            // Tài chính & Nút hành động
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tổng tiền đơn:',
+                      style: TextStyle(fontSize: 11, color: palette.inkMuted),
+                    ),
+                    Text(
+                      Formatters.formatCurrency(booking.totalAmount),
+                      style: textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: palette.ink,
+                      ),
+                    ),
+                  ],
+                ),
+                // `POST /bookings/:id/check-in` chỉ mở cho ADMIN và
+                // RECEPTIONIST — thu ngân xem được danh sách, không bấm được.
+                if (!isCheckedIn && context.currentRole.canCheckIn)
+                  ElevatedButton.icon(
+                    onPressed:
+                        isProcessing ? null : () => _performCheckIn(booking),
+                    icon: isProcessing
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.vpn_key_outlined,
+                            size: 16, color: Colors.white),
+                    label: Text(
+                      isProcessing ? 'Đang xử lý...' : 'Xác nhận Nhận phòng',
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: palette.accent,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: 9,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.emerald.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(AppRadius.xs),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.done_all_rounded,
+                            size: 16, color: AppColors.emerald),
+                        SizedBox(width: 4),
+                        Text(
+                          'Đã xong thủ tục',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.emerald,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ),
           ],
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-          const SizedBox(height: 10),
-
-          // Tài chính & Nút hành động
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Tổng tiền đơn:', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
-                  Text(
-                    Formatters.formatCurrency(booking.totalAmount),
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-                  ),
-                ],
-              ),
-              if (!isCheckedIn)
-                ElevatedButton.icon(
-                  onPressed: isProcessing ? null : () => _performCheckIn(booking),
-                  icon: isProcessing
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Icon(Icons.vpn_key_outlined, size: 16, color: Colors.white),
-                  label: Text(
-                    isProcessing ? 'Đang xử lý...' : 'Xác nhận Nhận phòng',
-                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.emerald.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.done_all_rounded, size: 16, color: AppColors.emerald),
-                      SizedBox(width: 4),
-                      Text('Đã xong thủ tục', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.emerald)),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppPalette palette) {
     return Container(
-      padding: const EdgeInsets.all(40),
+      padding: const EdgeInsets.all(AppSpacing.xxxl),
       alignment: Alignment.center,
       child: Column(
         children: [
-          Icon(Icons.event_available_rounded, size: 54, color: Colors.grey.shade400),
+          Icon(Icons.event_available_rounded, size: 54, color: palette.inkFaint),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Không có lượt nhận phòng nào',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: palette.ink,
+            ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Chưa có khách đặt lịch nhận phòng phù hợp với bộ lọc hiện tại',
-            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 13, color: palette.inkMuted),
             textAlign: TextAlign.center,
           ),
         ],

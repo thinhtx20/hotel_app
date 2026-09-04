@@ -1,17 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/constants/app_dimens.dart';
-import '../../../core/theme/app_palette.dart';
-import '../../../shared/widgets/motion/pressable_scale.dart';
+import '../../core/constants/app_dimens.dart';
+import '../../core/theme/app_palette.dart';
+import '../../di/injection_container.dart';
+import '../repositories/room_repository.dart';
+import 'motion/pressable_scale.dart';
 
-/// Shell Scaffold chứa Bottom Navigation Bar phong cách Modern Luxury cho khách hàng.
-class CustomerTabScaffold extends StatelessWidget {
+/// Một mục trên thanh điều hướng của nhân viên.
+class StaffTab {
+  final String label;
+  final IconData icon;
+  final IconData activeIcon;
+
+  /// Gắn huy hiệu số phòng đang chờ duyệt (tab "Duyệt phòng").
+  final bool showsPendingRoomsBadge;
+
+  const StaffTab({
+    required this.label,
+    required this.icon,
+    required this.activeIcon,
+    this.showsPendingRoomsBadge = false,
+  });
+}
+
+/// Shell Scaffold chứa Bottom Navigation Bar phong cách Modern Luxury dùng
+/// chung cho ADMIN, RECEPTIONIST và CASHIER.
+///
+/// Mỗi vai trò truyền vào bộ tab của riêng mình — xem `design/FE-ROLE-MATRIX.md`
+/// Phần 4. Tab nào cũng đã được lọc theo quyền ở [AppRouter], nên widget này
+/// không tự kiểm tra role.
+class StaffTabScaffold extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
+  final List<StaffTab> tabs;
 
-  const CustomerTabScaffold({
+  const StaffTabScaffold({
     super.key,
     required this.navigationShell,
+    required this.tabs,
   });
 
   void _onTap(int index) {
@@ -55,47 +81,14 @@ class CustomerTabScaffold extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(
-                  context: context,
-                  index: 0,
-                  label: 'Khám phá',
-                  icon: Icons.explore_outlined,
-                  activeIcon: Icons.explore_rounded,
-                  isSelected: navigationShell.currentIndex == 0,
-                ),
-                _buildNavItem(
-                  context: context,
-                  index: 1,
-                  label: 'Tìm kiếm',
-                  icon: Icons.search_rounded,
-                  activeIcon: Icons.search_rounded,
-                  isSelected: navigationShell.currentIndex == 1,
-                ),
-                _buildNavItem(
-                  context: context,
-                  index: 2,
-                  label: 'Đơn phòng',
-                  icon: Icons.calendar_today_outlined,
-                  activeIcon: Icons.calendar_today_rounded,
-                  badgeCount: '2',
-                  isSelected: navigationShell.currentIndex == 2,
-                ),
-                _buildNavItem(
-                  context: context,
-                  index: 3,
-                  label: 'Hóa đơn',
-                  icon: Icons.receipt_long_outlined,
-                  activeIcon: Icons.receipt_long_rounded,
-                  isSelected: navigationShell.currentIndex == 3,
-                ),
-                _buildNavItem(
-                  context: context,
-                  index: 4,
-                  label: 'Tài khoản',
-                  icon: Icons.person_outline_rounded,
-                  activeIcon: Icons.person_rounded,
-                  isSelected: navigationShell.currentIndex == 4,
-                ),
+                for (var i = 0; i < tabs.length; i++)
+                  tabs[i].showsPendingRoomsBadge
+                      ? _buildBadgedNavItem(context, i, tabs[i])
+                      : _buildNavItem(
+                          context: context,
+                          index: i,
+                          tab: tabs[i],
+                        ),
               ],
             ),
           ),
@@ -104,16 +97,34 @@ class CustomerTabScaffold extends StatelessWidget {
     );
   }
 
+  /// Huy hiệu số phòng chờ duyệt bám theo [RoomRepository] để cập nhật realtime.
+  Widget _buildBadgedNavItem(BuildContext context, int index, StaffTab tab) {
+    final hasRepo = sl.isRegistered<RoomRepository>();
+    if (!hasRepo) {
+      return _buildNavItem(context: context, index: index, tab: tab);
+    }
+    return AnimatedBuilder(
+      animation: sl<RoomRepository>(),
+      builder: (context, _) {
+        final pendingCount = sl<RoomRepository>().pendingRooms.length;
+        return _buildNavItem(
+          context: context,
+          index: index,
+          tab: tab,
+          badgeCount: pendingCount > 0 ? '$pendingCount' : null,
+        );
+      },
+    );
+  }
+
   Widget _buildNavItem({
     required BuildContext context,
     required int index,
-    required String label,
-    required IconData icon,
-    required IconData activeIcon,
-    required bool isSelected,
+    required StaffTab tab,
     String? badgeCount,
   }) {
     final palette = context.palette;
+    final isSelected = navigationShell.currentIndex == index;
 
     return Expanded(
       child: PressableScale(
@@ -131,7 +142,7 @@ class CustomerTabScaffold extends StatelessWidget {
                     scale: isSelected ? 1.08 : 1.0,
                     duration: const Duration(milliseconds: 180),
                     child: Icon(
-                      isSelected ? activeIcon : icon,
+                      isSelected ? tab.activeIcon : tab.icon,
                       color: isSelected ? palette.accent : palette.inkMuted,
                       size: 24,
                     ),
@@ -150,10 +161,7 @@ class CustomerTabScaffold extends StatelessWidget {
                               ? const Color(0xFFEF4444)
                               : const Color(0xFFDC2626),
                           borderRadius: BorderRadius.circular(AppRadius.pill),
-                          border: Border.all(
-                            color: palette.surface,
-                            width: 1.5,
-                          ),
+                          border: Border.all(color: palette.surface, width: 1.5),
                         ),
                         constraints: const BoxConstraints(
                           minWidth: 17,
@@ -176,7 +184,7 @@ class CustomerTabScaffold extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                label,
+                tab.label,
                 style: TextStyle(
                   fontFamily: 'Outfit',
                   fontSize: 11,

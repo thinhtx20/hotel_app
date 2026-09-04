@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_dimens.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/storage/token_storage.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/theme_cubit.dart';
 import '../../../shared/models/user_model.dart';
+import '../../../shared/widgets/app_bottom_sheet.dart';
+import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/logout_confirmation_dialog.dart';
+import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
 
@@ -27,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _selectedLanguage = 'Tiếng Việt';
 
   void _showChangePasswordModal(BuildContext context) {
+    final palette = context.palette;
     final currentPassController = TextEditingController();
     final newPassController = TextEditingController();
     final confirmPassController = TextEditingController();
@@ -35,125 +43,101 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bool hideConfirm = true;
     bool isChanging = false;
 
-    showModalBottomSheet(
+    AppBottomSheet.show(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-            top: 24,
-            left: 20,
-            right: 20,
-          ),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
+        builder: (context, setModalState) => AppBottomSheet(
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.border,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.lock_reset_rounded,
-                        color: AppColors.secondary, size: 24),
-                    SizedBox(width: 10),
+                    Icon(Icons.lock_reset_rounded, color: palette.accent, size: 24),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(
                       'Đổi Mật Khẩu',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: palette.ink,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
                 TextField(
                   controller: currentPassController,
                   obscureText: hideCurrent,
+                  style: TextStyle(color: palette.ink, fontSize: 14),
                   decoration: InputDecoration(
                     labelText: 'Mật khẩu hiện tại',
-                    prefixIcon: const Icon(Icons.lock_outline, size: 20),
+                    labelStyle: TextStyle(color: palette.inkMuted),
+                    prefixIcon: Icon(Icons.lock_outline, size: 20, color: palette.inkMuted),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        hideCurrent
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
+                        hideCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                         size: 20,
+                        color: palette.inkMuted,
                       ),
-                      onPressed: () =>
-                          setModalState(() => hideCurrent = !hideCurrent),
+                      onPressed: () => setModalState(() => hideCurrent = !hideCurrent),
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    filled: true,
+                    fillColor: palette.surfaceMuted,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 TextField(
                   controller: newPassController,
                   obscureText: hideNew,
+                  style: TextStyle(color: palette.ink, fontSize: 14),
                   decoration: InputDecoration(
-                    labelText: 'Mật khẩu mới',
-                    prefixIcon: const Icon(Icons.lock_clock_outlined, size: 20),
+                    labelText: 'Mật khẩu mới (tối thiểu 6 ký tự)',
+                    labelStyle: TextStyle(color: palette.inkMuted),
+                    prefixIcon: Icon(Icons.lock_reset, size: 20, color: palette.inkMuted),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        hideNew
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
+                        hideNew ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                         size: 20,
+                        color: palette.inkMuted,
                       ),
-                      onPressed: () =>
-                          setModalState(() => hideNew = !hideNew),
+                      onPressed: () => setModalState(() => hideNew = !hideNew),
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    filled: true,
+                    fillColor: palette.surfaceMuted,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 TextField(
                   controller: confirmPassController,
                   obscureText: hideConfirm,
+                  style: TextStyle(color: palette.ink, fontSize: 14),
                   decoration: InputDecoration(
                     labelText: 'Xác nhận mật khẩu mới',
-                    prefixIcon: const Icon(Icons.check_circle_outline, size: 20),
+                    labelStyle: TextStyle(color: palette.inkMuted),
+                    prefixIcon: Icon(Icons.check_circle_outline, size: 20, color: palette.inkMuted),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        hideConfirm
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
+                        hideConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                         size: 20,
+                        color: palette.inkMuted,
                       ),
-                      onPressed: () =>
-                          setModalState(() => hideConfirm = !hideConfirm),
+                      onPressed: () => setModalState(() => hideConfirm = !hideConfirm),
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    filled: true,
+                    fillColor: palette.surfaceMuted,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.lg),
                 SizedBox(
                   width: double.infinity,
                   height: 48,
-                  child: ElevatedButton(
-                    onPressed: isChanging
+                  child: PressableScale(
+                    onTap: isChanging
                         ? null
                         : () async {
                             final current = currentPassController.text;
@@ -222,32 +206,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               }
                             }
                           },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: AppGradients.gold,
+                        borderRadius: BorderRadius.circular(AppRadius.button),
+                        boxShadow: AppShadows.goldGlow,
                       ),
-                      elevation: 0,
+                      alignment: Alignment.center,
+                      child: isChanging
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Cập nhật mật khẩu',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
-                    child: isChanging
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text(
-                            'Cập nhật mật khẩu',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
                   ),
                 ),
+                const SizedBox(height: AppSpacing.sm),
               ],
             ),
           ),
@@ -257,73 +243,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showEditPhoneModal(BuildContext context, String currentPhone) {
+    final palette = context.palette;
     final phoneController = TextEditingController(text: currentPhone);
     bool isSaving = false;
 
-    showModalBottomSheet(
+    AppBottomSheet.show(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-            top: 24,
-            left: 20,
-            right: 20,
-          ),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
+        builder: (context, setModalState) => AppBottomSheet(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.phone_android_rounded,
-                      color: Color(0xFF3B82F6), size: 24),
-                  SizedBox(width: 10),
+                  Icon(Icons.phone_android_rounded, color: palette.accent, size: 24),
+                  const SizedBox(width: AppSpacing.sm),
                   Text(
                     'Cập Nhật Số Điện Thoại',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: palette.ink,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               TextField(
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
+                style: TextStyle(color: palette.ink, fontSize: 14),
                 decoration: InputDecoration(
                   labelText: 'Số điện thoại liên hệ',
-                  prefixIcon: const Icon(Icons.phone_outlined, size: 20),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  labelStyle: TextStyle(color: palette.inkMuted),
+                  prefixIcon: Icon(Icons.phone_outlined, size: 20, color: palette.inkMuted),
+                  filled: true,
+                  fillColor: palette.surfaceMuted,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.lg),
               SizedBox(
                 width: double.infinity,
                 height: 48,
-                child: ElevatedButton(
-                  onPressed: isSaving
+                child: PressableScale(
+                  onTap: isSaving
                       ? null
                       : () async {
                           final phone = phoneController.text.trim();
@@ -367,32 +332,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             }
                           }
                         },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppGradients.gold,
+                      borderRadius: BorderRadius.circular(AppRadius.button),
+                      boxShadow: AppShadows.goldGlow,
                     ),
-                    elevation: 0,
+                    alignment: Alignment.center,
+                    child: isSaving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Lưu thay đổi',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
-                  child: isSaving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Lưu thay đổi',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                 ),
               ),
+              const SizedBox(height: AppSpacing.sm),
             ],
           ),
         ),
@@ -401,45 +368,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showPaymentMethodsModal(BuildContext context) {
-    showModalBottomSheet(
+    final palette = context.palette;
+    AppBottomSheet.show(
       context: context,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
-          padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
+        builder: (context, setModalState) => AppBottomSheet(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Phương Thức Thanh Toán',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: palette.ink,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'Chọn phương thức ưu tiên khi thanh toán đặt phòng',
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 13, color: palette.inkMuted),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               _buildPaymentOption(
                 icon: Icons.account_balance_wallet_rounded,
                 iconColor: const Color(0xFFA50064),
@@ -452,11 +403,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
                   setModalState(() {});
                   Navigator.pop(ctx);
-                  AppNotification.showSuccess(
-                      context, 'Đã chọn phương thức thanh toán: Ví MoMo');
+                  AppNotification.showSuccess(context, 'Đã chọn phương thức thanh toán: Ví MoMo');
                 },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm),
               _buildPaymentOption(
                 icon: Icons.qr_code_scanner_rounded,
                 iconColor: const Color(0xFF005BAA),
@@ -469,14 +419,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
                   setModalState(() {});
                   Navigator.pop(ctx);
-                  AppNotification.showSuccess(
-                      context, 'Đã chọn phương thức thanh toán: VNPAY-QR');
+                  AppNotification.showSuccess(context, 'Đã chọn phương thức thanh toán: VNPAY-QR');
                 },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm),
               _buildPaymentOption(
                 icon: Icons.payments_outlined,
-                iconColor: const Color(0xFF10B981),
+                iconColor: palette.statusAvailable,
                 title: 'Thanh toán tại khách sạn',
                 subtitle: 'Thanh toán khi làm thủ tục Check-in',
                 isSelected: _selectedPaymentMethod == 'Thanh toán tại khách sạn',
@@ -486,10 +435,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
                   setModalState(() {});
                   Navigator.pop(ctx);
-                  AppNotification.showSuccess(
-                      context, 'Đã chọn thanh toán trực tiếp tại sảnh');
+                  AppNotification.showSuccess(context, 'Đã chọn thanh toán trực tiếp tại sảnh');
                 },
               ),
+              const SizedBox(height: AppSpacing.sm),
             ],
           ),
         ),
@@ -505,18 +454,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    final palette = context.palette;
+    return PressableScale(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.secondary.withValues(alpha: 0.08)
-              : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected ? palette.accent.withValues(alpha: 0.12) : palette.surfaceMuted,
+          borderRadius: BorderRadius.circular(AppRadius.image),
           border: Border.all(
-            color: isSelected ? AppColors.secondary : AppColors.border,
+            color: isSelected ? palette.accent : palette.border,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -526,37 +473,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
+                color: iconColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Icon(icon, color: iconColor, size: 22),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: palette.ink,
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: palette.inkMuted,
                     ),
                   ),
                 ],
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded,
-                  color: AppColors.secondary, size: 20),
+              Icon(Icons.check_circle_rounded, color: palette.accent, size: 20),
           ],
         ),
       ),
@@ -564,40 +510,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showLanguageModal(BuildContext context) {
-    showModalBottomSheet(
+    final palette = context.palette;
+    AppBottomSheet.show(
       context: context,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
-          padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
+        builder: (context, setModalState) => AppBottomSheet(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Chọn Ngôn Ngữ',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: palette.ink,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               _buildLanguageOption(
                 title: 'Tiếng Việt',
                 subtitle: 'Giao diện hiển thị Tiếng Việt',
@@ -609,7 +539,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   AppNotification.showSuccess(context, 'Đã chuyển sang Tiếng Việt');
                 },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm),
               _buildLanguageOption(
                 title: 'English',
                 subtitle: 'English Interface',
@@ -621,6 +551,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   AppNotification.showSuccess(context, 'Switched to English');
                 },
               ),
+              const SizedBox(height: AppSpacing.sm),
             ],
           ),
         ),
@@ -634,18 +565,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    final palette = context.palette;
+    return PressableScale(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.secondary.withValues(alpha: 0.08)
-              : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected ? palette.accent.withValues(alpha: 0.12) : palette.surfaceMuted,
+          borderRadius: BorderRadius.circular(AppRadius.image),
           border: Border.all(
-            color: isSelected ? AppColors.secondary : AppColors.border,
+            color: isSelected ? palette.accent : palette.border,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -657,25 +586,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: palette.ink,
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: palette.inkMuted,
                     ),
                   ),
                 ],
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded,
-                  color: AppColors.secondary, size: 20),
+              Icon(Icons.check_circle_rounded, color: palette.accent, size: 20),
           ],
         ),
       ),
@@ -683,45 +611,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showAvatarOptionsModal(BuildContext context) {
-    showModalBottomSheet(
+    final palette = context.palette;
+    AppBottomSheet.show(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
+      builder: (ctx) => AppBottomSheet(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.camera_alt_outlined,
-                  color: AppColors.primary),
-              title: const Text('Chụp ảnh mới'),
+              leading: Icon(Icons.camera_alt_outlined, color: palette.accent),
+              title: Text('Chụp ảnh mới', style: TextStyle(color: palette.ink, fontWeight: FontWeight.w600)),
               onTap: () {
                 Navigator.pop(ctx);
-                AppNotification.showSuccess(
-                    context, 'Mở máy ảnh chụp ảnh đại diện');
+                AppNotification.showSuccess(context, 'Mở máy ảnh chụp ảnh đại diện');
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library_outlined,
-                  color: AppColors.secondary),
-              title: const Text('Chọn từ thư viện'),
+              leading: Icon(Icons.photo_library_outlined, color: palette.accent),
+              title: Text('Chọn từ thư viện', style: TextStyle(color: palette.ink, fontWeight: FontWeight.w600)),
               onTap: () {
                 Navigator.pop(ctx);
-                AppNotification.showSuccess(
-                    context, 'Mở thư viện ảnh');
+                AppNotification.showSuccess(context, 'Mở thư viện ảnh');
               },
             ),
           ],
@@ -732,8 +642,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.canvas,
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthUnauthenticated) {
@@ -756,7 +668,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. Dải Navy đầu màn bo cong mềm ở đáy (chiều cao 335 + topPadding giúp thẻ role badge thoáng đẹp, không bị đè)
+                // 1. Dải Navy đầu màn bo cong mềm ở đáy
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
@@ -822,65 +734,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                     const SizedBox(height: 8),
 
-                                    // Avatar tròn 88px viền gold 3px
+                                    // Avatar tròn 88px Hero
                                     GestureDetector(
                                       onTap: () =>
                                           _showAvatarOptionsModal(context),
-                                      child: Stack(
-                                        children: [
-                                          Container(
-                                            width: 88,
-                                            height: 88,
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF1E293B),
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: AppColors.secondary,
-                                                width: 3,
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: AppColors.secondaryLight
-                                                      .withValues(alpha: 0.25),
-                                                  blurRadius: 20,
-                                                  spreadRadius: 2,
-                                                ),
-                                              ],
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                initialChar,
-                                                style: const TextStyle(
-                                                  color: AppColors.secondaryLight,
-                                                  fontSize: 38,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          // Camera Icon
-                                          Positioned(
-                                            bottom: 0,
-                                            right: 0,
-                                            child: Container(
-                                              width: 26,
-                                              height: 26,
+                                      child: Hero(
+                                        tag: 'profile-avatar',
+                                        child: Stack(
+                                          children: [
+                                            Container(
+                                              width: 88,
+                                              height: 88,
                                               decoration: BoxDecoration(
-                                                color: AppColors.secondary,
+                                                color: const Color(0xFF1E293B),
                                                 shape: BoxShape.circle,
                                                 border: Border.all(
-                                                  color: Colors.white,
-                                                  width: 2,
+                                                  color: AppColors.secondary,
+                                                  width: 3,
+                                                ),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: AppColors.secondaryLight
+                                                        .withValues(alpha: 0.25),
+                                                    blurRadius: 20,
+                                                    spreadRadius: 2,
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  initialChar,
+                                                  style: const TextStyle(
+                                                    color: AppColors.secondaryLight,
+                                                    fontSize: 38,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
                                                 ),
                                               ),
-                                              child: const Icon(
-                                                Icons.camera_alt,
-                                                color: Colors.white,
-                                                size: 13,
+                                            ),
+                                            // Camera Icon
+                                            Positioned(
+                                              bottom: 0,
+                                              right: 0,
+                                              child: Container(
+                                                width: 26,
+                                                height: 26,
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.secondary,
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: Colors.white,
+                                                    width: 2,
+                                                  ),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.camera_alt,
+                                                  color: Colors.white,
+                                                  size: 13,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 10),
@@ -953,51 +868,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
 
-                    // 2. Thẻ Thống Kê (đè lên đáy dải cong 32px, cao 84px)
+                    // 2. Thẻ Thống Kê (AppCard đè lên đáy dải cong 32px, cao 84px)
                     Positioned(
                       bottom: -32,
-                      left: 20,
-                      right: 20,
-                      child: Container(
-                        height: 84,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF0F172A)
-                                  .withValues(alpha: 0.08),
-                              blurRadius: 20,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _buildStatCol('12', 'Lượt đặt'),
-                            ),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: AppColors.border,
-                            ),
-                            Expanded(
-                              child: _buildStatCol('3', 'Đang hoạt động'),
-                            ),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: AppColors.border,
-                            ),
-                            Expanded(
-                              child: _buildStatCol(
-                                '4.9',
-                                'Đánh giá',
-                                hasStar: true,
+                      left: AppSpacing.screen,
+                      right: AppSpacing.screen,
+                      child: AppCard(
+                        padding: EdgeInsets.zero,
+                        borderRadius: AppRadius.card,
+                        child: SizedBox(
+                          height: 84,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _buildStatCol('12', 'Lượt đặt'),
                               ),
-                            ),
-                          ],
+                              Container(
+                                width: 1,
+                                height: 40,
+                                color: palette.divider,
+                              ),
+                              Expanded(
+                                child: _buildStatCol('3', 'Đang hoạt động'),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 40,
+                                color: palette.divider,
+                              ),
+                              Expanded(
+                                child: _buildStatCol(
+                                  '4.9',
+                                  'Đánh giá',
+                                  hasStar: true,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -1006,36 +913,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 52),
 
                 // 3. Section Label: TÀI KHOẢN
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
                   child: Text(
                     'TÀI KHOẢN',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textMuted,
+                      color: palette.inkFaint,
                       letterSpacing: 1.0,
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
 
-                // 4. Menu Card 1 (Tài khoản)
+                // 4. Menu Card 1 (Tài khoản) gom bằng AppCard
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              const Color(0xFF0F172A).withValues(alpha: 0.05),
-                          blurRadius: 16,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  child: AppCard(
+                    padding: EdgeInsets.zero,
                     child: Column(
                       children: [
                         _buildMenuItem(
@@ -1045,16 +941,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           subtitle: phone,
                           onTap: () => _showEditPhoneModal(context, phone),
                         ),
-                        const Divider(
-                            height: 1, indent: 68, color: AppColors.divider),
+                        Divider(height: 1, indent: 68, color: palette.divider),
                         _buildMenuItem(
                           icon: Icons.lock_outline_rounded,
-                          iconColor: AppColors.secondary,
+                          iconColor: palette.accent,
                           title: 'Đổi mật khẩu',
                           onTap: () => _showChangePasswordModal(context),
                         ),
-                        const Divider(
-                            height: 1, indent: 68, color: AppColors.divider),
+                        Divider(height: 1, indent: 68, color: palette.divider),
                         _buildMenuItem(
                           icon: Icons.credit_card_outlined,
                           iconColor: const Color(0xFF8B5CF6),
@@ -1066,49 +960,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xl),
 
                 // 5. Section Label: ỨNG DỤNG
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
                   child: Text(
                     'ỨNG DỤNG',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textMuted,
+                      color: palette.inkFaint,
                       letterSpacing: 1.0,
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
 
-                // 6. Menu Card 2 (Ứng dụng)
+                // 6. Menu Card 2 (Ứng dụng) gom bằng AppCard kèm Dark Mode Switch
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              const Color(0xFF0F172A).withValues(alpha: 0.05),
-                          blurRadius: 16,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  child: AppCard(
+                    padding: EdgeInsets.zero,
                     child: Column(
                       children: [
+                        // Công tắc Dark Mode mượt mà kết nối ThemeCubit
+                        _buildMenuItem(
+                          icon: palette.isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                          iconColor: palette.accent,
+                          title: 'Giao diện tối (Dark Mode)',
+                          subtitle: palette.isDark ? 'Đang bật nền tối' : 'Đang bật nền sáng',
+                          trailing: Switch(
+                            value: palette.isDark,
+                            activeThumbColor: Colors.white,
+                            activeTrackColor: palette.accent,
+                            onChanged: (_) {
+                              context.read<ThemeCubit>().toggleDarkMode(context);
+                            },
+                          ),
+                        ),
+                        Divider(height: 1, indent: 68, color: palette.divider),
                         _buildMenuItem(
                           icon: Icons.notifications_none_rounded,
-                          iconColor: const Color(0xFF10B981),
+                          iconColor: palette.statusAvailable,
                           title: 'Thông báo',
                           trailing: Switch(
                             value: _notificationsEnabled,
                             activeThumbColor: Colors.white,
-                            activeTrackColor: AppColors.secondary,
+                            activeTrackColor: palette.accent,
                             onChanged: (val) {
                               setState(() => _notificationsEnabled = val);
                               AppNotification.showSuccess(
@@ -1120,11 +1019,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             },
                           ),
                         ),
-                        const Divider(
-                            height: 1, indent: 68, color: AppColors.divider),
+                        Divider(height: 1, indent: 68, color: palette.divider),
                         _buildMenuItem(
                           icon: Icons.language_rounded,
-                          iconColor: AppColors.textSecondary,
+                          iconColor: palette.inkMuted,
                           title: 'Ngôn ngữ',
                           subtitle: _selectedLanguage,
                           onTap: () => _showLanguageModal(context),
@@ -1133,58 +1031,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: AppSpacing.xxl),
 
-                // 7. Nút Đăng Xuất (viền đỏ #EF4444 1.5px)
+                // 7. Nút Đăng Xuất (viền đỏ với PressableScale)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: OutlinedButton.icon(
-                      onPressed: () => LogoutConfirmationDialog.show(context),
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppColors.error,
-                        side: const BorderSide(
-                            color: AppColors.error, width: 1.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  child: PressableScale(
+                    onTap: () => LogoutConfirmationDialog.show(context),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton.icon(
+                        onPressed: () => LogoutConfirmationDialog.show(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: palette.error,
+                          side: BorderSide(color: palette.error, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.button),
+                          ),
                         ),
-                      ),
-                      icon: const Icon(Icons.logout, size: 20),
-                      label: const Text(
-                        'Đăng Xuất',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                        icon: const Icon(Icons.logout, size: 20),
+                        label: const Text(
+                          'Đăng Xuất',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
 
                 // 8. Footer
-                const Center(
+                Center(
                   child: Text(
                     'Luxe Grand Hotel • Phiên bản 1.0.0',
                     style: TextStyle(
-                      color: AppColors.textMuted,
+                      color: palette.inkFaint,
                       fontSize: 11,
                     ),
                   ),
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: AppSpacing.xxxl),
               ],
             ),
-          );
+          )
+          .animate()
+          .fadeIn(duration: AppDurations.normal)
+          .slideY(begin: 0.04, curve: AppMotion.enter);
         },
       ),
     );
   }
 
   Widget _buildStatCol(String value, String label, {bool hasStar = false}) {
+    final palette = context.palette;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -1192,9 +1095,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (hasStar) ...[
-              const Icon(
+              Icon(
                 Icons.star_rounded,
-                color: AppColors.secondary,
+                color: palette.accent,
                 size: 18,
               ),
               const SizedBox(width: 2),
@@ -1204,10 +1107,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 fit: BoxFit.scaleDown,
                 child: Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: palette.ink,
                   ),
                   maxLines: 1,
                 ),
@@ -1218,9 +1121,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
-            color: AppColors.textSecondary,
+            color: palette.inkMuted,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -1237,33 +1140,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Widget? trailing,
     VoidCallback? onTap,
   }) {
+    final palette = context.palette;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(AppRadius.card),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
         child: Row(
           children: [
             Container(
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(12),
+                color: iconColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Icon(icon, color: iconColor, size: 20),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: palette.ink,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1272,9 +1176,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: palette.inkMuted,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1284,10 +1188,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             trailing ??
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 14,
-                  color: AppColors.textMuted,
+                  color: palette.inkFaint,
                 ),
           ],
         ),

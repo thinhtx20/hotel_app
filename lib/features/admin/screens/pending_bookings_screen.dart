@@ -2,10 +2,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/role_permissions.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/models/booking_model.dart';
+import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/motion/pressable_scale.dart';
 
 /// Màn hình Chi tiết Đơn đặt phòng chờ duyệt (Pending Bookings Screen)
 /// Phục vụ khi nhấn vào thẻ "Đơn chờ duyệt" trên Admin Dashboard
@@ -20,7 +25,6 @@ class PendingBookingsScreen extends StatefulWidget {
 class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
   DioClient get _dioClient => widget.dioClient ?? DioClient();
 
-  bool _isLoading = true;
   int _selectedTabIndex = 0; // 0: Chờ duyệt, 1: Đã duyệt gần đây, 2: Đã từ chối
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -44,8 +48,6 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
   }
 
   Future<void> _fetchPendingBookings() async {
-    setState(() => _isLoading = true);
-
     try {
       // 1. Thử gọi endpoint /bookings/pending
       final res = await _dioClient.dio.get(
@@ -65,7 +67,6 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
                 .whereType<Map>()
                 .map((e) => BookingModel.fromJson(Map<String, dynamic>.from(e)))
                 .toList();
-            _isLoading = false;
           });
           return;
         }
@@ -92,7 +93,6 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
           if (allBookings.isNotEmpty) {
             setState(() {
               _bookings = allBookings;
-              _isLoading = false;
             });
             return;
           }
@@ -103,126 +103,162 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
     // 3. Fallback dữ liệu chuẩn cho khách sạn Luxe Grand Hotel
     if (mounted) {
       _applyFallbackBookings();
-      setState(() => _isLoading = false);
     }
   }
 
   void _applyFallbackBookings() {
     final now = DateTime.now();
-    _bookings = [
-      BookingModel(
-        id: 'bk_pb_01',
-        bookingCode: 'BK-2026-102',
-        createdAt: now.subtract(const Duration(minutes: 25)),
-        roomId: '501',
-        roomNumber: '501',
-        roomTypeName: 'Presidential Penthouse',
-        floor: 5,
-        customerId: 'cust_pb1',
-        customerName: 'Đặng Quốc Hưng',
-        customerPhone: '0918 889 999',
-        checkInDate: now.add(const Duration(days: 6)),
-        checkOutDate: now.add(const Duration(days: 10)),
-        nights: 4,
-        guestCount: 3,
-        totalAmount: 18000000,
-        depositAmount: 5000000,
-        status: 'PENDING',
-        specialRequests: 'Yêu cầu setup bánh sinh nhật và rượu vang chúc mừng lúc nhận phòng.',
-      ),
-      BookingModel(
-        id: 'bk_pb_02',
-        bookingCode: 'BK-2026-103',
-        createdAt: now.subtract(const Duration(hours: 2)),
-        roomId: '203',
-        roomNumber: '203',
-        roomTypeName: 'Superior City View',
-        floor: 2,
-        customerId: 'cust_pb2',
-        customerName: 'Ngô Thị Bích',
-        customerPhone: '0977 665 544',
-        checkInDate: now.add(const Duration(days: 2)),
-        checkOutDate: now.add(const Duration(days: 4)),
-        nights: 2,
-        guestCount: 2,
-        totalAmount: 3200000,
-        depositAmount: 0,
-        status: 'PENDING',
-        specialRequests: 'Nhận phòng sớm khoảng 11h sáng nếu khách sạn có phòng trống.',
-      ),
-      BookingModel(
-        id: 'bk_pb_03',
-        bookingCode: 'BK-2026-098',
-        createdAt: now.subtract(const Duration(hours: 5)),
-        roomId: '301',
-        roomNumber: '301',
-        roomTypeName: 'Deluxe Ocean Panorama',
-        floor: 3,
-        customerId: 'cust_pb3',
-        customerName: 'Trịnh Thanh Bình',
-        customerPhone: '0903 222 111',
-        checkInDate: now.add(const Duration(days: 3)),
-        checkOutDate: now.add(const Duration(days: 5)),
-        nights: 2,
-        guestCount: 2,
-        totalAmount: 4800000,
-        depositAmount: 2400000,
-        status: 'CONFIRMED',
-      ),
-      BookingModel(
-        id: 'bk_pb_04',
-        bookingCode: 'BK-2026-092',
-        createdAt: now.subtract(const Duration(days: 1)),
-        roomId: '102',
-        roomNumber: '102',
-        roomTypeName: 'Standard Queen Double',
-        floor: 1,
-        customerId: 'cust_pb4',
-        customerName: 'Hoàng Anh Dũng',
-        customerPhone: '0988 555 444',
-        checkInDate: now.add(const Duration(days: 1)),
-        checkOutDate: now.add(const Duration(days: 2)),
-        nights: 1,
-        guestCount: 2,
-        totalAmount: 1200000,
-        depositAmount: 0,
-        status: 'CANCELLED',
-        cancellationReason: 'Khách sạn đã hết phòng trống trong khoảng thời gian này.',
-      ),
-    ];
+    setState(() {
+      _bookings = [
+        BookingModel(
+          id: 'bk_pend_01',
+          bookingCode: 'BK-2026-089',
+          roomId: 'r_01',
+          roomNumber: '101',
+          roomTypeName: 'Deluxe City View',
+          floor: 1,
+          customerId: 'c_01',
+          customerName: 'Nguyễn Văn Long',
+          customerPhone: '0901234567',
+          checkInDate: now.add(const Duration(days: 1)),
+          checkOutDate: now.add(const Duration(days: 4)),
+          nights: 3,
+          guestCount: 2,
+          totalAmount: 3600000,
+          depositAmount: 1000000,
+          status: 'PENDING',
+          specialRequests: 'Tầng cao, phòng không hút thuốc, view yên tĩnh.',
+          createdAt: now.subtract(const Duration(minutes: 15)),
+        ),
+        BookingModel(
+          id: 'bk_pend_02',
+          bookingCode: 'BK-2026-090',
+          roomId: 'r_05',
+          roomNumber: '201',
+          roomTypeName: 'Executive Ocean Suite',
+          floor: 2,
+          customerId: 'c_02',
+          customerName: 'Trần Thị Mai Phương',
+          customerPhone: '0987654321',
+          checkInDate: now.add(const Duration(days: 2)),
+          checkOutDate: now.add(const Duration(days: 5)),
+          nights: 3,
+          guestCount: 2,
+          totalAmount: 7500000,
+          depositAmount: 2500000,
+          status: 'PENDING',
+          specialRequests: 'Kỷ niệm ngày cưới, chuẩn bị set hoa tươi và rượu vang.',
+          createdAt: now.subtract(const Duration(hours: 1, minutes: 20)),
+        ),
+        BookingModel(
+          id: 'bk_pend_03',
+          bookingCode: 'BK-2026-091',
+          roomId: 'r_08',
+          roomNumber: '305',
+          roomTypeName: 'Family Connecting Room',
+          floor: 3,
+          customerId: 'c_03',
+          customerName: 'Lê Hoàng Nam',
+          customerPhone: '0912348888',
+          checkInDate: now.add(const Duration(days: 3)),
+          checkOutDate: now.add(const Duration(days: 7)),
+          nights: 4,
+          guestCount: 4,
+          totalAmount: 12000000,
+          depositAmount: 4000000,
+          status: 'PENDING',
+          specialRequests: 'Gia đình có 2 bé nhỏ, kê thêm 1 nôi trẻ em.',
+          createdAt: now.subtract(const Duration(hours: 3)),
+        ),
+        BookingModel(
+          id: 'bk_conf_01',
+          bookingCode: 'BK-2026-077',
+          roomId: 'r_02',
+          roomNumber: '102',
+          roomTypeName: 'Superior Double',
+          floor: 1,
+          customerId: 'c_04',
+          customerName: 'Phạm Quỳnh Nga',
+          customerPhone: '0945671234',
+          checkInDate: now.add(const Duration(days: 1)),
+          checkOutDate: now.add(const Duration(days: 3)),
+          nights: 2,
+          guestCount: 2,
+          totalAmount: 2200000,
+          depositAmount: 1000000,
+          status: 'CONFIRMED',
+          createdAt: now.subtract(const Duration(hours: 8)),
+        ),
+        BookingModel(
+          id: 'bk_can_01',
+          bookingCode: 'BK-2026-065',
+          roomId: 'r_03',
+          roomNumber: '103',
+          roomTypeName: 'Deluxe City View',
+          floor: 1,
+          customerId: 'c_05',
+          customerName: 'Vũ Đức Thịnh',
+          customerPhone: '0933221144',
+          checkInDate: now.add(const Duration(days: 1)),
+          checkOutDate: now.add(const Duration(days: 2)),
+          nights: 1,
+          guestCount: 1,
+          totalAmount: 1200000,
+          status: 'CANCELLED',
+          cancellationReason: 'Khách đổi kế hoạch công tác.',
+          createdAt: now.subtract(const Duration(hours: 24)),
+        ),
+      ];
+    });
   }
 
   List<BookingModel> get _filteredBookings {
-    return _bookings.where((b) {
-      if (_selectedTabIndex == 0 && b.status != 'PENDING') return false;
-      if (_selectedTabIndex == 1 && b.status != 'CONFIRMED') return false;
-      if (_selectedTabIndex == 2 && b.status != 'CANCELLED') return false;
+    var list = _bookings;
+    if (_selectedTabIndex == 0) {
+      list = list.where((b) => b.status == 'PENDING').toList();
+    } else if (_selectedTabIndex == 1) {
+      list = list.where((b) => b.status == 'CONFIRMED' || b.status == 'CHECKED_IN').toList();
+    } else if (_selectedTabIndex == 2) {
+      list = list.where((b) => b.status == 'CANCELLED').toList();
+    }
 
-      if (_searchQuery.isNotEmpty) {
-        final q = _searchQuery.toLowerCase();
-        final matchName = (b.customerName ?? '').toLowerCase().contains(q);
-        final matchPhone = (b.customerPhone ?? '').toLowerCase().contains(q);
-        final matchRoom = (b.roomNumber ?? '').toLowerCase().contains(q);
-        final matchCode = (b.bookingCode ?? '').toLowerCase().contains(q);
-        final matchType = (b.roomTypeName ?? '').toLowerCase().contains(q);
-        if (!matchName && !matchPhone && !matchRoom && !matchCode && !matchType) {
-          return false;
-        }
-      }
-      return true;
-    }).toList();
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      list = list.where((b) {
+        final code = (b.bookingCode ?? '').toLowerCase();
+        final name = (b.customerName ?? '').toLowerCase();
+        final phone = (b.customerPhone ?? '').toLowerCase();
+        final roomType = (b.roomTypeName ?? '').toLowerCase();
+        final roomNum = (b.roomNumber ?? '').toLowerCase();
+        return code.contains(q) || name.contains(q) || phone.contains(q) || roomType.contains(q) || roomNum.contains(q);
+      }).toList();
+    }
+
+    return list;
   }
 
   Future<void> _approveBooking(BookingModel booking) async {
+    final palette = context.palette;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        backgroundColor: palette.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
+        title: Row(
           children: [
-            Icon(Icons.verified_rounded, color: AppColors.emerald, size: 26),
-            SizedBox(width: 10),
-            Text('Phê duyệt Đơn phòng', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.xs),
+              decoration: BoxDecoration(
+                color: palette.success.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: Icon(Icons.check_circle_outline_rounded, color: palette.success, size: 24),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              'Phê duyệt Đơn phòng',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: palette.ink),
+            ),
           ],
         ),
         content: Column(
@@ -230,40 +266,40 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Xác nhận phê duyệt đơn đặt phòng ${booking.bookingCode ?? booking.id} của khách hàng ${booking.customerName ?? ''}?',
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              'Bạn có chắc chắn muốn phê duyệt đơn đặt phòng ${booking.bookingCode ?? booking.id} của khách hàng ${booking.customerName ?? ''}?',
+              style: TextStyle(fontSize: 14, color: palette.inkMuted, height: 1.4),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                color: palette.surfaceMuted,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                border: Border.all(color: palette.border),
               ),
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Phòng dự kiến:', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                      Text('P.${booking.roomNumber ?? '---'} (${booking.roomTypeName ?? ''})', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      Text('Hạng phòng:', style: TextStyle(fontSize: 12, color: palette.inkFaint)),
+                      Text(booking.roomTypeName ?? 'Tiêu chuẩn', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: palette.ink)),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Thời gian lưu trú:', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                      Text('${Formatters.formatDate(booking.checkInDate)} - ${Formatters.formatDate(booking.checkOutDate)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      Text('Thời gian lưu trú:', style: TextStyle(fontSize: 12, color: palette.inkFaint)),
+                      Text('${Formatters.formatDate(booking.checkInDate)} - ${Formatters.formatDate(booking.checkOutDate)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: palette.ink)),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Tổng tiền thanh toán:', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                      Text(Formatters.formatCurrency(booking.totalAmount), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.secondary)),
+                      Text('Tổng tiền thanh toán:', style: TextStyle(fontSize: 12, color: palette.inkFaint)),
+                      Text(Formatters.formatCurrency(booking.totalAmount), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: palette.accent)),
                     ],
                   ),
                 ],
@@ -274,13 +310,14 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Xem lại', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text('Xem lại', style: TextStyle(color: palette.inkMuted)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.emerald,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              backgroundColor: palette.success,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
             ),
             child: const Text('Duyệt đơn', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
           ),
@@ -305,6 +342,7 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
 
   void _onApproveSuccess(String id) {
     if (!mounted) return;
+    final palette = context.palette;
     setState(() {
       _processingIds.remove(id);
       final idx = _bookings.indexWhere((b) => b.id == id);
@@ -337,28 +375,30 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
         content: const Row(
           children: [
             Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-            SizedBox(width: 10),
+            SizedBox(width: AppSpacing.sm),
             Expanded(child: Text('Đã phê duyệt đơn đặt phòng thành công!')),
           ],
         ),
-        backgroundColor: AppColors.emerald,
+        backgroundColor: palette.success,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardSmall)),
       ),
     );
   }
 
   Future<void> _rejectBooking(BookingModel booking) async {
+    final palette = context.palette;
     final reasonController = TextEditingController();
     final reason = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        backgroundColor: palette.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
+        title: Row(
           children: [
-            Icon(Icons.cancel_outlined, color: AppColors.rose, size: 26),
-            SizedBox(width: 10),
-            Text('Từ chối Đơn đặt phòng', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            Icon(Icons.cancel_outlined, color: palette.error, size: 26),
+            const SizedBox(width: AppSpacing.sm),
+            Text('Từ chối Đơn đặt phòng', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: palette.ink)),
           ],
         ),
         content: Column(
@@ -367,18 +407,19 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
           children: [
             Text(
               'Nhập lý do từ chối đơn ${booking.bookingCode ?? booking.id} để thông báo cho khách hàng:',
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 14, color: palette.inkMuted),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: reasonController,
               maxLines: 3,
+              style: TextStyle(color: palette.ink, fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'VD: Khách sạn đã kín phòng trong thời gian yêu cầu...',
-                hintStyle: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                hintStyle: TextStyle(fontSize: 12.5, color: palette.inkFaint),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
                 filled: true,
-                fillColor: const Color(0xFFF8FAFC),
+                fillColor: palette.surfaceMuted,
               ),
             ),
           ],
@@ -386,7 +427,7 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text('Hủy', style: TextStyle(color: palette.inkMuted)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -394,8 +435,9 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
               Navigator.of(ctx).pop(text.isEmpty ? 'Khách sạn đã hết phòng phù hợp.' : text);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.rose,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              backgroundColor: palette.error,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
             ),
             child: const Text('Xác nhận từ chối', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
           ),
@@ -423,6 +465,7 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
 
   void _onRejectSuccess(String id, String reason) {
     if (!mounted) return;
+    final palette = context.palette;
     setState(() {
       _processingIds.remove(id);
       final idx = _bookings.indexWhere((b) => b.id == id);
@@ -456,25 +499,26 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
         content: const Row(
           children: [
             Icon(Icons.info_outline, color: Colors.white, size: 20),
-            SizedBox(width: 10),
+            SizedBox(width: AppSpacing.sm),
             Expanded(child: Text('Đã từ chối đơn đặt phòng.')),
           ],
         ),
-        backgroundColor: AppColors.rose,
+        backgroundColor: palette.error,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardSmall)),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     final pendingCount = _bookings.where((b) => b.status == 'PENDING').length;
     final confirmedCount = _bookings.where((b) => b.status == 'CONFIRMED').length;
     final rejectedCount = _bookings.where((b) => b.status == 'CANCELLED').length;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.canvas,
       body: CustomScrollView(
         slivers: [
           // 1. Navy App Bar
@@ -522,19 +566,19 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
             ),
           ),
 
-          // 2. Nội dung
+          // 2. Nội dung bộ lọc
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
                 children: [
                   // Thanh tìm kiếm
                   _buildSearchBar(),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.sm),
 
                   // Tabs lọc (Chờ duyệt, Đã duyệt, Đã từ chối)
                   _buildTabs(pendingCount, confirmedCount, rejectedCount),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.md),
                 ],
               ),
             ),
@@ -544,63 +588,69 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
           _filteredBookings.isEmpty
               ? SliverToBoxAdapter(child: _buildEmptyState())
               : SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final booking = _filteredBookings[index];
-                        return _buildPendingCard(booking);
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                          child: _buildPendingCard(booking),
+                        );
                       },
                       childCount: _filteredBookings.length,
                     ),
                   ),
                 ),
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
         ],
       ),
     );
   }
 
   Widget _buildSearchBar() {
+    final palette = context.palette;
     return TextField(
       controller: _searchController,
+      style: TextStyle(fontSize: 13, color: palette.ink),
       decoration: InputDecoration(
         hintText: 'Tìm theo tên khách, SĐT, loại phòng, mã đơn...',
-        hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-        prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.textMuted),
+        hintStyle: TextStyle(fontSize: 13, color: palette.inkFaint),
+        prefixIcon: Icon(Icons.search, size: 20, color: palette.inkFaint),
         suffixIcon: _searchQuery.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear, size: 18, color: AppColors.textMuted),
+                icon: Icon(Icons.clear, size: 18, color: palette.inkFaint),
                 onPressed: () => _searchController.clear(),
               )
             : null,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: palette.surface,
         contentPadding: const EdgeInsets.symmetric(vertical: 10),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderSide: BorderSide(color: palette.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderSide: BorderSide(color: palette.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderSide: BorderSide(color: palette.accent, width: 1.5),
         ),
       ),
     );
   }
 
   Widget _buildTabs(int pending, int confirmed, int rejected) {
+    final palette = context.palette;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        color: palette.surface,
+        borderRadius: BorderRadius.circular(AppRadius.field),
+        border: Border.all(color: palette.border),
       ),
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(AppSpacing.xs),
       child: Row(
         children: [
           _buildTabItem(0, 'Chờ duyệt ($pending)'),
@@ -612,16 +662,17 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
   }
 
   Widget _buildTabItem(int index, String title) {
+    final palette = context.palette;
     final isSelected = _selectedTabIndex == index;
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _selectedTabIndex = index),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: AppDurations.fast,
           padding: const EdgeInsets.symmetric(vertical: 9),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppRadius.button),
           ),
           alignment: Alignment.center,
           child: Text(
@@ -629,7 +680,7 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? Colors.white : AppColors.textSecondary,
+              color: isSelected ? Colors.white : palette.inkMuted,
             ),
           ),
         ),
@@ -638,6 +689,7 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
   }
 
   Widget _buildPendingCard(BookingModel booking) {
+    final palette = context.palette;
     final isPending = booking.status == 'PENDING';
     final isConfirmed = booking.status == 'CONFIRMED';
     final isProcessing = _processingIds.contains(booking.id);
@@ -645,33 +697,21 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
     Color statusColor;
     String statusLabel;
     if (isPending) {
-      statusColor = const Color(0xFFEF4444);
+      statusColor = palette.warning;
       statusLabel = 'Chờ phê duyệt';
     } else if (isConfirmed) {
-      statusColor = AppColors.emerald;
+      statusColor = palette.success;
       statusLabel = 'Đã phê duyệt';
     } else {
-      statusColor = AppColors.rose;
+      statusColor = palette.error;
       statusLabel = 'Đã từ chối';
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isPending ? const Color(0xFFEF4444).withValues(alpha: 0.3) : AppColors.border,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 3),
-          ),
-        ],
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      border: Border.all(
+        color: isPending ? palette.warning.withValues(alpha: 0.3) : palette.border,
       ),
-      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -682,10 +722,10 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(AppRadius.xs),
                     ),
                     child: Text(
                       booking.bookingCode ?? booking.id,
@@ -693,19 +733,19 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
                     ),
                   ),
                   if (booking.createdAt != null) ...[
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(
                       Formatters.formatDateTime(booking.createdAt!),
-                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                      style: TextStyle(fontSize: 11, color: palette.inkFaint),
                     ),
                   ],
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Text(
                   statusLabel,
@@ -718,47 +758,47 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
 
           // Loại phòng & Số phòng
           Row(
             children: [
-              const Icon(Icons.hotel_outlined, size: 18, color: AppColors.secondary),
-              const SizedBox(width: 8),
+              Icon(Icons.hotel_outlined, size: 18, color: palette.accent),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   booking.roomTypeName ?? 'Phòng Tiêu chuẩn',
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: palette.ink),
                 ),
               ),
               if (booking.roomNumber != null && booking.roomNumber!.isNotEmpty)
                 Text(
                   'Phòng ${booking.roomNumber}',
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.secondary),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: palette.accent),
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
 
           // Ngày lưu trú
           Row(
             children: [
-              const Icon(Icons.calendar_today_outlined, size: 15, color: AppColors.textSecondary),
+              Icon(Icons.calendar_today_outlined, size: 15, color: palette.inkMuted),
               const SizedBox(width: 6),
               Text(
                 '${Formatters.formatDate(booking.checkInDate)} - ${Formatters.formatDate(booking.checkOutDate)}',
-                style: const TextStyle(fontSize: 12.5, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 12.5, color: palette.ink, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(6),
+                  color: palette.surfaceMuted,
+                  borderRadius: BorderRadius.circular(AppRadius.xs),
                 ),
                 child: Text(
                   '${booking.nightsCount} đêm',
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: palette.inkMuted),
                 ),
               ),
             ],
@@ -768,11 +808,11 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
           // Khách hàng & Số khách
           Row(
             children: [
-              const Icon(Icons.person_outline_rounded, size: 15, color: AppColors.textSecondary),
+              Icon(Icons.person_outline_rounded, size: 15, color: palette.inkMuted),
               const SizedBox(width: 6),
               Text(
                 '${booking.customerName ?? 'Khách vãng lai'} (${booking.guestCount} khách)',
-                style: const TextStyle(fontSize: 12.5, color: AppColors.textPrimary),
+                style: TextStyle(fontSize: 12.5, color: palette.ink),
               ),
               const Spacer(),
               if (booking.customerPhone != null) ...[
@@ -788,11 +828,11 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
                   },
                   child: Row(
                     children: [
-                      const Icon(Icons.phone_outlined, size: 14, color: AppColors.secondary),
+                      Icon(Icons.phone_outlined, size: 14, color: palette.accent),
                       const SizedBox(width: 4),
                       Text(
                         booking.customerPhone!,
-                        style: const TextStyle(fontSize: 12, color: AppColors.secondary, fontWeight: FontWeight.w500),
+                        style: TextStyle(fontSize: 12, color: palette.accent, fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
@@ -803,23 +843,23 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
 
           // Yêu cầu đặc biệt
           if (booking.specialRequests != null && booking.specialRequests!.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm),
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFFBEB),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFFDE68A)),
+                color: palette.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                border: Border.all(color: palette.warning.withValues(alpha: 0.3)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.star_outline_rounded, size: 16, color: Color(0xFFD97706)),
+                  Icon(Icons.star_outline_rounded, size: 16, color: palette.warning),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       'Yêu cầu đặc biệt: ${booking.specialRequests}',
-                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF92400E)),
+                      style: TextStyle(fontSize: 11.5, color: palette.warning),
                     ),
                   ),
                 ],
@@ -829,24 +869,24 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
 
           // Lý do từ chối nếu có
           if (booking.cancellationReason != null && booking.cancellationReason!.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm),
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: const Color(0xFFFEF2F2),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFFECACA)),
+                color: palette.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                border: Border.all(color: palette.error.withValues(alpha: 0.3)),
               ),
               child: Text(
                 'Lý do từ chối: ${booking.cancellationReason}',
-                style: const TextStyle(fontSize: 11.5, color: AppColors.rose),
+                style: TextStyle(fontSize: 11.5, color: palette.error),
               ),
             ),
           ],
 
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.md),
+          Divider(height: 1, color: palette.divider),
+          const SizedBox(height: AppSpacing.sm),
 
           // Tiền & Các nút Duyệt / Từ chối
           Row(
@@ -855,56 +895,63 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Tổng thanh toán:', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                  Text('Tổng thanh toán:', style: TextStyle(fontSize: 11, color: palette.inkFaint)),
                   Text(
                     Formatters.formatCurrency(booking.totalAmount),
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.secondary),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: palette.accent),
                   ),
                 ],
               ),
-              if (isPending)
+              // Duyệt / từ chối đơn chỉ mở cho ADMIN và RECEPTIONIST.
+              if (isPending && context.currentRole.canApproveBooking)
                 Row(
                   children: [
-                    OutlinedButton(
-                      onPressed: isProcessing ? null : () => _rejectBooking(booking),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.rose,
-                        side: const BorderSide(color: AppColors.rose),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    PressableScale(
+                      onTap: isProcessing ? null : () => _rejectBooking(booking),
+                      child: OutlinedButton(
+                        onPressed: isProcessing ? null : () => _rejectBooking(booking),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: palette.error,
+                          side: BorderSide(color: palette.error),
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
+                        ),
+                        child: const Text('Từ chối', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
                       ),
-                      child: const Text('Từ chối', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
                     ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: isProcessing ? null : () => _approveBooking(booking),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.emerald,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    const SizedBox(width: AppSpacing.sm),
+                    PressableScale(
+                      onTap: isProcessing ? null : () => _approveBooking(booking),
+                      child: ElevatedButton(
+                        onPressed: isProcessing ? null : () => _approveBooking(booking),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: palette.success,
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
+                        ),
+                        child: isProcessing
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Text('Duyệt đơn', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Colors.white)),
                       ),
-                      child: isProcessing
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Text('Duyệt đơn', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Colors.white)),
                     ),
                   ],
                 )
               else if (isConfirmed)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.emerald.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: palette.success.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.check_circle_outline, size: 15, color: AppColors.emerald),
-                      SizedBox(width: 4),
-                      Text('Đã duyệt thành công', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.emerald)),
+                      Icon(Icons.check_circle_outline, size: 15, color: palette.success),
+                      const SizedBox(width: 4),
+                      Text('Đã duyệt thành công', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: palette.success)),
                     ],
                   ),
                 ),
@@ -916,21 +963,22 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
   }
 
   Widget _buildEmptyState() {
+    final palette = context.palette;
     return Container(
-      padding: const EdgeInsets.all(40),
+      padding: const EdgeInsets.all(AppSpacing.xxxl),
       alignment: Alignment.center,
       child: Column(
         children: [
-          Icon(Icons.assignment_turned_in_outlined, size: 54, color: Colors.grey.shade400),
-          const SizedBox(height: 12),
-          const Text(
+          Icon(Icons.assignment_turned_in_outlined, size: 54, color: palette.inkFaint),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
             'Không có đơn đặt phòng nào',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: palette.ink),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Hiện tại không có đơn nào cần xử lý trong danh mục này',
-            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 13, color: palette.inkMuted),
             textAlign: TextAlign.center,
           ),
         ],

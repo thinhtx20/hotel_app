@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/role_enum.dart';
+import '../../core/constants/role_permissions.dart';
 import '../auth/bloc/auth_bloc.dart';
 import '../auth/bloc/auth_state.dart';
 
@@ -64,20 +64,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     try {
       if (state is AuthAuthenticated) {
-        switch (state.user.role) {
-          case UserRole.admin:
-            context.go('/admin');
-            break;
-          case UserRole.receptionist:
-            context.go('/receptionist');
-            break;
-          case UserRole.cashier:
-            context.go('/cashier');
-            break;
-          case UserRole.customer:
-            context.go('/customer');
-            break;
-        }
+        context.go(state.user.role.homeRoute);
       } else if (state is AuthUnauthenticated || state is AuthFailure) {
         context.go('/login');
       }

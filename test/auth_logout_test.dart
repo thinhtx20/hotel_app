@@ -18,8 +18,9 @@ class FakeTokenStorage implements TokenStorage {
 
   FakeTokenStorage({String? accessToken, String? refreshToken, UserModel? user})
       : _access = accessToken,
-        _refresh = refreshToken,
-        _user = user;
+        _refresh = refreshToken {
+    _user = user;
+  }
 
   @override
   Future<void> saveTokens({required String accessToken, required String refreshToken}) async {
