@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
-import '../../../core/constants/role_enum.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
@@ -181,10 +180,19 @@ class _CreateBookingModalState extends State<CreateBookingModal> {
 
   Future<void> _handleSuccessTransition() async {
     setState(() => _isSuccess = true);
-    sl<RoomRepository>().updateRoomStatus(widget.room.id, RoomStatus.reserved);
+
+    // Trạng thái phòng do máy chủ quyết định: đơn khách tự đặt nằm ở PENDING nên
+    // phòng vẫn AVAILABLE cho tới khi lễ tân xác nhận, còn đơn nhân viên tạo
+    // thẳng CONFIRMED thì máy chủ tự đẩy phòng sang RESERVED. Ở đây chỉ tải lại
+    // danh sách phòng (GET /rooms công khai); không tự ghi trạng thái vì
+    // PATCH /rooms/:id/status chỉ mở cho ADMIN/RECEPTIONIST và trả 403 cho
+    // tài khoản khách hàng.
+    final refreshRooms =
+        sl<RoomRepository>().fetchRooms(forceRefresh: true).catchError((_) {});
 
     // Chờ dấu tick vẽ xong và trải nghiệm thị giác trọn vẹn (khoảng 1.1 giây)
     await Future.delayed(const Duration(milliseconds: 1100));
+    await refreshRooms;
 
     if (mounted) {
       Navigator.of(context).pop(true);

@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
-import '../../../core/constants/role_enum.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
@@ -278,7 +277,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     try {
       final updated = await _bookingRepository.cancel(booking.id, reason: cancelReason);
       if (mounted) {
-        sl<RoomRepository>().updateRoomStatus(booking.roomId, RoomStatus.available);
+        // Máy chủ đã tự trả phòng về đúng trạng thái theo các đơn còn hiệu lực
+        // khi hủy đơn, nên ở đây chỉ tải lại danh sách phòng. Gọi
+        // PATCH /rooms/:id/status sẽ bị 403 vì endpoint đó chỉ mở cho
+        // ADMIN/RECEPTIONIST.
+        sl<RoomRepository>().fetchRooms(forceRefresh: true).catchError((_) {});
         setState(() {
           final idx = _bookings.indexWhere((b) => b.id == booking.id);
           if (idx != -1) {
