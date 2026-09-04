@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
@@ -8,6 +10,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
 import '../../../shared/models/room_model.dart';
 import '../../../shared/repositories/room_repository.dart';
+import '../../../shared/repositories/upload_repository.dart';
 import '../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/custom_text_field.dart';
@@ -34,6 +37,9 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
   bool _isLoadingTypes = false;
 
   bool _isSubmitting = false;
+  final List<String> _uploadedImages = [];
+  bool _isUploadingImages = false;
+  final ImagePicker _picker = ImagePicker();
   final List<String> _selectedAmenities = ['Wifi', 'Điều hòa'];
 
   final List<String> _availableAmenities = const [
@@ -80,6 +86,37 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
     super.dispose();
   }
 
+  Future<void> _pickAndUploadImages() async {
+    try {
+      final pickedFiles = await _picker.pickMultiImage(imageQuality: 85);
+      if (pickedFiles.isEmpty) return;
+
+      setState(() => _isUploadingImages = true);
+      final paths = pickedFiles.map((x) => x.path).toList();
+      final urls = await sl<UploadRepository>().uploadRoomImages(
+        paths,
+        roomTypeId: _selectedRoomType?.id,
+      );
+
+      if (mounted) {
+        setState(() {
+          _uploadedImages.addAll(urls);
+          _isUploadingImages = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isUploadingImages = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải ảnh lên: ${e.toString()}'),
+            backgroundColor: AppColors.rose,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -102,6 +139,23 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
     final imageUrl = _imageUrlController.text.trim();
     final notes = _notesController.text.trim();
 
+    final List<String> roomImages = [];
+    if (_uploadedImages.isNotEmpty) {
+      roomImages.addAll(_uploadedImages);
+    }
+    if (imageUrl.isNotEmpty && !roomImages.contains(imageUrl)) {
+      roomImages.add(imageUrl);
+    }
+    if (roomImages.isEmpty) {
+      if (_selectedRoomType?.images.isNotEmpty == true) {
+        roomImages.addAll(_selectedRoomType!.images);
+      } else {
+        roomImages.add(
+          'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80',
+        );
+      }
+    }
+
     final newRoom = RoomModel(
       id: 'room_${DateTime.now().millisecondsSinceEpoch}',
       roomNumber: roomNumber,
@@ -110,13 +164,7 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
       pricePerNight: price,
       roomTypeId: _selectedRoomType!.id,
       roomTypeName: _selectedRoomType?.name ?? 'Phòng Tiêu Chuẩn',
-      images: imageUrl.isNotEmpty
-          ? [imageUrl]
-          : (_selectedRoomType?.images.isNotEmpty == true
-              ? _selectedRoomType!.images
-              : [
-                  'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80'
-                ]),
+      images: roomImages,
       amenities: List.from(_selectedAmenities),
     );
 
@@ -311,12 +359,95 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // URL Hình ảnh
+              // Hình ảnh phòng & Tải ảnh
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'HÌNH ẢNH PHÒNG',
+                    style: textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: palette.ink,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: _isUploadingImages ? null : _pickAndUploadImages,
+                    icon: _isUploadingImages
+                        ? SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: palette.accent,
+                            ),
+                          )
+                        : Icon(Icons.add_photo_alternate_outlined, size: 16, color: palette.accent),
+                    label: Text(
+                      _isUploadingImages ? 'Đang tải lên...' : 'Chọn ảnh từ máy',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: palette.accent,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (_uploadedImages.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.xs),
+                SizedBox(
+                  height: 72,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _uploadedImages.length,
+                    separatorBuilder: (context, index) => const SizedBox(width: AppSpacing.sm),
+                    itemBuilder: (context, idx) {
+                      final imgUrl = _uploadedImages[idx];
+                      return Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(AppRadius.image),
+                            child: CachedNetworkImage(
+                              imageUrl: imgUrl,
+                              width: 72,
+                              height: 72,
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) => Container(
+                                width: 72,
+                                height: 72,
+                                color: palette.surfaceMuted,
+                                child: Icon(Icons.broken_image, color: palette.inkMuted),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 2,
+                            right: 2,
+                            child: InkWell(
+                              onTap: () => setState(() => _uploadedImages.removeAt(idx)),
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: const BoxDecoration(
+                                  color: Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.close, size: 12, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
               CustomTextField(
                 controller: _imageUrlController,
-                label: 'Đường dẫn ảnh phòng (URL)',
+                label: 'Hoặc nhập đường dẫn ảnh (URL)',
                 hint: 'https://...',
-                prefixIcon: Icons.image_outlined,
+                prefixIcon: Icons.link_outlined,
               ),
               const SizedBox(height: AppSpacing.lg),
 

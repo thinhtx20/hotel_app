@@ -1,16 +1,14 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/role_enum.dart';
-import '../../../core/network/api_endpoints.dart';
-import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
 import '../../../shared/models/booking_model.dart';
+import '../../../shared/repositories/booking_repository.dart';
 import '../../../shared/repositories/room_repository.dart';
 import '../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -21,7 +19,8 @@ import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/skeletons/booking_card_skeleton.dart';
 
 class MyBookingsScreen extends StatefulWidget {
-  const MyBookingsScreen({super.key});
+  final BookingRepository? bookingRepository;
+  const MyBookingsScreen({super.key, this.bookingRepository});
 
   @override
   State<MyBookingsScreen> createState() => _MyBookingsScreenState();
@@ -31,6 +30,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   int _selectedTabIndex = 0;
   List<BookingModel> _bookings = [];
   bool _isLoading = true;
+  dynamic _error;
+  late final BookingRepository _bookingRepository = widget.bookingRepository ??
+      (sl.isRegistered<BookingRepository>()
+          ? sl<BookingRepository>()
+          : BookingRepository());
 
   final List<String> _tabs = const [
     'Tất cả',
@@ -44,142 +48,46 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchBookings();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _fetchBookings();
+    });
   }
 
   Future<void> _fetchBookings({bool isRefresh = false}) async {
     if (!isRefresh && _bookings.isEmpty) {
       setState(() {
         _isLoading = true;
+        _error = null;
       });
     }
 
     try {
-      final res = await DioClient().dio.get(
-        ApiEndpoints.bookings,
-        options: Options(
-          sendTimeout: const Duration(seconds: 6),
-          receiveTimeout: const Duration(seconds: 6),
-        ),
-      );
-
-      if (res.statusCode == 200 && res.data['success'] == true) {
-        final list = res.data['data'] as List?;
-        if (list != null && mounted) {
-          setState(() {
-            _bookings = list.map((e) => BookingModel.fromJson(e)).toList();
-            _isLoading = false;
-          });
-          return;
+      // Màn này tự chia tab theo trạng thái nên phải gom đủ mọi trang.
+      final list = await _bookingRepository.fetchAllBookings();
+      if (mounted) {
+        setState(() {
+          _bookings = list;
+          _isLoading = false;
+          _error = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          if (_bookings.isEmpty) {
+            _error = e;
+          }
+        });
+        if (isRefresh) {
+          AppNotification.showError(
+            context,
+            e,
+            title: 'Làm mới thất bại',
+          );
         }
       }
-    } catch (_) {
-      // Network error or timeout: fall back gracefully if no data yet
     }
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-        if (_bookings.isEmpty) {
-          _bookings = _getFallbackBookings();
-        }
-      });
-    }
-  }
-
-  List<BookingModel> _getFallbackBookings() {
-    return [
-      BookingModel(
-        id: '1',
-        bookingCode: 'BK-2026-004',
-        roomId: '203',
-        roomNumber: '203',
-        roomTypeName: 'Superior City View',
-        floor: 2,
-        checkInDate: DateTime.now().add(const Duration(days: 1)),
-        checkOutDate: DateTime.now().add(const Duration(days: 4)),
-        guestCount: 3,
-        totalAmount: 2850000,
-        depositAmount: 1000000,
-        status: 'CONFIRMED',
-        specialRequests:
-            'Gia đình có em bé nhỏ, cần phòng yên tĩnh không mùi thuốc lá',
-      ),
-      BookingModel(
-        id: '2',
-        bookingCode: 'BK-2026-005',
-        roomId: '501',
-        roomNumber: '501',
-        roomTypeName: 'Presidential Penthouse',
-        floor: 5,
-        checkInDate: DateTime.now().add(const Duration(days: 7)),
-        checkOutDate: DateTime.now().add(const Duration(days: 9)),
-        guestCount: 2,
-        totalAmount: 11000000,
-        depositAmount: 0,
-        status: 'PENDING',
-        specialRequests: 'Chuẩn bị rượu vang chào mừng & xe đón sân bay',
-      ),
-      BookingModel(
-        id: '3',
-        bookingCode: 'BK-2026-001',
-        roomId: '301',
-        roomNumber: '301',
-        roomTypeName: 'Deluxe Ocean Panorama',
-        floor: 3,
-        checkInDate: DateTime.now().subtract(const Duration(days: 1)),
-        checkOutDate: DateTime.now().add(const Duration(days: 2)),
-        guestCount: 2,
-        totalAmount: 4350000,
-        depositAmount: 2000000,
-        status: 'CHECKED_IN',
-        specialRequests: 'Kỷ niệm ngày cưới, setup hoa hồng và bánh kem',
-      ),
-      BookingModel(
-        id: '4',
-        bookingCode: 'BK-2026-003',
-        roomId: '101',
-        roomNumber: '101',
-        roomTypeName: 'Standard Queen Double',
-        floor: 1,
-        checkInDate: DateTime.now().subtract(const Duration(days: 5)),
-        checkOutDate: DateTime.now().subtract(const Duration(days: 2)),
-        guestCount: 1,
-        totalAmount: 1350000,
-        depositAmount: 500000,
-        status: 'CHECKED_OUT',
-      ),
-      BookingModel(
-        id: '5',
-        bookingCode: 'BK-2026-006',
-        roomId: '102',
-        roomNumber: '102',
-        roomTypeName: 'Standard Twin Single',
-        floor: 1,
-        checkInDate: DateTime.now().subtract(const Duration(days: 10)),
-        checkOutDate: DateTime.now().subtract(const Duration(days: 8)),
-        guestCount: 2,
-        totalAmount: 900000,
-        depositAmount: 0,
-        status: 'CANCELLED',
-        cancellationReason: 'Thay đổi lịch trình chuyến đi đột xuất',
-      ),
-      BookingModel(
-        id: '6',
-        bookingCode: 'BK-2026-005',
-        roomId: '501',
-        roomNumber: '501',
-        roomTypeName: 'Presidential Penthouse',
-        floor: 5,
-        checkInDate: DateTime.now().subtract(const Duration(days: 15)),
-        checkOutDate: DateTime.now().subtract(const Duration(days: 13)),
-        guestCount: 2,
-        totalAmount: 11000000,
-        depositAmount: 0,
-        status: 'CANCELLED',
-        cancellationReason: 'Tìm được phòng khác phù hợp nhu cầu hơn',
-      ),
-    ];
   }
 
   int _getTabCount(int tabIndex) {
@@ -367,67 +275,27 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
     if (cancelReason == null || !mounted) return;
 
-    void updateLocalCancelled(String reason) {
-      final idx = _bookings.indexWhere((b) => b.id == booking.id);
-      if (idx != -1) {
-        final old = _bookings[idx];
-        _bookings[idx] = BookingModel(
-          id: old.id,
-          bookingCode: old.bookingCode,
-          roomId: old.roomId,
-          roomNumber: old.roomNumber,
-          roomTypeName: old.roomTypeName,
-          roomImage: old.roomImage,
-          floor: old.floor,
-          customerId: old.customerId,
-          customerName: old.customerName,
-          customerPhone: old.customerPhone,
-          checkInDate: old.checkInDate,
-          checkOutDate: old.checkOutDate,
-          actualCheckIn: old.actualCheckIn,
-          actualCheckOut: old.actualCheckOut,
-          guestCount: old.guestCount,
-          totalAmount: old.totalAmount,
-          depositAmount: old.depositAmount,
-          status: 'CANCELLED',
-          specialRequests: old.specialRequests,
-          cancellationReason: reason,
-        );
-      }
-    }
-
     try {
-      final res = await DioClient().dio.post(
-        ApiEndpoints.cancelBooking(booking.id),
-        data: {
-          'cancellationReason': cancelReason,
-          'reason': cancelReason,
-        },
-      );
-      final isSuccess = (res.statusCode == 200 || res.statusCode == 201) &&
-          (res.data['success'] == true || res.data['data'] != null);
-
-      if (isSuccess && mounted) {
+      final updated = await _bookingRepository.cancel(booking.id, reason: cancelReason);
+      if (mounted) {
         sl<RoomRepository>().updateRoomStatus(booking.roomId, RoomStatus.available);
         setState(() {
-          updateLocalCancelled(cancelReason);
+          final idx = _bookings.indexWhere((b) => b.id == booking.id);
+          if (idx != -1) {
+            _bookings[idx] = updated;
+          }
         });
         AppNotification.showSuccess(
           context,
-          'Đã hủy đơn phòng ${booking.bookingCode ?? ""} thành công',
+          'Đã hủy đơn phòng ${booking.bookingCode ?? booking.id} thành công',
         );
-        _fetchBookings(isRefresh: true);
-        return;
       }
-    } catch (_) {
-      sl<RoomRepository>().updateRoomStatus(booking.roomId, RoomStatus.available);
+    } catch (e) {
       if (mounted) {
-        setState(() {
-          updateLocalCancelled(cancelReason);
-        });
-        AppNotification.showSuccess(
+        AppNotification.showError(
           context,
-          'Đã hủy đơn phòng ${booking.bookingCode ?? ""}',
+          e,
+          title: 'Hủy đơn phòng thất bại',
         );
       }
     }
@@ -639,15 +507,20 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           ],
                         ),
                       )
-                    : filtered.isEmpty
-                        ? AppEmptyState(
-                            icon: Icons.book_online_outlined,
-                            title: 'Không có đơn phòng nào',
-                            description:
-                                'Hiện tại bạn không có đơn phòng nào trong trạng thái này.',
-                            actionText: 'Khám phá & Đặt phòng',
-                            onAction: () => context.go('/search'),
+                    : _error != null && _bookings.isEmpty
+                        ? AppErrorView(
+                            error: _error,
+                            onRetry: () => _fetchBookings(),
                           )
+                        : filtered.isEmpty
+                            ? AppEmptyState(
+                                icon: Icons.book_online_outlined,
+                                title: 'Không có đơn phòng nào',
+                                description:
+                                    'Hiện tại bạn không có đơn phòng nào trong trạng thái này.',
+                                actionText: 'Khám phá & Đặt phòng',
+                                onAction: () => context.go('/search'),
+                              )
                         : ListView.separated(
                             padding: const EdgeInsets.fromLTRB(
                               AppSpacing.screen,
@@ -715,7 +588,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         break;
     }
 
-    final code = booking.bookingCode ?? 'BK-${booking.id.substring(0, 8)}';
+    final code = booking.bookingCode?.isNotEmpty == true
+        ? booking.bookingCode!
+        : 'BK-${booking.displayCode}';
     final checkIn = booking.checkInDate;
     final checkOut = booking.checkOutDate;
     final nights = booking.nightsCount;
@@ -1173,7 +1048,9 @@ class _BookingDetailsModal extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              booking.bookingCode ?? 'BK-${booking.id.substring(0, 8)}',
+              booking.bookingCode?.isNotEmpty == true
+                  ? booking.bookingCode!
+                  : 'BK-${booking.displayCode}',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,

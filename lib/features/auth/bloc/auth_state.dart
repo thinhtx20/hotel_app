@@ -26,8 +26,15 @@ class AuthUnauthenticated extends AuthState {}
 class AuthFailure extends AuthState {
   final String message;
 
-  const AuthFailure(this.message);
+  /// Tài khoản đang đăng nhập trước khi thao tác thất bại.
+  ///
+  /// Đăng nhập hỏng lúc **đang có phiên hợp lệ** (đổi tài khoản từ màn Hồ sơ)
+  /// thì token cũ vẫn còn dùng được — giữ lại người dùng này để guard trong
+  /// `AppRouter` không đá người dùng ra màn đăng nhập.
+  final UserModel? previousUser;
+
+  const AuthFailure(this.message, {this.previousUser});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, previousUser];
 }

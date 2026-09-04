@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/network/api_endpoints.dart';
@@ -11,13 +13,18 @@ import '../../../core/network/dio_client.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/theme_cubit.dart';
-import '../../../shared/models/user_model.dart';
+import '../../../di/injection_container.dart';
+import '../../../shared/repositories/upload_repository.dart';
+import '../../../shared/repositories/user_repository.dart';
 import '../../../shared/widgets/app_bottom_sheet.dart';
+import '../../../core/constants/role_enum.dart';
+import '../../../core/constants/role_permissions.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/logout_confirmation_dialog.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../auth/bloc/auth_bloc.dart';
+import '../../auth/bloc/auth_event.dart';
 import '../../auth/bloc/auth_state.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -32,6 +39,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _selectedPaymentMethod = 'Ví MoMo';
   String? _customPhone;
   String _selectedLanguage = 'Tiếng Việt';
+
+  void _quickSwitchRole(BuildContext context, String email, String password, String roleName) {
+    AppNotification.showSuccess(
+      context,
+      'Đang chuyển sang vai trò: $roleName...',
+    );
+    context.read<AuthBloc>().add(
+      AuthLoginSubmitted(
+        email: email,
+        password: password,
+      ),
+    );
+  }
 
   void _showChangePasswordModal(BuildContext context) {
     final palette = context.palette;
@@ -302,33 +322,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           setModalState(() => isSaving = true);
                           try {
-                            final res = await DioClient().dio.patch(
-                              ApiEndpoints.usersMe,
-                              data: {'phone': phone},
-                            );
-                            if (res.data != null && res.data['success'] == true) {
-                              final raw = res.data['data'];
-                              if (raw != null) {
-                                final updatedUser = UserModel.fromJson(raw);
-                                await TokenStorage().saveUser(updatedUser);
+                            final updatedUser =
+                                await sl<UserRepository>().updateMe({'phone': phone});
+                            await TokenStorage().saveUser(updatedUser);
+
+                            if (mounted) {
+                              setState(() {
+                                _customPhone = phone;
+                              });
+                              if (ctx.mounted) {
+                                Navigator.pop(ctx);
+                              }
+                              if (context.mounted) {
+                                AppNotification.showSuccess(
+                                  context,
+                                  'Đã cập nhật số điện thoại: $phone',
+                                );
                               }
                             }
-                          } catch (_) {
-                            // Local fallback if offline
-                          }
-
-                          if (mounted) {
-                            setState(() {
-                              _customPhone = phone;
-                            });
-                            if (ctx.mounted) {
-                              Navigator.pop(ctx);
-                            }
+                          } catch (e) {
                             if (context.mounted) {
-                              AppNotification.showSuccess(
+                              AppNotification.showError(
                                 context,
-                                'Đã cập nhật số điện thoại: $phone',
+                                e,
+                                title: 'Cập nhật thất bại',
                               );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setModalState(() => isSaving = false);
                             }
                           }
                         },
@@ -610,6 +632,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _pickAndUploadAvatar(ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+      if (pickedFile == null) return;
+
+      final uploadRepo = sl<UploadRepository>();
+      final updatedUser =
+          await uploadRepo.uploadAvatar(pickedFile.path, updateProfile: true);
+      await TokenStorage().saveUser(updatedUser);
+
+      if (mounted) {
+        setState(() {});
+        AppNotification.showSuccess(
+          context,
+          'Cập nhật ảnh đại diện thành công!',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        AppNotification.showError(
+          context,
+          e,
+          title: 'Tải ảnh đại diện thất bại',
+        );
+      }
+    }
+  }
+
   void _showAvatarOptionsModal(BuildContext context) {
     final palette = context.palette;
     AppBottomSheet.show(
@@ -620,18 +676,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             ListTile(
               leading: Icon(Icons.camera_alt_outlined, color: palette.accent),
-              title: Text('Chụp ảnh mới', style: TextStyle(color: palette.ink, fontWeight: FontWeight.w600)),
+              title: Text('Chụp ảnh mới',
+                  style: TextStyle(
+                      color: palette.ink, fontWeight: FontWeight.w600)),
               onTap: () {
                 Navigator.pop(ctx);
-                AppNotification.showSuccess(context, 'Mở máy ảnh chụp ảnh đại diện');
+                _pickAndUploadAvatar(ImageSource.camera);
               },
             ),
             ListTile(
-              leading: Icon(Icons.photo_library_outlined, color: palette.accent),
-              title: Text('Chọn từ thư viện', style: TextStyle(color: palette.ink, fontWeight: FontWeight.w600)),
+              leading:
+                  Icon(Icons.photo_library_outlined, color: palette.accent),
+              title: Text('Chọn từ thư viện',
+                  style: TextStyle(
+                      color: palette.ink, fontWeight: FontWeight.w600)),
               onTap: () {
                 Navigator.pop(ctx);
-                AppNotification.showSuccess(context, 'Mở thư viện ảnh');
+                _pickAndUploadAvatar(ImageSource.gallery);
               },
             ),
           ],
@@ -648,8 +709,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: palette.canvas,
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
+          // Guard trong AppRouter đã lo điều hướng khi đổi tài khoản; ở đây chỉ
+          // xử lý khi màn hình còn gắn trên cây (đổi tài khoản làm màn hình bị
+          // dựng lại — xem [SessionScope]).
+          if (!context.mounted) return;
           if (state is AuthUnauthenticated) {
             context.go('/login');
+          } else if (state is AuthFailure) {
+            AppNotification.showError(
+              context,
+              state.message,
+              title: 'Đổi tài khoản không thành công',
+            );
+          } else if (state is AuthAuthenticated) {
+            context.go(state.user.role.homeRoute);
           }
         },
         builder: (context, state) {
@@ -761,15 +834,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   ),
                                                 ],
                                               ),
-                                              child: Center(
-                                                child: Text(
-                                                  initialChar,
-                                                  style: const TextStyle(
-                                                    color: AppColors.secondaryLight,
-                                                    fontSize: 38,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                                ),
+                                              child: ClipOval(
+                                                child: user?.avatar != null &&
+                                                        user!.avatar!.isNotEmpty
+                                                    ? CachedNetworkImage(
+                                                        imageUrl: user.avatar!,
+                                                        fit: BoxFit.cover,
+                                                        placeholder: (_, _) =>
+                                                            const Center(
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                            color: AppColors
+                                                                .secondaryLight,
+                                                          ),
+                                                        ),
+                                                        errorWidget:
+                                                            (_, _, _) => Center(
+                                                          child: Text(
+                                                            initialChar,
+                                                            style: const TextStyle(
+                                                              color: AppColors
+                                                                  .secondaryLight,
+                                                              fontSize: 38,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                    : Center(
+                                                        child: Text(
+                                                          initialChar,
+                                                          style:
+                                                              const TextStyle(
+                                                            color: AppColors
+                                                                .secondaryLight,
+                                                            fontSize: 38,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                          ),
+                                                        ),
+                                                      ),
                                               ),
                                             ),
                                             // Camera Icon
@@ -881,15 +988,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Row(
                             children: [
                               Expanded(
-                                child: _buildStatCol('12', 'Lượt đặt'),
-                              ),
-                              Container(
-                                width: 1,
-                                height: 40,
-                                color: palette.divider,
-                              ),
-                              Expanded(
-                                child: _buildStatCol('3', 'Đang hoạt động'),
+                                child: _buildStatCol(
+                                  user?.role == UserRole.admin
+                                      ? '100%'
+                                      : user?.role == UserRole.receptionist
+                                          ? 'Ca trực'
+                                          : user?.role == UserRole.cashier
+                                              ? 'Quầy thu'
+                                              : '12',
+                                  user?.role == UserRole.admin
+                                      ? 'Toàn quyền'
+                                      : user?.role == UserRole.receptionist
+                                          ? 'Đang mở'
+                                          : user?.role == UserRole.cashier
+                                              ? 'Sẵn sàng'
+                                              : 'Lượt đặt',
+                                ),
                               ),
                               Container(
                                 width: 1,
@@ -898,9 +1012,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               Expanded(
                                 child: _buildStatCol(
-                                  '4.9',
-                                  'Đánh giá',
-                                  hasStar: true,
+                                  user?.role == UserRole.admin
+                                      ? '24'
+                                      : user?.role == UserRole.receptionist
+                                          ? 'Sơ đồ'
+                                          : user?.role == UserRole.cashier
+                                              ? 'Hóa đơn'
+                                              : '3',
+                                  user?.role == UserRole.admin
+                                      ? 'Phòng KS'
+                                      : user?.role == UserRole.receptionist
+                                          ? 'Buồng phòng'
+                                          : user?.role == UserRole.cashier
+                                              ? 'Báo cáo ngày'
+                                              : 'Đang hoạt động',
+                                ),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 40,
+                                color: palette.divider,
+                              ),
+                              Expanded(
+                                child: _buildStatCol(
+                                  user?.role == UserRole.admin
+                                      ? '4.95'
+                                      : user?.role == UserRole.receptionist
+                                          ? '5.0'
+                                          : user?.role == UserRole.cashier
+                                              ? '100%'
+                                              : '4.9',
+                                  user?.role == UserRole.admin
+                                      ? 'Đánh giá KS'
+                                      : user?.role == UserRole.receptionist
+                                          ? 'Tiêu chuẩn'
+                                          : user?.role == UserRole.cashier
+                                              ? 'Chính xác'
+                                              : 'Đánh giá',
+                                  hasStar: user?.role != UserRole.cashier,
                                 ),
                               ),
                             ],
@@ -1026,6 +1175,95 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           title: 'Ngôn ngữ',
                           subtitle: _selectedLanguage,
                           onTap: () => _showLanguageModal(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Section: CHUYỂN VAI TRÒ KIỂM THỬ (DEMO ROLE SWITCHER)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  child: Text(
+                    'CHUYỂN VAI TRÒ KIỂM THỬ (DEMO SWITCHER)',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: palette.inkFaint,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  child: AppCard(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.switch_account_rounded, size: 20, color: palette.accent),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: Text(
+                                'Đổi vai trò 1-chạm để trải nghiệm giao diện khác biệt:',
+                                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: palette.ink),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildRoleSwitchButton(
+                                label: 'Quản trị viên',
+                                role: UserRole.admin,
+                                color: Colors.purple,
+                                isCurrent: user?.role == UserRole.admin,
+                                onTap: () => _quickSwitchRole(context, 'admin@hotel.com', 'Admin@123', 'Quản trị viên'),
+                                palette: palette,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: _buildRoleSwitchButton(
+                                label: 'Lễ tân sảnh',
+                                role: UserRole.receptionist,
+                                color: Colors.blue,
+                                isCurrent: user?.role == UserRole.receptionist,
+                                onTap: () => _quickSwitchRole(context, 'reception@hotel.com', 'Staff@123', 'Lễ tân'),
+                                palette: palette,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildRoleSwitchButton(
+                                label: 'Thu ngân',
+                                role: UserRole.cashier,
+                                color: Colors.green,
+                                isCurrent: user?.role == UserRole.cashier,
+                                onTap: () => _quickSwitchRole(context, 'cashier@hotel.com', 'Staff@123', 'Thu ngân'),
+                                palette: palette,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: _buildRoleSwitchButton(
+                                label: 'Khách hàng',
+                                role: UserRole.customer,
+                                color: palette.accent,
+                                isCurrent: user?.role == UserRole.customer,
+                                onTap: () => _quickSwitchRole(context, 'customer@hotel.com', 'Cust@123', 'Khách hàng'),
+                                palette: palette,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -1193,6 +1431,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   size: 14,
                   color: palette.inkFaint,
                 ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleSwitchButton({
+    required String label,
+    required UserRole role,
+    required Color color,
+    required bool isCurrent,
+    required VoidCallback onTap,
+    required AppPalette palette,
+  }) {
+    return InkWell(
+      onTap: isCurrent ? null : onTap,
+      borderRadius: BorderRadius.circular(AppRadius.button),
+      child: Container(
+        height: 42,
+        decoration: BoxDecoration(
+          color: isCurrent ? color.withValues(alpha: 0.15) : palette.surfaceMuted,
+          borderRadius: BorderRadius.circular(AppRadius.button),
+          border: Border.all(
+            color: isCurrent ? color : palette.border,
+            width: isCurrent ? 1.5 : 1,
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w600,
+                  color: isCurrent ? color : palette.ink,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (isCurrent) ...[
+              const SizedBox(width: 4),
+              Icon(Icons.check_circle_rounded, size: 14, color: color),
+            ],
           ],
         ),
       ),

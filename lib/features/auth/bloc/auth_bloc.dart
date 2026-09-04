@@ -13,11 +13,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final DioClient _dioClient;
   final TokenStorage _tokenStorage;
 
+  /// Được gọi khi phiên đăng nhập kết thúc hoặc chuyển sang tài khoản khác, để
+  /// tầng dữ liệu dọn cache của người dùng cũ (xem `clearUserScopedCaches`).
+  final void Function()? _onSessionReset;
+
   AuthBloc({
     DioClient? dioClient,
     TokenStorage? tokenStorage,
+    void Function()? onSessionReset,
   })  : _dioClient = dioClient ?? DioClient(),
         _tokenStorage = tokenStorage ?? TokenStorage(),
+        // ignore: prefer_initializing_formals
+        _onSessionReset = onSessionReset,
         super(AuthInitial()) {
     on<AuthCheckRequested>(_onCheckRequested);
     on<AuthLoginSubmitted>(_onLoginSubmitted);
@@ -55,6 +62,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLoginSubmitted event,
     Emitter<AuthState> emit,
   ) async {
+    // Đổi tài khoản ngay trong app: phiên hiện tại phải được giữ nguyên nếu
+    // đăng nhập tài khoản mới thất bại.
+    final previousState = state;
+    final previousUser =
+        previousState is AuthAuthenticated ? previousState.user : null;
+
     emit(AuthLoading());
     try {
       final res = await _dioClient.dio.post(
@@ -75,6 +88,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final accessToken = (data['accessToken'] ?? '') as String;
         final refreshToken = (data['refreshToken'] ?? '') as String;
 
+        // Dữ liệu đã nạp thuộc về tài khoản trước đó — dọn trước khi phát
+        // trạng thái mới để màn hình của tài khoản mới tải lại từ API.
+        _onSessionReset?.call();
+
         await _tokenStorage.saveTokens(
           accessToken: accessToken,
           refreshToken: refreshToken,
@@ -84,14 +101,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthAuthenticated(user));
       } else {
         final msg = res.data['message']?.toString() ?? 'Đăng nhập thất bại';
-        emit(AuthFailure(msg));
+        _emitLoginFailure(emit, msg, previousUser);
       }
     } on DioException catch (e) {
       final apiError = ApiError.fromDioException(e);
-      emit(AuthFailure(apiError.displayMessage));
+      _emitLoginFailure(emit, apiError.displayMessage, previousUser);
     } catch (e) {
       final apiError = ApiError.fromDynamic(e);
-      emit(AuthFailure(apiError.displayMessage));
+      _emitLoginFailure(emit, apiError.displayMessage, previousUser);
+    }
+  }
+
+  /// Báo lỗi đăng nhập, rồi trả phiên cũ về nguyên trạng nếu có.
+  ///
+  /// Không khôi phục thì một lần đổi tài khoản hỏng (sai mật khẩu, rớt mạng)
+  /// sẽ hất người dùng ra màn đăng nhập dù token cũ vẫn còn hiệu lực.
+  void _emitLoginFailure(
+    Emitter<AuthState> emit,
+    String message,
+    UserModel? previousUser,
+  ) {
+    emit(AuthFailure(message, previousUser: previousUser));
+    if (previousUser != null) {
+      emit(AuthAuthenticated(previousUser));
     }
   }
 
@@ -108,7 +140,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           'password': event.password,
           'fullName': event.fullName.trim(),
           'phone': event.phone?.trim(),
-          'role': 'CUSTOMER',
+          // Không gửi `role`: API đăng ký công khai luôn ép vai trò CUSTOMER
+          // và bỏ qua trường này.
         },
       );
 
@@ -145,6 +178,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (_) {
       // Ignore network errors when logging out
     } finally {
+      _onSessionReset?.call();
       await _tokenStorage.clearAll();
       emit(AuthUnauthenticated());
     }

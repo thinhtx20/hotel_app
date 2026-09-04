@@ -5,8 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/role_enum.dart';
-import '../../../core/network/api_endpoints.dart';
-import '../../../core/network/dio_client.dart';
+import '../../../core/network/api_error.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
@@ -32,6 +31,8 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
   int _selectedFilterIndex = 0; // "Còn trống"
   List<RoomModel> _results = [];
   bool _isLoading = false;
+  DateTime? _checkInDate;
+  DateTime? _checkOutDate;
   final RoomRepository _roomRepository = sl<RoomRepository>();
 
   final List<String> _filters = const [
@@ -109,72 +110,45 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
     }).toList();
   }
 
+  String? _errorMessage;
+
   Future<void> _performSearch(String query) async {
-    setState(() => _isLoading = true);
-    List<RoomModel> rawList = [];
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     try {
-      final res = await DioClient().dio.get(
-        ApiEndpoints.roomsSearch,
-        queryParameters: query.isNotEmpty ? {'q': query} : null,
-      );
-      if (res.statusCode == 200 && res.data['success'] == true) {
-        final list = res.data['data'] as List?;
-        if (list != null) {
-          rawList = list.map((e) => RoomModel.fromJson(e)).toList();
-          if (mounted) {
-            setState(() {
-              _isLoading = false;
-              _results = _syncWithRepository(rawList);
-            });
-          }
-          return;
+      List<RoomModel> list;
+      if (_checkInDate != null && _checkOutDate != null) {
+        list = await _roomRepository.fetchAvailable(
+          checkInDate: _checkInDate!,
+          checkOutDate: _checkOutDate!,
+        );
+        if (query.trim().isNotEmpty) {
+          final q = query.trim().toLowerCase();
+          list = list.where((r) =>
+            r.roomNumber.toLowerCase().contains(q) ||
+            (r.roomTypeName?.toLowerCase().contains(q) ?? false)
+          ).toList();
         }
+      } else {
+        list = await _roomRepository.searchRooms(
+          q: query.trim().isNotEmpty ? query.trim() : null,
+        );
       }
-    } catch (_) {}
-
-    // Fallback standard design cards from 05-search.md if offline or network error
-    if (rawList.isEmpty) {
-      rawList = [
-        RoomModel(
-          id: '101',
-          roomNumber: '101',
-          floor: 1,
-          status: RoomStatus.available,
-          pricePerNight: 1450000,
-          roomTypeName: 'Standard Queen Double',
-        ),
-        RoomModel(
-          id: '102',
-          roomNumber: '102',
-          floor: 1,
-          status: RoomStatus.available,
-          pricePerNight: 1650000,
-          roomTypeName: 'Standard Queen Double',
-        ),
-        RoomModel(
-          id: '205',
-          roomNumber: '205',
-          floor: 2,
-          status: RoomStatus.available,
-          pricePerNight: 4200000,
-          roomTypeName: 'Suite Tổng Thống',
-        ),
-        RoomModel(
-          id: '308',
-          roomNumber: '308',
-          floor: 3,
-          status: RoomStatus.reserved,
-          pricePerNight: 2100000,
-          roomTypeName: 'Phòng Gia Đình',
-        ),
-      ];
-    }
-
-    if (mounted) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _results = _syncWithRepository(rawList);
+        _results = _syncWithRepository(list);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final apiErr = ApiError.fromDynamic(e);
+      setState(() {
+        _isLoading = false;
+        _errorMessage = apiErr.displayMessage;
+        _results = [];
       });
     }
   }
@@ -277,7 +251,77 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
                 onClear: () => _performSearch(''),
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.sm),
+
+            // Date Range Filter (GET /rooms/available)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+              child: PressableScale(
+                onTap: () async {
+                  final picked = await showDateRangePicker(
+                    context: context,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 180)),
+                    initialDateRange: _checkInDate != null && _checkOutDate != null
+                        ? DateTimeRange(start: _checkInDate!, end: _checkOutDate!)
+                        : null,
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      _checkInDate = picked.start;
+                      _checkOutDate = picked.end;
+                    });
+                    _performSearch(_searchController.text);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: _checkInDate != null
+                        ? palette.accent.withValues(alpha: 0.1)
+                        : palette.surface,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: Border.all(
+                      color: _checkInDate != null ? palette.accent : palette.border,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        size: 16,
+                        color: _checkInDate != null ? palette.accent : palette.inkMuted,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _checkInDate != null && _checkOutDate != null
+                              ? '${Formatters.formatDate(_checkInDate!)} - ${Formatters.formatDate(_checkOutDate!)}'
+                              : 'Chọn ngày nhận - trả phòng để xem phòng trống',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: _checkInDate != null ? FontWeight.w600 : FontWeight.w400,
+                            color: _checkInDate != null ? palette.accent : palette.inkMuted,
+                          ),
+                        ),
+                      ),
+                      if (_checkInDate != null)
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _checkInDate = null;
+                              _checkOutDate = null;
+                            });
+                            _performSearch(_searchController.text);
+                          },
+                          child: Icon(Icons.close_rounded, size: 16, color: palette.inkMuted),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
 
             // 3. Horizontal Filter Chips
             SizedBox(
@@ -391,8 +435,17 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
                         ],
                       ),
                     )
-                  : _results.isEmpty
+                  : _errorMessage != null && _results.isEmpty
                       ? AppEmptyState(
+                          icon: Icons.cloud_off_rounded,
+                          title: 'Không thể tìm kiếm phòng',
+                          description: _errorMessage!,
+                          actionText: 'Thử lại',
+                          onAction: () =>
+                              _performSearch(_searchController.text),
+                        )
+                      : _results.isEmpty
+                          ? AppEmptyState(
                           icon: Icons.search_off_rounded,
                           title: 'Không tìm thấy phòng',
                           description:
@@ -461,7 +514,7 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.sm),
-      onTap: () => _onBookPressed(room),
+      onTap: () => context.push('/rooms/${room.id}'),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -620,24 +673,28 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
                               ],
                             ),
                           )
-                        : Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              gradient: AppGradients.gold,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: palette.accent.withValues(alpha: 0.25),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.north_east_rounded,
-                              color: Colors.white,
-                              size: 16,
+                        : InkWell(
+                            onTap: () => _onBookPressed(room),
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                gradient: AppGradients.gold,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: palette.accent.withValues(alpha: 0.25),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.north_east_rounded,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                           ),
                   ],

@@ -106,6 +106,16 @@ extension RolePermissions on UserRole {
   bool get canManageUsers => _isAdmin;
 }
 
+/// Vai trò tương ứng với [state], `null` nếu chưa xác định được.
+///
+/// [AuthFailure] mang theo tài khoản cũ khi đổi tài khoản thất bại — lúc đó
+/// phiên cũ vẫn còn hiệu lực nên quyền vẫn là quyền của tài khoản đó.
+UserRole? _roleOf(AuthState state) {
+  if (state is AuthAuthenticated) return state.user.role;
+  if (state is AuthFailure) return state.previousUser?.role;
+  return null;
+}
+
 extension RoleContext on BuildContext {
   /// Vai trò của người đang đăng nhập.
   ///
@@ -114,8 +124,8 @@ extension RoleContext on BuildContext {
   /// Dùng trong `build()` — màn hình vẽ lại khi đổi tài khoản.
   UserRole get currentRole {
     try {
-      final state = watch<AuthBloc>().state;
-      if (state is AuthAuthenticated) return state.user.role;
+      final role = _roleOf(watch<AuthBloc>().state);
+      if (role != null) return role;
     } catch (_) {
       // Không có AuthBloc phía trên: giữ nguyên fallback.
     }
@@ -127,11 +137,14 @@ extension RoleContext on BuildContext {
   /// nghe.
   UserRole get readRole {
     try {
-      final state = read<AuthBloc>().state;
-      if (state is AuthAuthenticated) return state.user.role;
+      final role = _roleOf(read<AuthBloc>().state);
+      if (role != null) return role;
     } catch (_) {
       // Không có AuthBloc phía trên: giữ nguyên fallback.
     }
     return UserRole.admin;
   }
+
+  /// Trả về true nếu người dùng hiện tại là nhân viên (ADMIN, RECEPTIONIST, CASHIER)
+  bool get isStaff => currentRole.isStaff;
 }

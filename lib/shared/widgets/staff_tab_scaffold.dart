@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_dimens.dart';
 import '../../core/theme/app_palette.dart';
 import '../../di/injection_container.dart';
+import '../repositories/booking_repository.dart';
 import '../repositories/room_repository.dart';
 import 'motion/pressable_scale.dart';
 
@@ -16,11 +17,15 @@ class StaffTab {
   /// Gắn huy hiệu số phòng đang chờ duyệt (tab "Duyệt phòng").
   final bool showsPendingRoomsBadge;
 
+  /// Gắn huy hiệu số đơn đặt phòng đang chờ duyệt (tab "Duyệt đơn").
+  final bool showsPendingBookingsBadge;
+
   const StaffTab({
     required this.label,
     required this.icon,
     required this.activeIcon,
     this.showsPendingRoomsBadge = false,
+    this.showsPendingBookingsBadge = false,
   });
 }
 
@@ -84,11 +89,13 @@ class StaffTabScaffold extends StatelessWidget {
                 for (var i = 0; i < tabs.length; i++)
                   tabs[i].showsPendingRoomsBadge
                       ? _buildBadgedNavItem(context, i, tabs[i])
-                      : _buildNavItem(
-                          context: context,
-                          index: i,
-                          tab: tabs[i],
-                        ),
+                      : tabs[i].showsPendingBookingsBadge
+                          ? _buildBadgedBookingNavItem(context, i, tabs[i])
+                          : _buildNavItem(
+                              context: context,
+                              index: i,
+                              tab: tabs[i],
+                            ),
               ],
             ),
           ),
@@ -107,6 +114,26 @@ class StaffTabScaffold extends StatelessWidget {
       animation: sl<RoomRepository>(),
       builder: (context, _) {
         final pendingCount = sl<RoomRepository>().pendingRooms.length;
+        return _buildNavItem(
+          context: context,
+          index: index,
+          tab: tab,
+          badgeCount: pendingCount > 0 ? '$pendingCount' : null,
+        );
+      },
+    );
+  }
+
+  /// Huy hiệu số đơn đặt phòng chờ duyệt bám theo [BookingRepository].
+  Widget _buildBadgedBookingNavItem(BuildContext context, int index, StaffTab tab) {
+    final hasRepo = sl.isRegistered<BookingRepository>();
+    if (!hasRepo) {
+      return _buildNavItem(context: context, index: index, tab: tab);
+    }
+    return AnimatedBuilder(
+      animation: sl<BookingRepository>(),
+      builder: (context, _) {
+        final pendingCount = sl<BookingRepository>().pendingCount;
         return _buildNavItem(
           context: context,
           index: index,

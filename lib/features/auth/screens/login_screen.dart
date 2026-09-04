@@ -361,12 +361,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
-                                  onPressed: () {
-                                    AppNotification.showWarning(
-                                      context,
-                                      'Vui lòng liên hệ quản trị viên để cấp lại mật khẩu',
-                                    );
-                                  },
+                                  onPressed: () => context.push('/forgot-password'),
                                   style: TextButton.styleFrom(
                                     padding: EdgeInsets.zero,
                                     minimumSize: Size.zero,

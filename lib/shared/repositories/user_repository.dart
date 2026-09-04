@@ -1,0 +1,130 @@
+import 'package:dio/dio.dart';
+import '../../core/network/api_endpoints.dart';
+import '../../core/network/api_error.dart';
+import '../../core/network/api_result.dart';
+import '../../core/network/dio_client.dart';
+import '../models/user_model.dart';
+
+class UserRepository {
+  final DioClient _dioClient;
+
+  UserRepository({DioClient? dioClient})
+      : _dioClient = dioClient ?? DioClient();
+
+  /// Lấy danh sách người dùng / nhân sự: GET /users?role=
+  Future<List<UserModel>> fetchAll({String? role}) async {
+    try {
+      final queryParams = <String, dynamic>{
+        if (role != null && role.isNotEmpty) 'role': role,
+      };
+
+      final res = await _dioClient.dio.get(
+        ApiEndpoints.users,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
+      final list = ApiResult.unwrapList(res);
+      return list.map((e) => UserModel.fromJson(e)).toList();
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Admin tạo tài khoản nhân viên: POST /users
+  /// [role] nhận ADMIN | RECEPTIONIST | CASHIER | CUSTOMER.
+  Future<UserModel> createUser({
+    required String email,
+    required String password,
+    required String fullName,
+    required String role,
+    String? phone,
+    String? avatar,
+    bool isActive = true,
+  }) async {
+    try {
+      final payload = <String, dynamic>{
+        'email': email,
+        'password': password,
+        'fullName': fullName,
+        'role': role,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (avatar != null && avatar.isNotEmpty) 'avatar': avatar,
+        'isActive': isActive,
+      };
+
+      final res = await _dioClient.dio.post(
+        ApiEndpoints.users,
+        data: payload,
+      );
+      final data = ApiResult.unwrapMap(res);
+      // Backend có thể bọc trong `user` khi trả kèm thông tin đăng nhập.
+      if (data['user'] is Map) {
+        return UserModel.fromJson(Map<String, dynamic>.from(data['user'] as Map));
+      }
+      return UserModel.fromJson(data);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Chi tiết người dùng: GET /users/:id
+  Future<UserModel> fetchDetail(String id) async {
+    try {
+      final res = await _dioClient.dio.get(ApiEndpoints.userDetail(id));
+      final data = ApiResult.unwrapMap(res);
+      return UserModel.fromJson(data);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Cập nhật thông tin bản thân: PATCH /users/me
+  Future<UserModel> updateMe(Map<String, dynamic> data) async {
+    try {
+      final res = await _dioClient.dio.patch(
+        ApiEndpoints.usersMe,
+        data: data,
+      );
+      final resData = ApiResult.unwrapMap(res);
+      return UserModel.fromJson(resData);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Sửa thông tin & vai trò người dùng: PATCH /users/:id (ADMIN)
+  Future<UserModel> updateUser(String id, Map<String, dynamic> data) async {
+    try {
+      final res = await _dioClient.dio.patch(
+        ApiEndpoints.updateUser(id),
+        data: data,
+      );
+      final resData = ApiResult.unwrapMap(res);
+      return UserModel.fromJson(resData);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Vô hiệu hóa tài khoản: DELETE /users/:id (ADMIN)
+  Future<void> deactivate(String id) async {
+    try {
+      final res = await _dioClient.dio.delete(ApiEndpoints.deleteUser(id));
+      ApiResult.unwrapMap(res);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+}

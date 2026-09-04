@@ -1,16 +1,19 @@
 import 'dart:math' as math;
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/role_enum.dart';
-import '../../../core/network/api_endpoints.dart';
+import '../../../core/network/api_error.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../di/injection_container.dart';
 import '../../../shared/models/room_model.dart';
+import '../../../shared/repositories/analytics_repository.dart';
+import '../../../shared/repositories/room_repository.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 
 /// Màn hình Chi tiết Tỷ lệ Lấp đầy (Occupancy Detail Screen)
@@ -24,20 +27,24 @@ class OccupancyDetailScreen extends StatefulWidget {
 }
 
 class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
-  DioClient get _dioClient => widget.dioClient ?? DioClient();
+  late final AnalyticsRepository _analyticsRepository;
+  late final RoomRepository _roomRepository;
 
   int _selectedFloor = -1; // -1: Tất cả
   RoomStatus? _selectedStatus; // null: Tất cả
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
+  bool _isLoading = false;
+  String? _errorMessage;
+
   // Dữ liệu thống kê
-  int _totalRooms = 20;
-  int _occupiedRooms = 4;
-  int _availableRooms = 10;
-  int _cleaningRooms = 2;
-  int _reservedRooms = 3;
-  int _maintenanceRooms = 1;
+  int _totalRooms = 0;
+  int _occupiedRooms = 0;
+  int _availableRooms = 0;
+  int _cleaningRooms = 0;
+  int _reservedRooms = 0;
+  int _maintenanceRooms = 0;
 
   List<_RoomTypeOccupancy> _roomTypeStats = [];
   List<RoomModel> _rooms = [];
@@ -45,6 +52,13 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _analyticsRepository = widget.dioClient != null
+        ? AnalyticsRepository(dioClient: widget.dioClient)
+        : sl<AnalyticsRepository>();
+    _roomRepository = widget.dioClient != null
+        ? RoomRepository(dioClient: widget.dioClient)
+        : sl<RoomRepository>();
+
     _searchController.addListener(() {
       setState(() => _searchQuery = _searchController.text.trim());
     });
@@ -58,92 +72,60 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
   }
 
   Future<void> _fetchOccupancyDetail() async {
-    try {
-      final res = await _dioClient.dio.get(
-        ApiEndpoints.analyticsOccupancyDetail,
-        options: Options(
-          sendTimeout: const Duration(seconds: 4),
-          receiveTimeout: const Duration(seconds: 4),
-        ),
-      );
-
-      if (res.statusCode == 200 && res.data['success'] == true) {
-        final data = res.data['data'];
-        if (data is Map && mounted) {
-          final summary = data['summary'] as Map?;
-          if (summary != null) {
-            _totalRooms = (summary['totalRooms'] as num?)?.toInt() ?? 20;
-            _occupiedRooms = (summary['occupiedRooms'] as num?)?.toInt() ?? 4;
-            _availableRooms =
-                (summary['availableRooms'] as num?)?.toInt() ?? 10;
-            _cleaningRooms = (summary['cleaningRooms'] as num?)?.toInt() ?? 2;
-            _reservedRooms = (summary['reservedRooms'] as num?)?.toInt() ?? 3;
-            _maintenanceRooms =
-                (summary['maintenanceRooms'] as num?)?.toInt() ?? 1;
-          }
-
-          final byType = data['byRoomType'] as List?;
-          if (byType != null) {
-            _roomTypeStats = byType
-                .whereType<Map>()
-                .map((e) => _RoomTypeOccupancy.fromJson(e))
-                .toList();
-          }
-
-          final rawRooms = data['rooms'] as List?;
-          if (rawRooms != null) {
-            _rooms = rawRooms
-                .whereType<Map>()
-                .map((e) => RoomModel.fromJson(Map<String, dynamic>.from(e)))
-                .toList();
-          }
-
-          setState(() {});
-          return;
-        }
-      }
-    } catch (_) {}
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     try {
-      final resRooms = await _dioClient.dio.get(
-        ApiEndpoints.rooms,
-        options: Options(
-          sendTimeout: const Duration(seconds: 4),
-          receiveTimeout: const Duration(seconds: 4),
-        ),
-      );
-      if (resRooms.statusCode == 200 && resRooms.data['success'] == true) {
-        final list = resRooms.data['data'] as List?;
-        if (list != null && list.isNotEmpty && mounted) {
-          final parsedRooms = list
-              .whereType<Map>()
-              .map((e) => RoomModel.fromJson(Map<String, dynamic>.from(e)))
-              .toList();
+      final results = await Future.wait([
+        _analyticsRepository.occupancyByType(),
+        _roomRepository.fetchRooms(forceRefresh: true),
+      ]);
 
-          _rooms = parsedRooms;
-          _totalRooms = parsedRooms.length;
-          _occupiedRooms =
-              parsedRooms.where((r) => r.status == RoomStatus.occupied).length;
-          _availableRooms =
-              parsedRooms.where((r) => r.status == RoomStatus.available).length;
-          _cleaningRooms =
-              parsedRooms.where((r) => r.status == RoomStatus.cleaning).length;
-          _reservedRooms =
-              parsedRooms.where((r) => r.status == RoomStatus.reserved).length;
-          _maintenanceRooms = parsedRooms
-              .where((r) => r.status == RoomStatus.maintenance)
-              .length;
+      final byTypeRaw = results[0] as List<Map<String, dynamic>>;
+      final roomsList = _roomRepository.rooms;
 
-          _buildTypeStatsFromRooms(parsedRooms);
-          setState(() {});
-          return;
-        }
+      _rooms = roomsList;
+      _totalRooms = roomsList.length;
+      _occupiedRooms = roomsList.where((r) => r.status == RoomStatus.occupied).length;
+      _availableRooms = roomsList.where((r) => r.status == RoomStatus.available).length;
+      _cleaningRooms = roomsList.where((r) => r.status == RoomStatus.cleaning).length;
+      _reservedRooms = roomsList.where((r) => r.status == RoomStatus.reserved).length;
+      _maintenanceRooms = roomsList.where((r) => r.status == RoomStatus.maintenance).length;
+
+      if (byTypeRaw.isNotEmpty) {
+        _roomTypeStats = byTypeRaw.map((e) => _RoomTypeOccupancy.fromJson(e)).toList();
+      } else {
+        _buildTypeStatsFromRooms(roomsList);
       }
-    } catch (_) {}
 
-    if (mounted) {
-      _applyFallbackData();
-      setState(() {});
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      if (_roomRepository.rooms.isNotEmpty) {
+        final roomsList = _roomRepository.rooms;
+        _rooms = roomsList;
+        _totalRooms = roomsList.length;
+        _occupiedRooms = roomsList.where((r) => r.status == RoomStatus.occupied).length;
+        _availableRooms = roomsList.where((r) => r.status == RoomStatus.available).length;
+        _cleaningRooms = roomsList.where((r) => r.status == RoomStatus.cleaning).length;
+        _reservedRooms = roomsList.where((r) => r.status == RoomStatus.reserved).length;
+        _maintenanceRooms = roomsList.where((r) => r.status == RoomStatus.maintenance).length;
+        _buildTypeStatsFromRooms(roomsList);
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+      final apiErr = ApiError.fromDynamic(e);
+      setState(() {
+        _errorMessage = apiErr.displayMessage;
+        _isLoading = false;
+      });
     }
   }
 
@@ -168,196 +150,6 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
         basePrice: price,
       );
     }).toList();
-  }
-
-  void _applyFallbackData() {
-    _totalRooms = 20;
-    _occupiedRooms = 4;
-    _availableRooms = 10;
-    _cleaningRooms = 2;
-    _reservedRooms = 3;
-    _maintenanceRooms = 1;
-
-    _roomTypeStats = [
-      _RoomTypeOccupancy(
-        roomTypeName: 'Standard Queen Double',
-        totalRooms: 6,
-        occupiedRooms: 1,
-        occupancyRate: 16.7,
-        basePrice: 1200000,
-      ),
-      _RoomTypeOccupancy(
-        roomTypeName: 'Superior City View',
-        totalRooms: 6,
-        occupiedRooms: 1,
-        occupancyRate: 16.7,
-        basePrice: 1800000,
-      ),
-      _RoomTypeOccupancy(
-        roomTypeName: 'Deluxe Ocean Panorama',
-        totalRooms: 6,
-        occupiedRooms: 2,
-        occupancyRate: 33.3,
-        basePrice: 2400000,
-      ),
-      _RoomTypeOccupancy(
-        roomTypeName: 'Presidential Penthouse',
-        totalRooms: 2,
-        occupiedRooms: 0,
-        occupancyRate: 0.0,
-        basePrice: 5500000,
-      ),
-    ];
-
-    _rooms = [
-      // Tầng 1
-      RoomModel(
-          id: '101',
-          roomNumber: '101',
-          floor: 1,
-          status: RoomStatus.available,
-          pricePerNight: 1200000,
-          roomTypeName: 'Standard Queen Double'),
-      RoomModel(
-          id: '102',
-          roomNumber: '102',
-          floor: 1,
-          status: RoomStatus.available,
-          pricePerNight: 1200000,
-          roomTypeName: 'Standard Queen Double'),
-      RoomModel(
-          id: '103',
-          roomNumber: '103',
-          floor: 1,
-          status: RoomStatus.occupied,
-          pricePerNight: 1200000,
-          roomTypeName: 'Standard Queen Double'),
-      RoomModel(
-          id: '104',
-          roomNumber: '104',
-          floor: 1,
-          status: RoomStatus.cleaning,
-          pricePerNight: 1200000,
-          roomTypeName: 'Standard Queen Double'),
-      RoomModel(
-          id: '105',
-          roomNumber: '105',
-          floor: 1,
-          status: RoomStatus.available,
-          pricePerNight: 1200000,
-          roomTypeName: 'Standard Queen Double'),
-      RoomModel(
-          id: '106',
-          roomNumber: '106',
-          floor: 1,
-          status: RoomStatus.reserved,
-          pricePerNight: 1200000,
-          roomTypeName: 'Standard Queen Double'),
-
-      // Tầng 2
-      RoomModel(
-          id: '201',
-          roomNumber: '201',
-          floor: 2,
-          status: RoomStatus.occupied,
-          pricePerNight: 1800000,
-          roomTypeName: 'Superior City View'),
-      RoomModel(
-          id: '202',
-          roomNumber: '202',
-          floor: 2,
-          status: RoomStatus.available,
-          pricePerNight: 1800000,
-          roomTypeName: 'Superior City View'),
-      RoomModel(
-          id: '203',
-          roomNumber: '203',
-          floor: 2,
-          status: RoomStatus.available,
-          pricePerNight: 1800000,
-          roomTypeName: 'Superior City View'),
-      RoomModel(
-          id: '204',
-          roomNumber: '204',
-          floor: 2,
-          status: RoomStatus.maintenance,
-          pricePerNight: 1800000,
-          roomTypeName: 'Superior City View'),
-      RoomModel(
-          id: '205',
-          roomNumber: '205',
-          floor: 2,
-          status: RoomStatus.reserved,
-          pricePerNight: 1800000,
-          roomTypeName: 'Superior City View'),
-      RoomModel(
-          id: '206',
-          roomNumber: '206',
-          floor: 2,
-          status: RoomStatus.available,
-          pricePerNight: 1800000,
-          roomTypeName: 'Superior City View'),
-
-      // Tầng 3
-      RoomModel(
-          id: '301',
-          roomNumber: '301',
-          floor: 3,
-          status: RoomStatus.available,
-          pricePerNight: 2400000,
-          roomTypeName: 'Deluxe Ocean Panorama'),
-      RoomModel(
-          id: '302',
-          roomNumber: '302',
-          floor: 3,
-          status: RoomStatus.occupied,
-          pricePerNight: 2400000,
-          roomTypeName: 'Deluxe Ocean Panorama'),
-      RoomModel(
-          id: '303',
-          roomNumber: '303',
-          floor: 3,
-          status: RoomStatus.cleaning,
-          pricePerNight: 2400000,
-          roomTypeName: 'Deluxe Ocean Panorama'),
-      RoomModel(
-          id: '304',
-          roomNumber: '304',
-          floor: 3,
-          status: RoomStatus.occupied,
-          pricePerNight: 2400000,
-          roomTypeName: 'Deluxe Ocean Panorama'),
-      RoomModel(
-          id: '305',
-          roomNumber: '305',
-          floor: 3,
-          status: RoomStatus.available,
-          pricePerNight: 2400000,
-          roomTypeName: 'Deluxe Ocean Panorama'),
-      RoomModel(
-          id: '306',
-          roomNumber: '306',
-          floor: 3,
-          status: RoomStatus.reserved,
-          pricePerNight: 2400000,
-          roomTypeName: 'Deluxe Ocean Panorama'),
-
-      // Tầng 5 (Penthouse)
-      RoomModel(
-          id: '501',
-          roomNumber: '501',
-          floor: 5,
-          status: RoomStatus.available,
-          pricePerNight: 5500000,
-          roomTypeName: 'Presidential Penthouse'),
-      RoomModel(
-          id: '502',
-          roomNumber: '502',
-          floor: 5,
-          status: RoomStatus.available,
-          pricePerNight: 5500000,
-          roomTypeName: 'Presidential Penthouse'),
-    ];
   }
 
   List<RoomModel> get _filteredRooms {
@@ -450,12 +242,31 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
           ),
 
           // 2. Nội dung chính
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.screen),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+          if (_isLoading)
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_errorMessage != null && _rooms.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: AppEmptyState(
+                  icon: Icons.cloud_off_rounded,
+                  title: 'Không thể tải dữ liệu',
+                  description: _errorMessage ?? 'Đã xảy ra lỗi kết nối.',
+                  actionText: 'Tải lại',
+                  onAction: _fetchOccupancyDetail,
+                ),
+              ),
+            )
+          else
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.screen),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   // Thẻ Hero Tỷ lệ lấp đầy
                   _buildHeroCard(palette, textTheme, rateStr, occupancyRate / 100.0),
                   const SizedBox(height: AppSpacing.xl),

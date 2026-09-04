@@ -3,23 +3,28 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/role_enum.dart';
 import '../constants/role_permissions.dart';
+import '../session/session_scope.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import '../../features/admin/screens/occupancy_detail_screen.dart';
-import '../../features/admin/screens/pending_bookings_screen.dart';
 import '../../features/admin/screens/room_approval_screen.dart';
+import '../../features/admin/screens/room_type_management_screen.dart';
 import '../../features/admin/screens/today_check_ins_screen.dart';
 import '../../features/admin/screens/today_check_outs_screen.dart';
+import '../../features/admin/screens/user_management_screen.dart';
 import '../../features/auth/bloc/auth_bloc.dart';
 import '../../features/auth/bloc/auth_state.dart';
+import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/cashier/screens/cashier_invoices_screen.dart';
 import '../../features/customer/screens/home_screen.dart';
 import '../../features/customer/screens/my_bookings_screen.dart';
 import '../../features/customer/screens/my_invoices_screen.dart';
+import '../../features/customer/screens/room_detail_screen.dart';
 import '../../features/customer/screens/room_search_screen.dart';
 import '../../features/customer/widgets/customer_tab_scaffold.dart';
 import '../../features/profile/screens/profile_screen.dart';
+import '../../features/receptionist/screens/booking_approval_screen.dart';
 import '../../features/receptionist/screens/room_matrix_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../shared/widgets/staff_tab_scaffold.dart';
@@ -34,7 +39,7 @@ class AppPage {
   }) {
     return CustomTransitionPage<void>(
       key: key,
-      child: child,
+      child: SessionScope(child: child),
       transitionDuration: duration,
       reverseTransitionDuration: duration,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -82,7 +87,7 @@ class AppPage {
   }) {
     return CustomTransitionPage<void>(
       key: key,
-      child: child,
+      child: SessionScope(child: child),
       transitionDuration: duration,
       reverseTransitionDuration: duration,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -120,11 +125,12 @@ const Map<String, Set<UserRole>> _sharedRouteAccess = {
 };
 
 /// Route công khai / không gắn với vai trò nào.
-const Set<String> _publicRoutes = {'/', '/login', '/register'};
+const Set<String> _publicRoutes = {'/', '/login', '/register', '/forgot-password'};
 
 /// Trả về `true` nếu [role] được phép mở [location].
 bool _canAccess(UserRole role, String location) {
   if (_publicRoutes.contains(location)) return true;
+  if (location.startsWith('/rooms/') || location.startsWith('/room-detail/')) return true;
 
   for (final entry in _sharedRouteAccess.entries) {
     if (location == entry.key || location.startsWith('${entry.key}/')) {
@@ -148,6 +154,12 @@ bool _canAccess(UserRole role, String location) {
 
 class AppRouter {
   static GoRouter createRouter(AuthBloc authBloc) {
+    // Tài khoản của lần chạy guard gần nhất. Đổi tài khoản giữa phiên (nút
+    // chuyển vai trò ở Hồ sơ, hoặc đăng nhập lại) phải nhảy về màn chính của
+    // vai trò mới, kể cả khi màn đang mở vẫn hợp lệ với cả hai vai trò —
+    // nếu không, người dùng ở nguyên màn cũ và tưởng app không đổi gì.
+    String? lastUserId;
+
     return GoRouter(
       initialLocation: '/',
       refreshListenable: GoRouterRefreshStream(authBloc.stream),
@@ -156,6 +168,7 @@ class AppRouter {
         final location = state.matchedLocation;
         final isLoggingIn = location == '/login';
         final isRegistering = location == '/register';
+        final isForgotPassword = location == '/forgot-password';
         final isSplash = location == '/';
 
         if (isSplash) {
@@ -166,16 +179,35 @@ class AppRouter {
           return '/';
         }
 
+        // Đổi tài khoản thất bại nhưng phiên cũ vẫn còn: ở lại đúng chỗ với
+        // quyền của tài khoản cũ thay vì bị đá ra màn đăng nhập.
+        if (authState is AuthFailure && authState.previousUser != null) {
+          final role = authState.previousUser!.role;
+          if (isLoggingIn || isRegistering || isForgotPassword) {
+            return role.homeRoute;
+          }
+          return _canAccess(role, location) ? null : role.homeRoute;
+        }
+
         if (authState is AuthUnauthenticated || authState is AuthFailure) {
-          if (isLoggingIn || isRegistering) return null;
+          lastUserId = null;
+          if (isLoggingIn || isRegistering || isForgotPassword) return null;
           return '/login';
         }
 
         if (authState is AuthAuthenticated) {
           final role = authState.user.role;
+          final userId = '${authState.user.id}|${role.value}';
+          final switchedAccount = lastUserId != null && lastUserId != userId;
+          lastUserId = userId;
 
-          // Đã đăng nhập thì không quay lại được màn đăng nhập/đăng ký.
-          if (isLoggingIn || isRegistering) {
+          // Đổi tài khoản giữa phiên: về thẳng màn chính của vai trò mới.
+          if (switchedAccount && location != role.homeRoute) {
+            return role.homeRoute;
+          }
+
+          // Đã đăng nhập thì không quay lại được màn đăng nhập/đăng ký/quên mk.
+          if (isLoggingIn || isRegistering || isForgotPassword) {
             return role.homeRoute;
           }
 
@@ -397,10 +429,10 @@ class AppRouter {
                   activeIcon: Icons.grid_view_rounded,
                 ),
                 StaffTab(
-                  label: 'Duyệt phòng',
-                  icon: Icons.fact_check_outlined,
-                  activeIcon: Icons.fact_check_rounded,
-                  showsPendingRoomsBadge: true,
+                  label: 'Duyệt đơn',
+                  icon: Icons.assignment_turned_in_outlined,
+                  activeIcon: Icons.assignment_turned_in_rounded,
+                  showsPendingBookingsBadge: true,
                 ),
                 StaffTab(
                   label: 'Tổng quan',
@@ -438,7 +470,7 @@ class AppRouter {
                   path: '/receptionist/approval',
                   pageBuilder: (context, state) => AppPage.fadeThrough(
                     key: state.pageKey,
-                    child: const RoomApprovalScreen(),
+                    child: const BookingApprovalScreen(),
                   ),
                 ),
               ],
@@ -589,7 +621,46 @@ class AppRouter {
           path: '/staff/pending-bookings',
           pageBuilder: (context, state) => AppPage.slide(
             key: state.pageKey,
-            child: const PendingBookingsScreen(),
+            child: const BookingApprovalScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/rooms/:id',
+          pageBuilder: (context, state) => AppPage.slide(
+            key: state.pageKey,
+            child: RoomDetailScreen(
+              roomId: state.pathParameters['id']!,
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/room-detail/:id',
+          pageBuilder: (context, state) => AppPage.slide(
+            key: state.pageKey,
+            child: RoomDetailScreen(
+              roomId: state.pathParameters['id']!,
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/forgot-password',
+          pageBuilder: (context, state) => AppPage.slide(
+            key: state.pageKey,
+            child: const ForgotPasswordScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/admin/users',
+          pageBuilder: (context, state) => AppPage.slide(
+            key: state.pageKey,
+            child: const UserManagementScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/admin/room-types',
+          pageBuilder: (context, state) => AppPage.slide(
+            key: state.pageKey,
+            child: const RoomTypeManagementScreen(),
           ),
         ),
       ],

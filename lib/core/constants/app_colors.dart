@@ -15,6 +15,7 @@ class AppColors {
   static const Color primaryLight = Color(0xFF1E293B); // Navy 800
   static const Color secondary = Color(0xFFD97706); // Gold
   static const Color secondaryLight = Color(0xFFFBBF24); // Gold sáng
+  static const Color secondaryDark = Color(0xFFB45309); // Gold đậm
 
   // ── Nền & bề mặt ───────────────────────────────────────────────────────
   static const Color background = Color(0xFFF8FAFC);

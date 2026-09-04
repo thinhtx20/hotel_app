@@ -24,7 +24,12 @@ class MockRoomRepository extends RoomRepository {
   List<RoomModel> get pendingRooms => _mockPendingRooms;
 
   @override
-  Future<void> fetchRooms({bool forceRefresh = false}) async {}
+  Future<void> fetchRooms({
+    bool forceRefresh = false,
+    RoomStatus? status,
+    int? floor,
+    String? roomTypeId,
+  }) async {}
 }
 
 void main() {

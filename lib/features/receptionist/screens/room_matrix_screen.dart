@@ -1,32 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/role_enum.dart';
 import '../../../core/constants/role_permissions.dart';
-import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
 import '../../../shared/models/room_model.dart';
+import '../../../shared/repositories/booking_repository.dart';
 import '../../../shared/repositories/room_repository.dart';
+import '../widgets/add_service_sheet.dart';
 import '../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/logout_confirmation_dialog.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/skeletons/room_matrix_skeleton.dart';
 
 class RoomMatrixScreen extends StatefulWidget {
   final DioClient? dioClient;
-  const RoomMatrixScreen({super.key, this.dioClient});
+  final RoomRepository? roomRepository;
+  const RoomMatrixScreen({super.key, this.dioClient, this.roomRepository});
 
   @override
   State<RoomMatrixScreen> createState() => _RoomMatrixScreenState();
 }
 
 class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
-  DioClient get _dioClient => widget.dioClient ?? DioClient();
+  late final RoomRepository _roomRepo = widget.roomRepository ??
+      (widget.dioClient != null
+          ? RoomRepository(dioClient: widget.dioClient)
+          : (sl.isRegistered<RoomRepository>()
+              ? sl<RoomRepository>()
+              : RoomRepository(dioClient: widget.dioClient ?? DioClient())));
+
   List<RoomModel> _rooms = [];
   bool _isLoading = true;
   String _lastUpdatedTime = '09:42';
@@ -35,7 +45,9 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchRooms();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _fetchRooms();
+    });
   }
 
   Future<void> _fetchRooms({bool isSilent = false}) async {
@@ -47,50 +59,23 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
         '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
 
     try {
-      final res = await _dioClient.dio.get(ApiEndpoints.rooms);
-      if (res.statusCode == 200 && res.data['success'] == true) {
-        final list = res.data['data'] as List?;
-        if (list != null && mounted) {
-          setState(() {
-            _rooms = list.map((e) => RoomModel.fromJson(e)).toList();
-            _isLoading = false;
-          });
-          return;
-        }
-      }
-    } catch (_) {}
-
-    // Fallback data strictly adhering to 07-room-matrix.md
-    if (mounted) {
-      if (_rooms.isEmpty) {
+      await _roomRepo.fetchRooms(forceRefresh: true);
+      if (mounted) {
         setState(() {
+          _rooms = List.from(_roomRepo.rooms);
           _isLoading = false;
-          _rooms = [
-            // Tầng 1 (6 phòng)
-            RoomModel(id: '101', roomNumber: '101', floor: 1, status: RoomStatus.available, pricePerNight: 1200000),
-            RoomModel(id: '102', roomNumber: '102', floor: 1, status: RoomStatus.available, pricePerNight: 1200000),
-            RoomModel(id: '103', roomNumber: '103', floor: 1, status: RoomStatus.occupied, pricePerNight: 1400000),
-            RoomModel(id: '104', roomNumber: '104', floor: 1, status: RoomStatus.cleaning, pricePerNight: 1200000),
-            RoomModel(id: '105', roomNumber: '105', floor: 1, status: RoomStatus.available, pricePerNight: 1200000),
-            RoomModel(id: '106', roomNumber: '106', floor: 1, status: RoomStatus.reserved, pricePerNight: 1500000),
-
-            // Tầng 2 (6 phòng)
-            RoomModel(id: '201', roomNumber: '201', floor: 2, status: RoomStatus.occupied, pricePerNight: 1800000),
-            RoomModel(id: '202', roomNumber: '202', floor: 2, status: RoomStatus.occupied, pricePerNight: 1800000),
-            RoomModel(id: '203', roomNumber: '203', floor: 2, status: RoomStatus.available, pricePerNight: 1800000),
-            RoomModel(id: '204', roomNumber: '204', floor: 2, status: RoomStatus.maintenance, pricePerNight: 1800000),
-            RoomModel(id: '205', roomNumber: '205', floor: 2, status: RoomStatus.reserved, pricePerNight: 4200000),
-            RoomModel(id: '206', roomNumber: '206', floor: 2, status: RoomStatus.available, pricePerNight: 1800000),
-
-            // Tầng 3 (4 phòng mẫu)
-            RoomModel(id: '301', roomNumber: '301', floor: 3, status: RoomStatus.available, pricePerNight: 2000000),
-            RoomModel(id: '302', roomNumber: '302', floor: 3, status: RoomStatus.occupied, pricePerNight: 2000000),
-            RoomModel(id: '303', roomNumber: '303', floor: 3, status: RoomStatus.cleaning, pricePerNight: 2000000),
-            RoomModel(id: '304', roomNumber: '304', floor: 3, status: RoomStatus.available, pricePerNight: 2000000),
-          ];
         });
-      } else {
+      }
+    } catch (e) {
+      if (mounted) {
         setState(() => _isLoading = false);
+        if (isSilent) {
+          AppNotification.showError(
+            context,
+            e,
+            title: 'Làm mới sơ đồ buồng phòng thất bại',
+          );
+        }
       }
     }
   }
@@ -111,41 +96,30 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
       }
     });
 
-    // Đồng bộ tức thời tới RoomRepository cho các màn khác
-    if (sl.isRegistered<RoomRepository>()) {
-      sl<RoomRepository>().updateRoomStatus(roomId, newStatus);
-    }
-
     try {
-      final res = await _dioClient.dio.patch(
-        ApiEndpoints.updateRoomStatus(roomId),
-        data: {'status': newStatus.code},
-      );
-      if (res.statusCode == 200 || res.statusCode == 204) {
-        if (!mounted) return;
-        setState(() {
-          _updatingRoomIds.remove(roomId);
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Text('Đã cập nhật phòng ${room.roomNumber} sang ${newStatus.label}'),
-                ),
-              ],
-            ),
-            backgroundColor: palette.success,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardSmall)),
-            duration: const Duration(seconds: 2),
+      await _roomRepo.updateRoomStatus(roomId, newStatus);
+      if (!mounted) return;
+      setState(() {
+        _updatingRoomIds.remove(roomId);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text('Đã cập nhật phòng ${room.roomNumber} sang ${newStatus.label}'),
+              ),
+            ],
           ),
-        );
-        return;
-      }
-    } catch (_) {
+          backgroundColor: palette.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardSmall)),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
       // Khi gặp lỗi kết nối hoặc API thất bại: rollback về trạng thái ban đầu
       if (mounted) {
         setState(() {
@@ -155,9 +129,6 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
             _rooms[idx] = _rooms[idx].copyWith(status: oldStatus);
           }
         });
-        if (sl.isRegistered<RoomRepository>()) {
-          sl<RoomRepository>().updateRoomStatus(roomId, oldStatus);
-        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -174,14 +145,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardSmall)),
           ),
         );
-        return;
       }
-    }
-
-    if (mounted) {
-      setState(() {
-        _updatingRoomIds.remove(roomId);
-      });
     }
   }
 
@@ -354,12 +318,93 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                   ),
                 ],
               ),
+              if (room.status == RoomStatus.occupied) ...[
+                const SizedBox(height: AppSpacing.lg),
+                Divider(height: 1, color: palette.divider),
+                const SizedBox(height: AppSpacing.md),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _openAddServiceForRoom(room);
+                    },
+                    icon: Icon(Icons.room_service_outlined, size: 18, color: palette.accent),
+                    label: Text(
+                      'Ghi nhận Dịch vụ / Minibar',
+                      style: TextStyle(
+                        color: palette.accent,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: palette.accent),
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.button),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.md),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.push('/rooms/${room.id}');
+                },
+                icon: Icon(Icons.photo_library_outlined, size: 18, color: palette.accent),
+                label: Text(
+                  'Xem Chi Tiết Phòng & Album Ảnh',
+                  style: TextStyle(
+                    color: palette.accent,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _openAddServiceForRoom(RoomModel room) async {
+    try {
+      final bookings = await sl<BookingRepository>().fetchBookings(
+        roomId: room.id,
+        status: 'CHECKED_IN',
+      );
+      if (!mounted) return;
+      if (bookings.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Không tìm thấy lượt lưu trú đang hoạt động của phòng ${room.roomNumber}'),
+            backgroundColor: context.palette.warning,
+          ),
+        );
+        return;
+      }
+      await AddServiceSheet.show(
+        context: context,
+        bookingId: bookings.first.id,
+        roomNumber: room.roomNumber,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi khi tải thông tin đặt phòng: ${e.toString()}'),
+          backgroundColor: context.palette.error,
+        ),
+      );
+    }
   }
 
   Widget _buildActionButton({

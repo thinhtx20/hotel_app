@@ -94,52 +94,8 @@ class InvoiceModel {
     List<InvoiceItemModel>? items,
     List<PaymentTransactionModel>? transactions,
     this.notes,
-  })  : items = items ?? _generateDefaultItems(roomAmount, servicesAmount),
-        transactions = transactions ??
-            _generateDefaultTransactions(paidAmount, paymentMethod, createdAt);
-
-  static List<InvoiceItemModel> _generateDefaultItems(num room, num services) {
-    final list = <InvoiceItemModel>[];
-    if (room > 0) {
-      list.add(InvoiceItemModel(
-        title: 'Tiền phòng lưu trú',
-        quantity: 1,
-        unitPrice: room,
-        category: 'ROOM',
-      ));
-    }
-    if (services > 0) {
-      list.add(InvoiceItemModel(
-        title: 'Dịch vụ minibar & tiện ích phòng',
-        quantity: 1,
-        unitPrice: services,
-        category: 'MINIBAR',
-      ));
-    }
-    if (list.isEmpty) {
-      list.add(InvoiceItemModel(
-        title: 'Khoản thu dịch vụ',
-        quantity: 1,
-        unitPrice: 0,
-      ));
-    }
-    return list;
-  }
-
-  static List<PaymentTransactionModel> _generateDefaultTransactions(
-      num paid, String? method, DateTime? date) {
-    if (paid <= 0) return [];
-    return [
-      PaymentTransactionModel(
-        id: 'TXN-${DateTime.now().millisecondsSinceEpoch}',
-        amount: paid,
-        paymentMethod: method ?? 'BANK_TRANSFER',
-        timestamp: date ?? DateTime.now(),
-        cashierName: 'Thu ngân ca trực',
-        notes: 'Thanh toán đợt 1 / Đặt cọc',
-      ),
-    ];
-  }
+  })  : items = items ?? const [],
+        transactions = transactions ?? const [];
 
   factory InvoiceModel.fromJson(Map<String, dynamic> json) {
     final parsedItems = (json['items'] as List?)

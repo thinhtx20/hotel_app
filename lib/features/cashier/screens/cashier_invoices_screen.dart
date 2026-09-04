@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/role_permissions.dart';
-import '../../../core/network/api_endpoints.dart';
-import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../di/injection_container.dart';
 import '../../../shared/models/invoice_model.dart';
+import '../../../shared/repositories/invoice_repository.dart';
 import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/logout_confirmation_dialog.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/skeletons/invoice_row_skeleton.dart';
@@ -53,176 +54,50 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
   Future<void> _fetchInvoices() async {
     setState(() => _isLoading = true);
     try {
-      final res = await DioClient().dio.get(ApiEndpoints.invoices);
-      if (res.statusCode == 200 && res.data['success'] == true) {
-        final list = res.data['data'] as List?;
-        if (list != null && mounted) {
-          final invoices = list.map((e) => InvoiceModel.fromJson(e)).toList();
+      final invoiceRepo = sl<InvoiceRepository>();
+      final invoices = await invoiceRepo.fetchAll();
 
-          // Lấy todayRevenue chính xác từ endpoint summary của backend
-          num summaryTodayRevenue = 0;
-          try {
-            final summaryRes =
-                await DioClient().dio.get(ApiEndpoints.invoiceSummary);
-            if (summaryRes.statusCode == 200 &&
-                summaryRes.data['success'] == true) {
-              final sData = summaryRes.data['data'];
-              if (sData != null && sData['todayRevenue'] != null) {
-                summaryTodayRevenue = (sData['todayRevenue'] as num?) ?? 0;
-              }
-            }
-          } catch (_) {}
+      // Lấy todayRevenue chính xác từ endpoint summary của backend
+      num summaryTodayRevenue = 0;
+      try {
+        final sData = await invoiceRepo.fetchSummary();
+        if (sData['todayRevenue'] != null) {
+          summaryTodayRevenue = (sData['todayRevenue'] as num?) ?? 0;
+        }
+      } catch (_) {}
 
-          // Kiểm tra thêm các giao dịch thu tiền trong ngày hôm nay (hỗ trợ offline/optimistic update)
-          final now = DateTime.now();
-          num localTodayPaid = 0;
-          for (final inv in invoices) {
-            for (final txn in inv.transactions) {
-              if (txn.timestamp.year == now.year &&
-                  txn.timestamp.month == now.month &&
-                  txn.timestamp.day == now.day) {
-                localTodayPaid += txn.amount;
-              }
-            }
+      final now = DateTime.now();
+      num localTodayPaid = 0;
+      for (final inv in invoices) {
+        for (final txn in inv.transactions) {
+          if (txn.timestamp.year == now.year &&
+              txn.timestamp.month == now.month &&
+              txn.timestamp.day == now.day) {
+            localTodayPaid += txn.amount;
           }
-
-          setState(() {
-            _invoices = invoices;
-            _todayRevenue = summaryTodayRevenue > 0
-                ? summaryTodayRevenue
-                : localTodayPaid;
-            _isLoading = false;
-          });
-          return;
         }
       }
-    } catch (_) {}
 
-    // Fallback data strictly adhering to 08-cashier.md and realistic hotel scenarios
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-        _todayRevenue = 0;
-        _invoices = [
-          InvoiceModel(
-            id: 'INV-2026-003',
-            invoiceCode: 'INV-2026-003',
-            bookingId: 'BK-2026-003',
-            roomAmount: 1800000,
-            servicesAmount: 350000,
-            discount: 0,
-            tax: 172000,
-            finalAmount: 2322000,
-            paidAmount: 1000000,
-            paymentStatus: 'PARTIAL',
-            paymentMethod: 'BANK_TRANSFER',
-            customerName: 'Nguyễn Văn A',
-            roomNumber: '203',
-            createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-            items: [
-              InvoiceItemModel(title: 'Phòng Deluxe City View (1 đêm)', quantity: 1, unitPrice: 1800000, category: 'ROOM'),
-              InvoiceItemModel(title: 'Rượu vang vang đỏ Đà Lạt', quantity: 1, unitPrice: 250000, category: 'MINIBAR'),
-              InvoiceItemModel(title: 'Snack khoai tây Lays', quantity: 2, unitPrice: 50000, category: 'MINIBAR'),
-            ],
-            transactions: [
-              PaymentTransactionModel(
-                id: 'TXN-001',
-                amount: 1000000,
-                paymentMethod: 'BANK_TRANSFER',
-                timestamp: DateTime.now().subtract(const Duration(hours: 3)),
-                cashierName: 'Thu ngân ca sáng',
-                notes: 'Đặt cọc nhận phòng qua VietQR',
-              ),
-            ],
-          ),
-          InvoiceModel(
-            id: 'INV-2026-002',
-            invoiceCode: 'INV-2026-002',
-            bookingId: 'BK-2026-002',
-            roomAmount: 3200000,
-            servicesAmount: 450000,
-            discount: 200000,
-            tax: 276000,
-            finalAmount: 3726000,
-            paidAmount: 0,
-            paymentStatus: 'UNPAID',
-            customerName: 'Trần Thị Bích',
-            roomNumber: '402',
-            createdAt: DateTime.now().subtract(const Duration(hours: 5)),
-            items: [
-              InvoiceItemModel(title: 'Phòng Premier Ocean Suite (1 đêm)', quantity: 1, unitPrice: 3200000, category: 'ROOM'),
-              InvoiceItemModel(title: 'Dịch vụ giặt là hấp cao cấp', quantity: 3, unitPrice: 150000, category: 'LAUNDRY'),
-            ],
-            transactions: [],
-          ),
-          InvoiceModel(
-            id: 'INV-0238',
-            invoiceCode: 'INV-0238',
-            bookingId: 'BK-0238',
-            roomAmount: 3000000,
-            servicesAmount: 0,
-            discount: 0,
-            tax: 0,
-            finalAmount: 3000000,
-            paidAmount: 2100000,
-            paymentStatus: 'PARTIAL',
-            paymentMethod: 'CREDIT_CARD',
-            customerName: 'Lê Văn Cường',
-            roomNumber: '108',
-            createdAt: DateTime.now().subtract(const Duration(hours: 7)),
-            items: [
-              InvoiceItemModel(title: 'Phòng Superior Double (2 đêm)', quantity: 2, unitPrice: 1500000, category: 'ROOM'),
-            ],
-            transactions: [
-              PaymentTransactionModel(
-                id: 'TXN-0238',
-                amount: 2100000,
-                paymentMethod: 'CREDIT_CARD',
-                timestamp: DateTime.now().subtract(const Duration(hours: 7)),
-                cashierName: 'Thu ngân ca sáng',
-                notes: 'Quẹt thẻ POS 70%',
-              ),
-            ],
-          ),
-          InvoiceModel(
-            id: 'INV-0220',
-            invoiceCode: 'INV-0220',
-            bookingId: 'BK-0220',
-            roomAmount: 4200000,
-            servicesAmount: 0,
-            discount: 0,
-            tax: 0,
-            finalAmount: 4200000,
-            paidAmount: 4200000,
-            paymentStatus: 'PAID',
-            paymentMethod: 'BANK_TRANSFER',
-            customerName: 'Hoàng Minh Tuấn',
-            roomNumber: '205',
-            createdAt: DateTime.now().subtract(const Duration(hours: 8)),
-            items: [
-              InvoiceItemModel(title: 'Phòng Executive King (2 đêm)', quantity: 2, unitPrice: 2100000, category: 'ROOM'),
-            ],
-            transactions: [
-              PaymentTransactionModel(
-                id: 'TXN-0220-1',
-                amount: 2000000,
-                paymentMethod: 'BANK_TRANSFER',
-                timestamp: DateTime.now().subtract(const Duration(hours: 8)),
-                cashierName: 'Thu ngân ca sáng',
-                notes: 'Đặt cọc chuyển khoản',
-              ),
-              PaymentTransactionModel(
-                id: 'TXN-0220-2',
-                amount: 2200000,
-                paymentMethod: 'BANK_TRANSFER',
-                timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-                cashierName: 'Thu ngân ca chiều',
-                notes: 'Thanh toán hoàn tất check-out',
-              ),
-            ],
-          ),
-        ];
-      });
+      if (mounted) {
+        setState(() {
+          _invoices = invoices;
+          _todayRevenue = summaryTodayRevenue > 0
+              ? summaryTodayRevenue
+              : localTodayPaid;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        AppNotification.showError(
+          context,
+          e,
+          title: 'Tải danh sách hóa đơn thất bại',
+        );
+      }
     }
   }
 
@@ -323,65 +198,41 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
         required String paymentMethod,
         required String notes,
       }) async {
-        final newTxn = PaymentTransactionModel(
-          id: 'TXN-${DateTime.now().millisecondsSinceEpoch}',
-          amount: amount,
-          paymentMethod: paymentMethod,
-          timestamp: DateTime.now(),
-          cashierName: 'Thu ngân ${_getCurrentShift()}',
-          notes: notes,
-        );
-
         try {
-          await DioClient().dio.post(
-            ApiEndpoints.payInvoice(invoice.id),
-            data: {
-              'amount': amount,
-              'paymentMethod': paymentMethod,
-              'paymentStatus':
-                  amount >= invoice.remainingAmount ? 'PAID' : 'PARTIAL',
-              'notes': newTxn.notes,
-            },
+          final updated = await sl<InvoiceRepository>().pay(
+            invoice.id,
+            amount: amount,
+            paymentMethod: paymentMethod,
+            paymentStatus:
+                amount >= invoice.remainingAmount ? 'PAID' : 'PARTIAL',
+            notes: notes.isNotEmpty ? notes : null,
           );
-          await _fetchInvoices();
-        } catch (_) {
-          // Offline/Fallback update local state
-          if (mounted) {
-            setState(() {
-              final idx = _invoices.indexWhere((i) => i.id == invoice.id);
-              if (idx != -1) {
-                final oldInv = _invoices[idx];
-                final newPaid = oldInv.paidAmount + amount;
-                final newRem = (oldInv.finalAmount - newPaid).clamp(0, double.infinity);
-                final updatedTxns = List<PaymentTransactionModel>.from(oldInv.transactions)
-                  ..add(newTxn);
-
-                _invoices[idx] = oldInv.copyWith(
-                  paidAmount: newPaid,
-                  paymentStatus: newRem <= 0 ? 'PAID' : 'PARTIAL',
-                  paymentMethod: paymentMethod,
-                  transactions: updatedTxns,
-                );
-                _todayRevenue += amount;
-              }
-            });
-          }
+          if (!mounted) return;
+          setState(() {
+            final idx = _invoices.indexWhere((i) => i.id == invoice.id);
+            if (idx != -1) {
+              _invoices[idx] = updated;
+            }
+            _todayRevenue += amount;
+          });
+          AppNotification.showSuccess(
+            context,
+            'Ghi nhận thu ${Formatters.formatCurrency(amount)} thành công!',
+          );
+          _showReceiptSheet(
+            updated,
+            lastTxn: updated.transactions.isNotEmpty
+                ? updated.transactions.last
+                : null,
+          );
+        } catch (e) {
+          if (!mounted) return;
+          AppNotification.showError(
+            context,
+            e,
+            title: 'Thanh toán thất bại',
+          );
         }
-
-        if (!mounted) return;
-        final palette = context.palette;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Ghi nhận thu ${Formatters.formatCurrency(amount)} thành công!'),
-            backgroundColor: palette.statusAvailable,
-          ),
-        );
-
-        final updatedInv = _invoices.firstWhere(
-          (i) => i.id == invoice.id,
-          orElse: () => invoice,
-        );
-        _showReceiptSheet(updatedInv, lastTxn: newTxn);
       },
     );
   }
@@ -782,56 +633,55 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: PressableScale(
-                  onTap: () {
+                  onTap: () async {
                     final amt = Formatters.parseCurrency(amountController.text) ?? 0;
                     if (amt <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Vui lòng nhập số tiền hợp lệ')),
-                      );
+                      AppNotification.showWarning(context, 'Vui lòng nhập số tiền hợp lệ');
                       return;
                     }
 
                     Navigator.pop(ctx);
 
-                    final newCode = 'INV-${DateTime.now().year}-${(_invoices.length + 1).toString().padLeft(3, '0')}';
-                    final newInvoice = InvoiceModel(
-                      id: 'inv-${DateTime.now().millisecondsSinceEpoch}',
-                      invoiceCode: newCode,
-                      bookingId: 'BK-$selectedRoom',
-                      roomAmount: selectedCategory == 'ROOM' ? amt : 0,
-                      servicesAmount: selectedCategory != 'ROOM' ? amt : 0,
-                      discount: 0,
-                      tax: 0,
-                      finalAmount: amt,
-                      paidAmount: 0,
-                      paymentStatus: 'UNPAID',
-                      customerName: customerController.text.trim().isNotEmpty
-                          ? customerController.text.trim()
-                          : 'Khách phòng $selectedRoom',
-                      roomNumber: selectedRoom,
-                      createdAt: DateTime.now(),
-                      items: [
-                        InvoiceItemModel(
-                          title: itemTitleController.text.trim(),
-                          quantity: 1,
-                          unitPrice: amt,
-                          category: selectedCategory,
-                        ),
-                      ],
-                      transactions: [],
-                    );
-
-                    setState(() {
-                      _invoices.insert(0, newInvoice);
-                      _selectedTabIndex = 0; // Chuyển về tab chưa thanh toán
-                    });
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Đã tạo hóa đơn #$newCode thành công!'),
-                        backgroundColor: palette.statusAvailable,
-                      ),
-                    );
+                    try {
+                      final payload = {
+                        'roomNumber': selectedRoom,
+                        'customerName': customerController.text.trim().isNotEmpty
+                            ? customerController.text.trim()
+                            : 'Khách phòng $selectedRoom',
+                        'finalAmount': amt,
+                        'roomAmount': selectedCategory == 'ROOM' ? amt : 0,
+                        'servicesAmount': selectedCategory != 'ROOM' ? amt : 0,
+                        'items': [
+                          {
+                            'title': itemTitleController.text.trim().isNotEmpty
+                                ? itemTitleController.text.trim()
+                                : 'Phụ phí',
+                            'quantity': 1,
+                            'unitPrice': amt,
+                            'category': selectedCategory,
+                          }
+                        ],
+                      };
+                      final created = await sl<InvoiceRepository>().create(payload);
+                      if (mounted) {
+                        setState(() {
+                          _invoices.insert(0, created);
+                          _selectedTabIndex = 0;
+                        });
+                        AppNotification.showSuccess(
+                          context,
+                          'Đã tạo hóa đơn ${created.displayCode} thành công!',
+                        );
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        AppNotification.showError(
+                          context,
+                          e,
+                          title: 'Tạo hóa đơn thất bại',
+                        );
+                      }
+                    }
                   },
                   child: Container(
                     width: double.infinity,

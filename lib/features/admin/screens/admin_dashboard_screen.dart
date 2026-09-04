@@ -1,23 +1,27 @@
 import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/role_enum.dart';
 import '../../../core/constants/role_permissions.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../di/injection_container.dart';
+import '../../../shared/repositories/analytics_repository.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/logout_confirmation_dialog.dart';
 import '../../../shared/widgets/motion/animated_counter.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/skeletons/skeleton_primitives.dart';
 import 'occupancy_detail_screen.dart';
-import 'pending_bookings_screen.dart';
 import 'today_check_ins_screen.dart';
 import 'today_check_outs_screen.dart';
+import '../../receptionist/screens/booking_approval_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -28,8 +32,8 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     with SingleTickerProviderStateMixin {
-  /// Các mốc lọc của biểu đồ doanh thu (số ngày gần nhất)
-  static const List<int> _revenueRangeOptions = [1, 7, 14, 30];
+  /// Các mốc lọc của biểu đồ doanh thu (số ngày gần nhất + năm nay 365)
+  static const List<int> _revenueRangeOptions = [1, 7, 14, 30, 365];
 
   Map<String, dynamic>? _dashboardData;
   bool _isStatsLoading = true;
@@ -64,7 +68,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     ]);
   }
 
-  /// Lấy chuỗi doanh thu theo số ngày gần nhất: GET /analytics/revenue/daily?days=N
+  /// Lấy chuỗi doanh thu theo số ngày gần nhất hoặc năm nay
   Future<void> _fetchRevenueSeries(int days) async {
     setState(() {
       _isRevenueLoading = true;
@@ -72,22 +76,49 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     });
 
     try {
-      final res = await DioClient().dio.get(
-        ApiEndpoints.analyticsRevenueDaily,
-        queryParameters: {'days': days},
-      );
-      final body = res.data;
-      final data = body is Map && body['data'] != null ? body['data'] : body;
-      final rawSeries = data is Map ? data['series'] : null;
+      if (days == 365) {
+        final currentYear = DateTime.now().year;
+        final data = await sl<AnalyticsRepository>().revenueYearly(year: currentYear);
+        List<_RevenuePoint> points = [];
 
-      if (res.statusCode == 200 && rawSeries is List) {
-        final series = rawSeries
-            .whereType<Map>()
-            .map((e) => _RevenuePoint.fromJson(e))
-            .toList();
+        // API trả về `{year, summary, monthly: [{month, totalRevenue, ...}]}`
+        final rawList = data['monthly'] ?? data['months'] ?? data['series'];
+        if (rawList is List) {
+          points = rawList.whereType<Map>().map((m) {
+            final monthNum = m['month'] ?? m['m'] ?? '';
+            final rev = num.tryParse(
+                  '${m['totalRevenue'] ?? m['revenue'] ?? m['total'] ?? 0}',
+                )?.toDouble() ??
+                0.0;
+            return _RevenuePoint(label: 'T$monthNum', revenue: rev);
+          }).toList();
+        } else {
+          for (int m = 1; m <= 12; m++) {
+            final rev = num.tryParse('${data['$m'] ?? data['m$m'] ?? 0}')?.toDouble() ?? 0.0;
+            points.add(_RevenuePoint(label: 'T$m', revenue: rev));
+          }
+        }
+
         if (mounted && days == _revenueDays) {
           setState(() {
-            _revenueSeries = series;
+            _revenueSeries = points;
+            _isRevenueLoading = false;
+          });
+        }
+        return;
+      }
+
+      // API dùng tham số `range` (enum 1 | 7 | 14 | 30) và trả dữ liệu biểu đồ
+      // ở khóa `series`.
+      final series = await sl<AnalyticsRepository>().revenueDailySeries(
+        range: days,
+      );
+
+      if (series.isNotEmpty) {
+        final points = series.map((e) => _RevenuePoint.fromJson(e)).toList();
+        if (mounted && days == _revenueDays) {
+          setState(() {
+            _revenueSeries = points;
             _isRevenueLoading = false;
           });
         }
@@ -243,17 +274,43 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      'Tổng quan',
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.60),
-                                        fontSize: 13,
-                                      ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(color: Colors.white30),
+                                          ),
+                                          child: Text(
+                                            context.currentRole == UserRole.admin
+                                                ? 'QUẢN TRỊ VIÊN'
+                                                : context.currentRole == UserRole.receptionist
+                                                    ? 'LỄ TÂN SẢNH'
+                                                    : context.currentRole == UserRole.cashier
+                                                        ? 'THU NGÂN'
+                                                        : 'TỔNG QUAN',
+                                            style: const TextStyle(
+                                              color: AppColors.secondaryLight,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w800,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 2),
-                                    const Text(
-                                      'Báo Cáo Quản Trị',
-                                      style: TextStyle(
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      context.currentRole == UserRole.admin
+                                          ? 'Báo Cáo Quản Trị'
+                                          : context.currentRole == UserRole.receptionist
+                                              ? 'Bàn Trực Lễ Tân'
+                                              : context.currentRole == UserRole.cashier
+                                                  ? 'Bàn Thu Ngân'
+                                                  : 'Báo Cáo Tổng Quan',
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 22,
                                         fontWeight: FontWeight.w700,
@@ -264,6 +321,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                 ),
                                 Row(
                                   children: [
+                                    if (context.currentRole == UserRole.admin) ...[
+                                      _buildGlassCircleBtn(
+                                        icon: Icons.manage_accounts_outlined,
+                                        onTap: () => context.push('/admin/users'),
+                                      ),
+                                      const SizedBox(width: AppSpacing.sm),
+                                      _buildGlassCircleBtn(
+                                        icon: Icons.bedroom_parent_outlined,
+                                        onTap: () => context.push('/admin/room-types'),
+                                      ),
+                                      const SizedBox(width: AppSpacing.sm),
+                                    ],
                                     _buildGlassCircleBtn(
                                       onTap: () {
                                         _fetchDashboardData();
@@ -555,7 +624,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (_) =>
-                                        const PendingBookingsScreen(),
+                                        const BookingApprovalScreen(),
                                   ),
                                 );
                               }
@@ -707,9 +776,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
   Widget _buildRevenueChartCard(AppPalette palette, TextTheme textTheme) {
     final series = _revenueSeries;
-    final title = _revenueDays == 1
-        ? 'Doanh thu hôm nay'
-        : 'Doanh thu $_revenueDays ngày';
+    final title = _revenueDays == 365
+        ? 'Doanh thu năm ${DateTime.now().year}'
+        : (_revenueDays == 1 ? 'Doanh thu hôm nay' : 'Doanh thu $_revenueDays ngày');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
@@ -788,6 +857,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       },
       itemBuilder: (context) => _revenueRangeOptions.map((days) {
         final selected = days == _revenueDays;
+        final labelText = days == 365 ? 'Năm nay (12 tháng)' : '$days ngày';
         return PopupMenuItem<int>(
           value: days,
           height: 42,
@@ -795,7 +865,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '$days ngày',
+                labelText,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
@@ -818,7 +888,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '$_revenueDays ngày',
+              _revenueDays == 365 ? 'Năm nay' : '$_revenueDays ngày',
               style: TextStyle(
                 fontSize: 11,
                 color: palette.inkMuted,
@@ -1159,8 +1229,10 @@ class _RevenuePoint {
       parsedDate = DateTime.tryParse(rawDate);
     }
     return _RevenuePoint(
-      label: json['label']?.toString() ?? '',
-      revenue: num.tryParse('${json['revenue'] ?? 0}')?.toDouble() ?? 0.0,
+      label: json['label']?.toString() ?? json['dateLabel']?.toString() ?? '',
+      revenue:
+          num.tryParse('${json['revenue'] ?? json['amount'] ?? 0}')?.toDouble() ??
+              0.0,
       date: parsedDate,
     );
   }

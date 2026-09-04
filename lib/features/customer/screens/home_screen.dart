@@ -825,9 +825,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     final palette = context.palette;
     final textTheme = Theme.of(context).textTheme;
     final isFav = _favoriteRoomIds.contains(room.id);
+    // Fallback is requested pre-cropped to the card's ~2.6:1 box so it does not
+    // decode rows that BoxFit.cover throws away.
     final imageUrl = room.images.isNotEmpty
         ? room.images.first
-        : 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80';
+        : 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1040&h=400&q=80';
 
     final roomTitle =
         'Phòng ${room.roomNumber} — ${room.roomTypeName ?? "Deluxe"}';
@@ -837,6 +839,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
     return AppCard(
       padding: EdgeInsets.zero,
+      onTap: () => context.push('/rooms/${room.id}'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -853,16 +856,29 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                 children: [
                   Hero(
                     tag: 'room-image-${room.id}',
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      fadeInDuration: const Duration(milliseconds: 250),
-                      placeholder: (context, url) =>
-                          Container(color: palette.surfaceMuted),
-                      errorWidget: (context, url, error) => Container(
-                        color: palette.surfaceMuted,
-                        child: Icon(Icons.hotel, color: palette.inkMuted),
-                      ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Decode at the card's real pixel width instead of the
+                        // source resolution. The card is much wider than it is
+                        // tall, so BoxFit.cover is always width-bound here and
+                        // capping the width costs no sharpness.
+                        final dpr = MediaQuery.devicePixelRatioOf(context);
+                        final decodeWidth = constraints.maxWidth.isFinite
+                            ? (constraints.maxWidth * dpr).round()
+                            : null;
+                        return CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          memCacheWidth: decodeWidth,
+                          fadeInDuration: const Duration(milliseconds: 250),
+                          placeholder: (context, url) =>
+                              Container(color: palette.surfaceMuted),
+                          errorWidget: (context, url, error) => Container(
+                            color: palette.surfaceMuted,
+                            child: Icon(Icons.hotel, color: palette.inkMuted),
+                          ),
+                        );
+                      },
                     ),
                   ),
 

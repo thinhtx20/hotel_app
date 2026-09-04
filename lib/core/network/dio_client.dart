@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../constants/app_constants.dart';
 import '../storage/token_storage.dart';
+import 'api_endpoints.dart';
 import 'api_error.dart';
 
 class DioClient {
@@ -11,6 +13,7 @@ class DioClient {
 
   late final Dio dio;
   final TokenStorage _tokenStorage = TokenStorage();
+  Completer<bool>? _refreshCompleter;
 
   // Mặc định sử dụng API Server trên Render
   static String get defaultBaseUrl {
@@ -53,30 +56,40 @@ class DioClient {
           return handler.next(options);
         },
         onError: (DioException error, handler) async {
-          // Bắt lỗi 401 để tự động Refresh Token
+          final reqOptions = error.requestOptions;
+          final isRetry = reqOptions.extra['_retry'] == true;
+
+          // Bắt lỗi 401 để tự động Refresh Token nếu chưa retry
           if (error.response?.statusCode == 401 &&
-              !error.requestOptions.path.contains('/auth/login') &&
-              !error.requestOptions.path.contains('/auth/refresh-token') &&
-              !error.requestOptions.path.contains('/auth/logout')) {
-            final refreshed = await _handleRefreshToken();
+              !isRetry &&
+              !reqOptions.path.contains(ApiEndpoints.login) &&
+              !reqOptions.path.contains(ApiEndpoints.refreshToken) &&
+              !reqOptions.path.contains(ApiEndpoints.logout)) {
+            final refreshed = await _refreshTokenWithMutex();
             if (refreshed) {
               final retryToken = await _tokenStorage.getAccessToken();
-              final options = error.requestOptions;
-              options.headers['Authorization'] = 'Bearer $retryToken';
+              final clonedHeaders = Map<String, dynamic>.from(reqOptions.headers);
+              if (retryToken != null && retryToken.isNotEmpty) {
+                clonedHeaders['Authorization'] = 'Bearer $retryToken';
+              }
+              final clonedExtra = Map<String, dynamic>.from(reqOptions.extra)
+                ..['_retry'] = true;
 
               try {
                 final cloneReq = await dio.request(
-                  options.path,
+                  reqOptions.path,
                   options: Options(
-                    method: options.method,
-                    headers: options.headers,
+                    method: reqOptions.method,
+                    headers: clonedHeaders,
+                    extra: clonedExtra,
                   ),
-                  data: options.data,
-                  queryParameters: options.queryParameters,
+                  data: reqOptions.data,
+                  queryParameters: reqOptions.queryParameters,
                 );
                 return handler.resolve(cloneReq);
               } on DioException catch (e) {
-                return handler.next(e);
+                final retryApiError = ApiError.fromDioException(e);
+                return handler.next(e.copyWith(error: retryApiError));
               }
             }
           }
@@ -93,6 +106,27 @@ class DioClient {
     dio.options.baseUrl = newUrl;
   }
 
+  /// Quản lý Mutex để chỉ có 1 request thực hiện refresh token tại một thời điểm
+  Future<bool> _refreshTokenWithMutex() async {
+    if (_refreshCompleter != null) {
+      return await _refreshCompleter!.future;
+    }
+
+    final completer = Completer<bool>();
+    _refreshCompleter = completer;
+
+    try {
+      final success = await _handleRefreshToken();
+      completer.complete(success);
+      return success;
+    } catch (_) {
+      completer.complete(false);
+      return false;
+    } finally {
+      _refreshCompleter = null;
+    }
+  }
+
   Future<bool> _handleRefreshToken() async {
     try {
       final refreshToken = await _tokenStorage.getRefreshToken();
@@ -107,7 +141,7 @@ class DioClient {
       );
 
       final response = await refreshDio.post(
-        '/auth/refresh-token',
+        ApiEndpoints.refreshToken,
         data: {'refreshToken': refreshToken},
       );
 
