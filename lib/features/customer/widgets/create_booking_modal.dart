@@ -47,6 +47,9 @@ class _CreateBookingModalState extends State<CreateBookingModal> {
     final now = DateTime.now();
     _checkInDate = DateTime(now.year, now.month, now.day);
     _checkOutDate = _checkInDate.add(const Duration(days: 1));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAvailability();
+    });
   }
 
   @override
@@ -164,8 +167,7 @@ class _CreateBookingModalState extends State<CreateBookingModal> {
         guestCount: _guestCount,
       );
       if (mounted) {
-        final available = availableRooms.isEmpty ||
-            availableRooms.any((r) => r.id == widget.room.id);
+        final available = availableRooms.any((r) => r.id == widget.room.id);
         setState(() {
           _isRoomAvailable = available;
           _isCheckingAvailability = false;
@@ -688,33 +690,71 @@ class _CreateBookingModalState extends State<CreateBookingModal> {
 
                           const SizedBox(height: AppSpacing.md),
 
-                          if (!_isRoomAvailable) ...[
+                          if (_isCheckingAvailability) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: palette.accent,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Đang kiểm tra phòng trống theo ngày...',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: palette.inkMuted,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ] else if (!_isRoomAvailable) ...[
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
-                              margin: const EdgeInsets.only(
-                                  bottom: AppSpacing.sm),
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              margin: const EdgeInsets.only(bottom: AppSpacing.md),
                               decoration: BoxDecoration(
                                 color: palette.errorSurface,
-                                borderRadius: BorderRadius.circular(
-                                    AppRadius.md),
+                                borderRadius: BorderRadius.circular(AppRadius.md),
                                 border: Border.all(
-                                    color: palette.error
-                                        .withValues(alpha: 0.3)),
+                                  color: palette.error.withValues(alpha: 0.35),
+                                ),
                               ),
                               child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Icon(Icons.warning_amber_rounded,
-                                      color: palette.error, size: 18),
-                                  const SizedBox(width: 8),
+                                      color: palette.error, size: 20),
+                                  const SizedBox(width: AppSpacing.sm),
                                   Expanded(
-                                    child: Text(
-                                      'Phòng này không còn trống trong khoảng thời gian đã chọn.',
-                                      style: TextStyle(
-                                        color: palette.error,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Phòng không còn trống trong khoảng ngày này',
+                                          style: TextStyle(
+                                            color: palette.error,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          'Phòng ${widget.room.roomNumber} đã có khách hoặc lịch đặt từ ${_formatDate(_checkInDate)} đến ${_formatDate(_checkOutDate)}. Quý khách vui lòng chọn ngày khác.',
+                                          style: TextStyle(
+                                            color: palette.error.withValues(alpha: 0.9),
+                                            fontSize: 12,
+                                            height: 1.35,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -726,14 +766,17 @@ class _CreateBookingModalState extends State<CreateBookingModal> {
                           CustomButton(
                             text: _isCheckingAvailability
                                 ? 'Đang kiểm tra phòng trống...'
-                                : (_isDepositRequired
-                                    ? 'Tôi Đã Chuyển Cọc & Đặt Phòng'
-                                    : 'Xác Nhận Đặt Phòng (Không Cần Cọc)'),
-                            isGold: true,
+                                : (!_isRoomAvailable
+                                    ? 'Phòng Không Khả Dụng - Đổi Ngày'
+                                    : (_isDepositRequired
+                                        ? 'Tôi Đã Chuyển Cọc & Đặt Phòng'
+                                        : 'Xác Nhận Đặt Phòng (Không Cần Cọc)')),
+                            isGold: _isRoomAvailable && !_isCheckingAvailability,
                             height: 50,
                             isLoading: _isSubmitting,
                             onPressed: (!_isRoomAvailable ||
-                                    _isCheckingAvailability)
+                                    _isCheckingAvailability ||
+                                    _isSubmitting)
                                 ? null
                                 : _submitBooking,
                           ),

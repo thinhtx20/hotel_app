@@ -88,11 +88,11 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
     if (_room == null) return;
     final room = _room!;
 
-    if (room.status == RoomStatus.reserved || room.status == RoomStatus.occupied) {
+    if (room.status == RoomStatus.maintenance) {
       AppNotification.showWarning(
         context,
-        'Phòng ${room.roomNumber} hiện đã được đặt hoặc đang có khách lưu trú.',
-        title: 'Phòng không khả dụng',
+        'Phòng ${room.roomNumber} hiện đang bảo trì kỹ thuật, tạm thời không nhận đặt.',
+        title: 'Phòng đang bảo trì',
       );
       return;
     }
@@ -399,6 +399,51 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                           RoomStatusBadge(status: room.status),
                         ],
                       ),
+                      if (room.status == RoomStatus.reserved || room.status == RoomStatus.occupied) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: (room.status == RoomStatus.occupied
+                                    ? AppColors.occupied
+                                    : AppColors.reserved)
+                                .withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                            border: Border.all(
+                              color: (room.status == RoomStatus.occupied
+                                      ? AppColors.occupied
+                                      : AppColors.reserved)
+                                  .withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline_rounded,
+                                size: 16,
+                                color: room.status == RoomStatus.occupied
+                                    ? AppColors.occupiedInk
+                                    : AppColors.reservedInk,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  room.status == RoomStatus.occupied
+                                      ? 'Phòng đang có khách hôm nay. Quý khách có thể chọn ngày sau để đặt trước.'
+                                      : 'Phòng đã có lịch đặt trước hôm nay. Quý khách có thể chọn ngày khác để đặt chỗ.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: room.status == RoomStatus.occupied
+                                        ? AppColors.occupiedInk
+                                        : AppColors.reservedInk,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
 
                       const SizedBox(height: AppSpacing.lg),
                       Divider(color: palette.divider, height: 1),
@@ -957,6 +1002,15 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
   }
 
   Widget _buildBottomActionBar(RoomModel room, AppPalette palette, bool isAvailable, bool isStaff) {
+    final canBook = room.status != RoomStatus.maintenance;
+    final isAvailableToday = room.status == RoomStatus.available;
+    final buttonText = isAvailableToday
+        ? 'Đặt Phòng Ngay'
+        : (canBook ? 'Chọn Ngày Đặt Trước' : 'Phòng Đang Bảo Trì');
+    final buttonIcon = isAvailableToday
+        ? Icons.calendar_today_rounded
+        : (canBook ? Icons.event_available_rounded : Icons.lock_outline_rounded);
+
     return Container(
       padding: EdgeInsets.only(
         left: AppSpacing.screen,
@@ -1012,31 +1066,31 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
           const SizedBox(width: AppSpacing.lg),
           Expanded(
             child: PressableScale(
-              onTap: isAvailable ? _onBookPressed : null,
+              onTap: canBook ? _onBookPressed : null,
               child: Container(
                 height: 50,
                 decoration: BoxDecoration(
-                  gradient: isAvailable ? AppGradients.gold : null,
-                  color: isAvailable ? null : palette.surfaceMuted,
+                  gradient: canBook ? AppGradients.gold : null,
+                  color: canBook ? null : palette.surfaceMuted,
                   borderRadius: BorderRadius.circular(AppRadius.button),
-                  boxShadow: isAvailable ? AppShadows.goldGlow : null,
+                  boxShadow: canBook ? AppShadows.goldGlow : null,
                 ),
                 alignment: Alignment.center,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      isAvailable ? Icons.calendar_today_rounded : Icons.lock_outline_rounded,
-                      color: isAvailable ? Colors.white : palette.inkMuted,
+                      buttonIcon,
+                      color: canBook ? Colors.white : palette.inkMuted,
                       size: 18,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      isAvailable ? 'Đặt Phòng Ngay' : 'Phòng ${room.status.label}',
+                      buttonText,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: isAvailable ? Colors.white : palette.inkMuted,
+                        color: canBook ? Colors.white : palette.inkMuted,
                       ),
                     ),
                   ],
