@@ -1,9 +1,11 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/role_enum.dart';
+import '../../../core/constants/role_permissions.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_palette.dart';
@@ -88,14 +90,26 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
 
       _rooms = roomsList;
       _totalRooms = roomsList.length;
-      _occupiedRooms = roomsList.where((r) => r.status == RoomStatus.occupied).length;
-      _availableRooms = roomsList.where((r) => r.status == RoomStatus.available).length;
-      _cleaningRooms = roomsList.where((r) => r.status == RoomStatus.cleaning).length;
-      _reservedRooms = roomsList.where((r) => r.status == RoomStatus.reserved).length;
-      _maintenanceRooms = roomsList.where((r) => r.status == RoomStatus.maintenance).length;
+      _occupiedRooms = roomsList
+          .where((r) => r.status == RoomStatus.occupied)
+          .length;
+      _availableRooms = roomsList
+          .where((r) => r.status == RoomStatus.available)
+          .length;
+      _cleaningRooms = roomsList
+          .where((r) => r.status == RoomStatus.cleaning)
+          .length;
+      _reservedRooms = roomsList
+          .where((r) => r.status == RoomStatus.reserved)
+          .length;
+      _maintenanceRooms = roomsList
+          .where((r) => r.status == RoomStatus.maintenance)
+          .length;
 
       if (byTypeRaw.isNotEmpty) {
-        _roomTypeStats = byTypeRaw.map((e) => _RoomTypeOccupancy.fromJson(e)).toList();
+        _roomTypeStats = byTypeRaw
+            .map((e) => _RoomTypeOccupancy.fromJson(e))
+            .toList();
       } else {
         _buildTypeStatsFromRooms(roomsList);
       }
@@ -110,11 +124,21 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
         final roomsList = _roomRepository.rooms;
         _rooms = roomsList;
         _totalRooms = roomsList.length;
-        _occupiedRooms = roomsList.where((r) => r.status == RoomStatus.occupied).length;
-        _availableRooms = roomsList.where((r) => r.status == RoomStatus.available).length;
-        _cleaningRooms = roomsList.where((r) => r.status == RoomStatus.cleaning).length;
-        _reservedRooms = roomsList.where((r) => r.status == RoomStatus.reserved).length;
-        _maintenanceRooms = roomsList.where((r) => r.status == RoomStatus.maintenance).length;
+        _occupiedRooms = roomsList
+            .where((r) => r.status == RoomStatus.occupied)
+            .length;
+        _availableRooms = roomsList
+            .where((r) => r.status == RoomStatus.available)
+            .length;
+        _cleaningRooms = roomsList
+            .where((r) => r.status == RoomStatus.cleaning)
+            .length;
+        _reservedRooms = roomsList
+            .where((r) => r.status == RoomStatus.reserved)
+            .length;
+        _maintenanceRooms = roomsList
+            .where((r) => r.status == RoomStatus.maintenance)
+            .length;
         _buildTypeStatsFromRooms(roomsList);
         setState(() {
           _isLoading = false;
@@ -137,8 +161,9 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
     }
 
     _roomTypeStats = map.entries.map((entry) {
-      final occ =
-          entry.value.where((r) => r.status == RoomStatus.occupied).length;
+      final occ = entry.value
+          .where((r) => r.status == RoomStatus.occupied)
+          .length;
       final total = entry.value.length;
       final rate = total > 0 ? (occ / total * 100) : 0.0;
       final price = entry.value.first.pricePerNight;
@@ -163,8 +188,9 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
         final matchNum = room.roomNumber.toLowerCase().contains(query);
-        final matchType =
-            (room.roomTypeName ?? '').toLowerCase().contains(query);
+        final matchType = (room.roomTypeName ?? '').toLowerCase().contains(
+          query,
+        );
         if (!matchNum && !matchType) return false;
       }
       return true;
@@ -174,6 +200,27 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
   Set<int> get _availableFloors {
     final floors = _rooms.map((r) => r.floor).toSet().toList()..sort();
     return floors.toSet();
+  }
+
+  void _handleBack(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    try {
+      if (context.canPop()) {
+        context.pop();
+        return;
+      }
+      final role = context.currentRole;
+      if (role == UserRole.admin) {
+        context.go('/admin/dashboard');
+      } else {
+        context.go('/receptionist/rooms');
+      }
+    } catch (_) {
+      Navigator.of(context).maybePop();
+    }
   }
 
   @override
@@ -198,17 +245,27 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
             expandedHeight: 140,
             pinned: true,
             backgroundColor: AppColors.primary,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 20),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                onPressed: _fetchOccupancyDetail,
-              ),
-            ],
+            leading: context.currentRole == UserRole.admin
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    onPressed: () => _handleBack(context),
+                  )
+                : null,
+            actions: context.currentRole == UserRole.admin
+                ? [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.refresh_rounded,
+                        color: Colors.white,
+                      ),
+                      onPressed: _fetchOccupancyDetail,
+                    ),
+                  ]
+                : [],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
               title: const Column(
@@ -234,9 +291,7 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
                 ],
               ),
               background: Container(
-                decoration: const BoxDecoration(
-                  gradient: AppGradients.navy,
-                ),
+                decoration: const BoxDecoration(gradient: AppGradients.navy),
               ),
             ),
           ),
@@ -267,68 +322,73 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                  // Thẻ Hero Tỷ lệ lấp đầy
-                  _buildHeroCard(palette, textTheme, rateStr, occupancyRate / 100.0),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  // Cơ cấu buồng phòng theo 5 trạng thái
-                  _buildStatusBreakdownPills(palette),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  // Tỷ lệ lấp đầy theo từng loại phòng
-                  Text(
-                    'TỶ LỆ LẤP ĐẦY THEO LOẠI PHÒNG',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: palette.inkMuted,
-                      letterSpacing: 1.0,
+                    // Thẻ Hero Tỷ lệ lấp đầy
+                    _buildHeroCard(
+                      palette,
+                      textTheme,
+                      rateStr,
+                      occupancyRate / 100.0,
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _buildRoomTypeBreakdownCards(palette, textTheme),
-                  const SizedBox(height: AppSpacing.xl),
+                    const SizedBox(height: AppSpacing.xl),
 
-                  // Tiêu đề danh sách phòng & bộ lọc
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'DANH SÁCH BUỒNG PHÒNG',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: palette.inkMuted,
-                          letterSpacing: 1.0,
-                        ),
+                    // Cơ cấu buồng phòng theo 5 trạng thái
+                    _buildStatusBreakdownPills(palette),
+                    const SizedBox(height: AppSpacing.xl),
+
+                    // Tỷ lệ lấp đầy theo từng loại phòng
+                    Text(
+                      'TỶ LỆ LẤP ĐẦY THEO LOẠI PHÒNG',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: palette.inkMuted,
+                        letterSpacing: 1.0,
                       ),
-                      Text(
-                        '${_filteredRooms.length} phòng',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: palette.accent,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildRoomTypeBreakdownCards(palette, textTheme),
+                    const SizedBox(height: AppSpacing.xl),
+
+                    // Tiêu đề danh sách phòng & bộ lọc
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'DANH SÁCH BUỒNG PHÒNG',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: palette.inkMuted,
+                            letterSpacing: 1.0,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
+                        Text(
+                          '${_filteredRooms.length} phòng',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: palette.accent,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
 
-                  // Thanh tìm kiếm
-                  _buildSearchBar(palette),
-                  const SizedBox(height: AppSpacing.md),
+                    // Thanh tìm kiếm
+                    _buildSearchBar(palette),
+                    const SizedBox(height: AppSpacing.md),
 
-                  // Filter Chips (Tầng & Trạng thái)
-                  _buildFilterChips(palette),
-                  const SizedBox(height: AppSpacing.lg),
+                    // Filter Chips (Tầng & Trạng thái)
+                    _buildFilterChips(palette),
+                    const SizedBox(height: AppSpacing.lg),
 
-                  // Danh sách phòng dạng Grid
-                  _buildRoomGrid(palette, textTheme),
-                  const SizedBox(height: AppSpacing.xxxl),
-                ],
+                    // Danh sách phòng dạng Grid
+                    _buildRoomGrid(palette, textTheme),
+                    const SizedBox(height: AppSpacing.xxxl),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -336,7 +396,11 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
 
   /// Thẻ Hero hiển thị tổng quan tỷ lệ lấp đầy
   Widget _buildHeroCard(
-      AppPalette palette, TextTheme textTheme, String rateStr, double fraction) {
+    AppPalette palette,
+    TextTheme textTheme,
+    String rateStr,
+    double fraction,
+  ) {
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
@@ -404,25 +468,53 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
       spacing: AppSpacing.sm,
       runSpacing: AppSpacing.sm,
       children: [
-        _buildMiniStatusPill(palette, 'Có khách', _occupiedRooms, AppColors.occupied),
-        _buildMiniStatusPill(palette, 'Trống', _availableRooms, AppColors.available),
-        _buildMiniStatusPill(palette, 'Dọn dẹp', _cleaningRooms, AppColors.cleaning),
-        _buildMiniStatusPill(palette, 'Đặt cọc', _reservedRooms, AppColors.reserved),
         _buildMiniStatusPill(
-            palette, 'Bảo trì', _maintenanceRooms, AppColors.maintenance),
+          palette,
+          'Có khách',
+          _occupiedRooms,
+          AppColors.occupied,
+        ),
+        _buildMiniStatusPill(
+          palette,
+          'Trống',
+          _availableRooms,
+          AppColors.available,
+        ),
+        _buildMiniStatusPill(
+          palette,
+          'Dọn dẹp',
+          _cleaningRooms,
+          AppColors.cleaning,
+        ),
+        _buildMiniStatusPill(
+          palette,
+          'Đặt cọc',
+          _reservedRooms,
+          AppColors.reserved,
+        ),
+        _buildMiniStatusPill(
+          palette,
+          'Bảo trì',
+          _maintenanceRooms,
+          AppColors.maintenance,
+        ),
       ],
     );
   }
 
   Widget _buildMiniStatusPill(
-      AppPalette palette, String label, int count, Color color) {
-    final isSelected = _selectedStatus != null &&
+    AppPalette palette,
+    String label,
+    int count,
+    Color color,
+  ) {
+    final isSelected =
+        _selectedStatus != null &&
         ((label == 'Có khách' && _selectedStatus == RoomStatus.occupied) ||
             (label == 'Trống' && _selectedStatus == RoomStatus.available) ||
             (label == 'Dọn dẹp' && _selectedStatus == RoomStatus.cleaning) ||
             (label == 'Đặt cọc' && _selectedStatus == RoomStatus.reserved) ||
-            (label == 'Bảo trì' &&
-                _selectedStatus == RoomStatus.maintenance));
+            (label == 'Bảo trì' && _selectedStatus == RoomStatus.maintenance));
 
     return PressableScale(
       onTap: () {
@@ -519,12 +611,15 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: stat.totalRooms > 0
-                            ? (stat.occupiedRooms / stat.totalRooms)
-                                .clamp(0.0, 1.0)
+                            ? (stat.occupiedRooms / stat.totalRooms).clamp(
+                                0.0,
+                                1.0,
+                              )
                             : 0,
                         backgroundColor: palette.surfaceMuted,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(palette.accent),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          palette.accent,
+                        ),
                         minHeight: 7,
                       ),
                     ),
@@ -625,9 +720,7 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
             const SizedBox(height: 12),
             Text(
               'Không tìm thấy phòng phù hợp',
-              style: textTheme.bodyMedium?.copyWith(
-                color: palette.inkMuted,
-              ),
+              style: textTheme.bodyMedium?.copyWith(color: palette.inkMuted),
             ),
           ],
         ),
@@ -652,7 +745,10 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
   }
 
   Widget _buildRoomGridItem(
-      AppPalette palette, TextTheme textTheme, RoomModel room) {
+    AppPalette palette,
+    TextTheme textTheme,
+    RoomModel room,
+  ) {
     Color statusBgColor;
     Color statusTextColor;
     switch (room.status) {

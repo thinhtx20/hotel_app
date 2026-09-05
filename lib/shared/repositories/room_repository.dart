@@ -19,6 +19,7 @@ class RoomRepository extends ChangeNotifier {
   bool _isLoading = false;
   bool _initialized = false;
   String? _errorMessage;
+  PageMeta? _lastMeta;
 
   SseClient? _roomSseClient;
   StreamSubscription? _sseSubscription;
@@ -33,6 +34,7 @@ class RoomRepository extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isInitialized => _initialized;
   String? get errorMessage => _errorMessage;
+  PageMeta? get lastMeta => _lastMeta;
 
   /// Trạng thái kết nối Realtime SSE
   bool get isRealtimeActive => _roomSseClient?.isConnected ?? false;
@@ -180,6 +182,83 @@ class RoomRepository extends ChangeNotifier {
     }
   }
 
+  /// Lấy một trang danh sách phòng kèm thông tin phân trang:
+  /// GET /rooms?status=...&floor=...&roomTypeId=...&search=...&page=...&limit=...
+  Future<PaginatedResult<RoomModel>> fetchRoomsPage({
+    RoomStatus? status,
+    int? floor,
+    String? roomTypeId,
+    String? search,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        if (status != null) 'status': status.code,
+        if (floor != null) 'floor': floor,
+        if (roomTypeId != null && roomTypeId.isNotEmpty) 'roomTypeId': roomTypeId,
+        if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
+        'page': page,
+        'limit': limit,
+      };
+
+      final res = await _dioClient.dio.get(
+        ApiEndpoints.rooms,
+        queryParameters: queryParams,
+      );
+
+      final paged = ApiResult.unwrapPaginatedList(res, RoomModel.fromJson);
+      _lastMeta = paged.meta;
+      return paged;
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Tải gom song song toàn bộ phòng qua nhiều trang (tối đa [maxPages] trang).
+  Future<List<RoomModel>> fetchAllRooms({
+    RoomStatus? status,
+    int? floor,
+    String? roomTypeId,
+    String? search,
+    int maxPages = 10,
+  }) async {
+    const pageSize = 100;
+    final first = await fetchRoomsPage(
+      status: status,
+      floor: floor,
+      roomTypeId: roomTypeId,
+      search: search,
+      page: 1,
+      limit: pageSize,
+    );
+
+    final all = <RoomModel>[...first.items];
+    final lastPage =
+        first.meta.totalPages < maxPages ? first.meta.totalPages : maxPages;
+
+    if (first.items.isNotEmpty && lastPage > 1) {
+      final rest = await Future.wait([
+        for (var p = 2; p <= lastPage; p++)
+          fetchRoomsPage(
+            status: status,
+            floor: floor,
+            roomTypeId: roomTypeId,
+            search: search,
+            page: p,
+            limit: pageSize,
+          ),
+      ]);
+      for (final batch in rest) {
+        all.addAll(batch.items);
+      }
+    }
+
+    return all;
+  }
+
   /// Tải danh sách phòng từ API (có cờ forceRefresh)
   /// Hỗ trợ bộ lọc phía máy chủ: [status], [floor], [roomTypeId].
   Future<void> fetchRooms({
@@ -197,7 +276,7 @@ class RoomRepository extends ChangeNotifier {
     try {
       final queryParams = <String, dynamic>{
         if (status != null) 'status': status.code,
-        'floor': ?floor,
+        if (floor != null) 'floor': floor,
         if (roomTypeId != null && roomTypeId.isNotEmpty) 'roomTypeId': roomTypeId,
       };
 
@@ -205,8 +284,9 @@ class RoomRepository extends ChangeNotifier {
         ApiEndpoints.rooms,
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
-      final list = ApiResult.unwrapList(res);
-      _rooms = list.map((item) => RoomModel.fromJson(item)).toList();
+      final paged = ApiResult.unwrapPaginatedList(res, RoomModel.fromJson);
+      _rooms = paged.items;
+      _lastMeta = paged.meta;
     } on DioException catch (e) {
       final apiErr = ApiError.fromDioException(e);
       if (_rooms.isEmpty) {
@@ -417,10 +497,10 @@ class RoomRepository extends ChangeNotifier {
     }
   }
 
-  /// Cập nhật thông tin phòng: PATCH /rooms/:id (ADMIN)
+  /// Cập nhật thông tin phòng: PUT /rooms/:id (ADMIN)
   Future<RoomModel> updateRoom(String roomId, Map<String, dynamic> data) async {
     try {
-      final res = await _dioClient.dio.patch(
+      final res = await _dioClient.dio.put(
         ApiEndpoints.updateRoom(roomId),
         data: data,
       );

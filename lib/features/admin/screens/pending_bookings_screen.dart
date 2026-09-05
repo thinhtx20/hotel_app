@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/role_enum.dart';
 import '../../../core/constants/role_permissions.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/network/dio_client.dart';
@@ -13,6 +15,7 @@ import '../../../shared/repositories/booking_repository.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
+import '../../../shared/widgets/sticky_header.dart';
 
 /// Màn hình Đơn đặt phòng chờ xác nhận (Pending Bookings Screen)
 /// Phục vụ khi nhấn vào thẻ "Đơn chờ duyệt" trên Admin Dashboard
@@ -343,6 +346,27 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
     }
   }
 
+  void _handleBack(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    try {
+      if (context.canPop()) {
+        context.pop();
+        return;
+      }
+      final role = context.currentRole;
+      if (role == UserRole.admin) {
+        context.go('/admin/dashboard');
+      } else {
+        context.go('/receptionist/rooms');
+      }
+    } catch (_) {
+      Navigator.of(context).maybePop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
@@ -361,7 +385,7 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
             backgroundColor: AppColors.primary,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => _handleBack(context),
             ),
             actions: [
               IconButton(
@@ -399,10 +423,13 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
             ),
           ),
 
-          // 2. Nội dung bộ lọc
-          SliverToBoxAdapter(
+          // 2. Nội dung bộ lọc — ghim ngay dưới app bar khi cuộn danh sách.
+          SliverStickyHeader(
+            contentHeight: _filterHeight,
+            topGap: AppSpacing.lg,
+            bottomGap: AppSpacing.lg + AppSpacing.md,
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Column(
                 children: [
                   // Thanh tìm kiếm
@@ -411,7 +438,6 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
 
                   // Tabs lọc (Chờ xác nhận, Đã nhận/duyệt, Đã từ chối)
                   _buildTabs(pendingCount, confirmedCount, rejectedCount),
-                  const SizedBox(height: AppSpacing.md),
                 ],
               ),
             ),
@@ -468,9 +494,16 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
     );
   }
 
+  // Thanh lọc phải cao cố định để sliver ghim biết trước kích thước.
+  static const double _searchHeight = 46;
+  static const double _tabsHeight = 58; // tab 2 dòng: nhãn + huy hiệu số
+  static const double _filterHeight =
+      _searchHeight + AppSpacing.sm + _tabsHeight;
+
   Widget _buildSearchBar() {
     final palette = context.palette;
     return Container(
+      height: _searchHeight,
       decoration: BoxDecoration(
         color: palette.surface,
         borderRadius: BorderRadius.circular(AppRadius.field),
@@ -497,14 +530,18 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
   }
 
   Widget _buildTabs(int pending, int confirmed, int rejected) {
-    return Row(
-      children: [
-        Expanded(child: _buildTabItem('Chờ xác nhận', 0, pending, context.palette.warning)),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(child: _buildTabItem('Đã duyệt', 1, confirmed, context.palette.success)),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(child: _buildTabItem('Đã từ chối', 2, rejected, context.palette.error)),
-      ],
+    return SizedBox(
+      height: _tabsHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: _buildTabItem('Chờ xác nhận', 0, pending, context.palette.warning)),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(child: _buildTabItem('Đã duyệt', 1, confirmed, context.palette.success)),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(child: _buildTabItem('Đã từ chối', 2, rejected, context.palette.error)),
+        ],
+      ),
     );
   }
 
@@ -525,9 +562,12 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
           ),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,

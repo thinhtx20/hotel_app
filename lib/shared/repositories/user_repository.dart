@@ -11,11 +11,14 @@ import '../models/user_model.dart';
 class UserRepository {
   final DioClient _dioClient;
   final TokenStorage _tokenStorage;
+  PageMeta? _lastMeta;
 
   UserRepository({DioClient? dioClient, TokenStorage? tokenStorage})
       : _dioClient = dioClient ?? DioClient(),
         _tokenStorage = tokenStorage ??
             (sl.isRegistered<TokenStorage>() ? sl<TokenStorage>() : TokenStorage());
+
+  PageMeta? get lastMeta => _lastMeta;
 
   /// Tạo SseClient kết nối luồng realtime danh sách tài khoản GET /users/stream
   SseClient createUsersSseClient({String? token}) {
@@ -33,11 +36,51 @@ class UserRepository {
     );
   }
 
-  /// Lấy danh sách người dùng / nhân sự: GET /users?role=
-  Future<List<UserModel>> fetchAll({String? role}) async {
+  /// Lấy một trang danh sách người dùng kèm thông tin phân trang:
+  /// GET /users?role=...&search=...&page=...&limit=...
+  Future<PaginatedResult<UserModel>> fetchUsersPage({
+    String? role,
+    String? search,
+    int page = 1,
+    int limit = 20,
+  }) async {
     try {
       final queryParams = <String, dynamic>{
         if (role != null && role.isNotEmpty) 'role': role,
+        if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
+        'page': page,
+        'limit': limit,
+      };
+
+      final res = await _dioClient.dio.get(
+        ApiEndpoints.users,
+        queryParameters: queryParams,
+      );
+
+      final paged = ApiResult.unwrapPaginatedList(res, UserModel.fromJson);
+      _lastMeta = paged.meta;
+      return paged;
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Lấy danh sách người dùng / nhân sự: GET /users
+  /// Hỗ trợ cả tương thích ngược (không truyền page/limit) lẫn gọi kèm phân trang.
+  Future<List<UserModel>> fetchAll({
+    String? role,
+    String? search,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        if (role != null && role.isNotEmpty) 'role': role,
+        if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
+        if (page != null) 'page': page,
+        if (limit != null) 'limit': limit,
       };
 
       final res = await _dioClient.dio.get(
@@ -45,13 +88,50 @@ class UserRepository {
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
 
-      final list = ApiResult.unwrapList(res);
-      return list.map((e) => UserModel.fromJson(e)).toList();
+      final paged = ApiResult.unwrapPaginatedList(res, UserModel.fromJson);
+      _lastMeta = paged.meta;
+      return paged.items;
     } on DioException catch (e) {
       throw ApiError.fromDioException(e);
     } catch (e) {
       throw ApiError.fromDynamic(e);
     }
+  }
+
+  /// Tải gom song song toàn bộ người dùng qua nhiều trang (tối đa [maxPages] trang).
+  Future<List<UserModel>> fetchAllUsers({
+    String? role,
+    String? search,
+    int maxPages = 10,
+  }) async {
+    const pageSize = 100;
+    final first = await fetchUsersPage(
+      role: role,
+      search: search,
+      page: 1,
+      limit: pageSize,
+    );
+
+    final all = <UserModel>[...first.items];
+    final lastPage =
+        first.meta.totalPages < maxPages ? first.meta.totalPages : maxPages;
+
+    if (first.items.isNotEmpty && lastPage > 1) {
+      final rest = await Future.wait([
+        for (var p = 2; p <= lastPage; p++)
+          fetchUsersPage(
+            role: role,
+            search: search,
+            page: p,
+            limit: pageSize,
+          ),
+      ]);
+      for (final batch in rest) {
+        all.addAll(batch.items);
+      }
+    }
+
+    return all;
   }
 
   /// Admin tạo tài khoản nhân viên: POST /users

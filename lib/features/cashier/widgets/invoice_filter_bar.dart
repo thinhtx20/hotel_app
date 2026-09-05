@@ -13,6 +13,15 @@ class InvoiceFilterBar extends StatelessWidget {
   final int selectedTabIndex;
   final ValueChanged<int> onTabSelected;
   final int Function(int tabIndex) getTabCount;
+  final String? timeFilterLabel;
+  final VoidCallback? onTimeFilterTap;
+  final bool canChangeTimeFilter;
+
+  static const double _searchHeight = 46;
+  static const double _tabsHeight = 38;
+
+  /// Chiều cao cố định — [SliverStickyHeader] cần biết trước để ghim.
+  static const double height = _searchHeight + AppSpacing.md + _tabsHeight;
 
   const InvoiceFilterBar({
     super.key,
@@ -24,6 +33,9 @@ class InvoiceFilterBar extends StatelessWidget {
     required this.selectedTabIndex,
     required this.onTabSelected,
     required this.getTabCount,
+    this.timeFilterLabel,
+    this.onTimeFilterTap,
+    this.canChangeTimeFilter = false,
   });
 
   @override
@@ -33,42 +45,94 @@ class InvoiceFilterBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Search Bar
+        // 1. Search Bar + Time Filter Chip
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
-          child: Container(
-            height: 46,
-            decoration: BoxDecoration(
-              color: palette.surface,
-              borderRadius: BorderRadius.circular(AppRadius.field),
-              border: Border.all(color: palette.border),
-              boxShadow: palette.isDark ? null : AppShadows.soft,
-            ),
-            child: TextField(
-              controller: searchController,
-              onChanged: onSearchChanged,
-              style: TextStyle(fontSize: 13, color: palette.ink),
-              decoration: InputDecoration(
-                hintText: 'Tìm theo mã HĐ, tên khách, số phòng...',
-                hintStyle: TextStyle(fontSize: 13, color: palette.inkFaint),
-                prefixIcon: Icon(Icons.search_rounded, color: palette.inkMuted, size: 20),
-                suffixIcon: searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(Icons.close_rounded, size: 18, color: palette.inkMuted),
-                        onPressed: onSearchClear,
-                      )
-                    : null,
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: _searchHeight,
+                  decoration: BoxDecoration(
+                    color: palette.surface,
+                    borderRadius: BorderRadius.circular(AppRadius.field),
+                    border: Border.all(color: palette.border),
+                    boxShadow: palette.isDark ? null : AppShadows.soft,
+                  ),
+                  child: TextField(
+                    controller: searchController,
+                    onChanged: onSearchChanged,
+                    style: TextStyle(fontSize: 13, color: palette.ink),
+                    decoration: InputDecoration(
+                      hintText: 'Tìm theo mã HĐ, tên khách, số phòng...',
+                      hintStyle: TextStyle(fontSize: 13, color: palette.inkFaint),
+                      prefixIcon: Icon(Icons.search_rounded, color: palette.inkMuted, size: 20),
+                      suffixIcon: searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(Icons.close_rounded, size: 18, color: palette.inkMuted),
+                              onPressed: onSearchClear,
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              if (timeFilterLabel != null) ...[
+                const SizedBox(width: AppSpacing.sm),
+                PressableScale(
+                  onTap: canChangeTimeFilter ? onTimeFilterTap : null,
+                  child: Container(
+                    height: _searchHeight,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: canChangeTimeFilter ? palette.surface : palette.surfaceMuted,
+                      borderRadius: BorderRadius.circular(AppRadius.field),
+                      border: Border.all(
+                        color: canChangeTimeFilter ? palette.accent.withValues(alpha: 0.5) : palette.border,
+                      ),
+                      boxShadow: canChangeTimeFilter && !palette.isDark ? AppShadows.soft : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.calendar_today_rounded,
+                          size: 14,
+                          color: canChangeTimeFilter ? palette.accent : palette.inkMuted,
+                        ),
+                        const SizedBox(width: 5),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 170),
+                          child: Text(
+                            timeFilterLabel!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: canChangeTimeFilter ? palette.accent : palette.ink,
+                            ),
+                          ),
+                        ),
+                        if (canChangeTimeFilter) ...[
+                          const SizedBox(width: 2),
+                          Icon(Icons.arrow_drop_down_rounded, size: 16, color: palette.accent),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(height: AppSpacing.md),
 
         // 2. Pill Tabs
         SizedBox(
-          height: 38,
+          height: _tabsHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),

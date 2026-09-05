@@ -32,6 +32,7 @@ import '../../features/profile/screens/profile_screen.dart';
 import '../../features/receptionist/screens/booking_approval_screen.dart';
 import '../../features/receptionist/screens/front_desk_today_screen.dart';
 import '../../features/receptionist/screens/room_matrix_screen.dart';
+import '../../features/receptionist/screens/payment_requests_screen.dart';
 import '../../features/receptionist/screens/shift_close_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../shared/widgets/staff_tab_scaffold.dart';
@@ -121,6 +122,9 @@ const Map<String, String> _legacyCashierRedirects = {
   '/cashier/check-outs': '/receptionist/today',
   '/cashier/invoices': '/receptionist/invoices',
   '/cashier/profile': '/receptionist/profile',
+  '/admin/dashboard': '/admin',
+  '/receptionist/rooms': '/receptionist',
+  '/receptionist/dashboard': '/receptionist',
 };
 
 const Map<String, Set<UserRole>> _sharedRouteAccess = {
@@ -673,6 +677,14 @@ class AppRouter {
           pageBuilder: (context, state) => AppPage.slide(
             key: state.pageKey,
             child: const ShiftCloseScreen(),
+          ),
+        ),
+        // Đối chiếu tiền khách trả qua app trước khi ghi vào sổ thu tiền.
+        GoRoute(
+          path: '/receptionist/payment-requests',
+          pageBuilder: (context, state) => AppPage.slide(
+            key: state.pageKey,
+            child: const PaymentRequestsScreen(),
           ),
         ),
       ],

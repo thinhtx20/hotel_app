@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/role_enum.dart';
 import '../../../core/constants/role_permissions.dart';
-import '../../../core/network/api_error.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
@@ -13,16 +15,27 @@ import '../../../shared/models/booking_model.dart';
 import '../../../shared/repositories/booking_repository.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_empty_state.dart';
-import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
+import '../../../shared/widgets/sticky_header.dart';
 import '../../receptionist/widgets/add_service_sheet.dart';
 import '../../receptionist/widgets/check_out_sheet.dart';
+import '../bloc/today_check_outs_bloc.dart';
+import '../bloc/today_check_outs_event.dart';
+import '../bloc/today_check_outs_state.dart';
 
 /// Màn hình Chi tiết Lượt trả phòng hôm nay (Today Check-Outs Screen)
 /// Phục vụ khi nhấn vào thẻ "Lượt trả phòng" trên Admin Dashboard
 class TodayCheckOutsScreen extends StatefulWidget {
   final DioClient? dioClient;
-  const TodayCheckOutsScreen({super.key, this.dioClient});
+  final BookingRepository? bookingRepository;
+  final TodayCheckOutsBloc? bloc;
+
+  const TodayCheckOutsScreen({
+    super.key,
+    this.dioClient,
+    this.bookingRepository,
+    this.bloc,
+  });
 
   @override
   State<TodayCheckOutsScreen> createState() => _TodayCheckOutsScreenState();
@@ -30,79 +43,46 @@ class TodayCheckOutsScreen extends StatefulWidget {
 
 class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
   late final BookingRepository _bookingRepository;
+  late final TodayCheckOutsBloc _bloc;
+  bool _shouldDisposeBloc = false;
 
-  int _selectedTabIndex = 0; // 0: Tất cả, 1: Chờ trả phòng, 2: Đã trả phòng
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-
-  bool _isLoading = false;
-  String? _errorMessage;
-  List<BookingModel> _bookings = [];
 
   @override
   void initState() {
     super.initState();
-    _bookingRepository = widget.dioClient != null
-        ? BookingRepository(dioClient: widget.dioClient)
-        : sl<BookingRepository>();
+    if (widget.bookingRepository != null) {
+      _bookingRepository = widget.bookingRepository!;
+    } else if (widget.dioClient != null) {
+      _bookingRepository = BookingRepository(dioClient: widget.dioClient);
+    } else if (sl.isRegistered<BookingRepository>()) {
+      _bookingRepository = sl<BookingRepository>();
+    } else {
+      _bookingRepository = BookingRepository();
+    }
+
+    if (widget.bloc != null) {
+      _bloc = widget.bloc!;
+    } else if (sl.isRegistered<TodayCheckOutsBloc>()) {
+      _bloc = sl<TodayCheckOutsBloc>();
+    } else {
+      _bloc = TodayCheckOutsBloc(bookingRepository: _bookingRepository);
+      _shouldDisposeBloc = true;
+    }
 
     _searchController.addListener(() {
-      setState(() => _searchQuery = _searchController.text.trim());
+      _bloc.add(TodayCheckOutsSearchChanged(_searchController.text.trim()));
     });
-    _fetchCheckOuts();
+    _bloc.add(const TodayCheckOutsFetchRequested());
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    if (_shouldDisposeBloc) {
+      _bloc.close();
+    }
     super.dispose();
-  }
-
-  Future<void> _fetchCheckOuts({bool isSilent = false}) async {
-    if (!isSilent && _bookings.isEmpty) {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = null;
-      });
-    }
-
-    try {
-      final list = await _bookingRepository.fetchTodayCheckOuts();
-      if (!mounted) return;
-      setState(() {
-        _bookings = list;
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      final apiErr = ApiError.fromDynamic(e);
-      setState(() {
-        if (_bookings.isEmpty) {
-          _errorMessage = apiErr.displayMessage;
-        }
-        _isLoading = false;
-      });
-      if (isSilent || _bookings.isNotEmpty) {
-        AppNotification.showError(context, e, title: 'Làm mới danh sách thất bại');
-      }
-    }
-  }
-
-  List<BookingModel> get _filteredBookings {
-    return _bookings.where((b) {
-      if (_selectedTabIndex == 1 && b.status == 'CHECKED_OUT') return false;
-      if (_selectedTabIndex == 2 && b.status != 'CHECKED_OUT') return false;
-
-      if (_searchQuery.isNotEmpty) {
-        final q = _searchQuery.toLowerCase();
-        final matchName = (b.customerName ?? '').toLowerCase().contains(q);
-        final matchPhone = (b.customerPhone ?? '').toLowerCase().contains(q);
-        final matchRoom = (b.roomNumber ?? '').toLowerCase().contains(q);
-        final matchCode = (b.bookingCode ?? '').toLowerCase().contains(q);
-        if (!matchName && !matchPhone && !matchRoom && !matchCode) return false;
-      }
-      return true;
-    }).toList();
   }
 
   /// Mở sheet thanh toán & trả phòng.
@@ -117,143 +97,174 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
     );
     if (result == null || !mounted) return;
 
-    setState(() {
-      final idx = _bookings.indexWhere((b) => b.id == booking.id);
-      if (idx != -1) {
-        _bookings[idx] = result.$1;
+    _bloc.add(TodayCheckOutsBookingUpdated(result.$1));
+  }
+
+  void _handleBack(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    try {
+      if (context.canPop()) {
+        context.pop();
+        return;
       }
-    });
+      final role = context.currentRole;
+      if (role == UserRole.admin) {
+        context.go('/admin/dashboard');
+      } else {
+        context.go('/receptionist/rooms');
+      }
+    } catch (_) {
+      Navigator.of(context).maybePop();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.palette;
-    final textTheme = Theme.of(context).textTheme;
+    return BlocProvider.value(
+      value: _bloc,
+      child: BlocBuilder<TodayCheckOutsBloc, TodayCheckOutsState>(
+        builder: (context, state) {
+          final palette = context.palette;
+          final textTheme = Theme.of(context).textTheme;
 
-    final totalCount = _bookings.length;
-    final checkedOutCount =
-        _bookings.where((b) => b.status == 'CHECKED_OUT').length;
-    final pendingCount = totalCount - checkedOutCount;
+          final totalCount = state.totalCount;
+          final checkedOutCount = state.checkedOutCount;
+          final pendingCount = state.pendingCount;
+          final filteredBookings = state.filteredBookings;
 
-    return Scaffold(
-      backgroundColor: palette.canvas,
-      body: CustomScrollView(
-        slivers: [
-          // 1. Navy App Bar
-          SliverAppBar(
-            expandedHeight: 140,
-            pinned: true,
-            backgroundColor: AppColors.primary,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 20),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                onPressed: _fetchCheckOuts,
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
-              title: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Trả Phòng Hôm Nay',
-                    style: textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
+          return Scaffold(
+            backgroundColor: palette.canvas,
+            body: CustomScrollView(
+              slivers: [
+                // 1. Navy App Bar
+                SliverAppBar(
+                  expandedHeight: 140,
+                  pinned: true,
+                  backgroundColor: AppColors.primary,
+                  flexibleSpace: FlexibleSpaceBar(
+                    titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
+                    title: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Trả Phòng Hôm Nay',
+                          style: textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'Dự kiến: $totalCount  •  Đã trả: $checkedOutCount  •  Chờ: $pendingCount',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                    background: Container(
+                      decoration: const BoxDecoration(
+                        gradient: AppGradients.navy,
+                      ),
                     ),
                   ),
-                  Text(
-                    'Dự kiến: $totalCount  •  Đã trả: $checkedOutCount  •  Chờ: $pendingCount',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w400,
+                ),
+
+                // 2. Search & Tabs — ghim ngay dưới app bar khi cuộn danh sách.
+                SliverStickyHeader(
+                  contentHeight: _filterHeight,
+                  topGap: AppSpacing.screen,
+                  bottomGap: AppSpacing.screen,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.screen,
+                    ),
+                    child: Column(
+                      children: [
+                        _buildSearchBar(state),
+                        const SizedBox(height: AppSpacing.sm),
+                        _buildTabs(
+                          state,
+                          totalCount,
+                          pendingCount,
+                          checkedOutCount,
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: AppGradients.navy,
                 ),
-              ),
-            ),
-          ),
 
-          // 2. Search & Tabs
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.screen),
-              child: Column(
-                children: [
-                  _buildSearchBar(),
-                  const SizedBox(height: AppSpacing.sm),
-                  _buildTabs(totalCount, pendingCount, checkedOutCount),
-                ],
-              ),
+                // 3. Nội dung danh sách / Trạng thái
+                if (state.isLoading)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (state.errorMessage != null && state.bookings.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: AppEmptyState(
+                        icon: Icons.cloud_off_rounded,
+                        title: 'Không thể tải danh sách',
+                        description:
+                            state.errorMessage ?? 'Đã xảy ra lỗi kết nối.',
+                        actionText: 'Tải lại',
+                        onAction: () =>
+                            _bloc.add(const TodayCheckOutsFetchRequested()),
+                      ),
+                    ),
+                  )
+                else if (filteredBookings.isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: AppEmptyState(
+                        icon: Icons.no_meeting_room_outlined,
+                        title: 'Không có lượt trả phòng',
+                        description:
+                            'Không tìm thấy phòng nào cần trả hôm nay.',
+                      ),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.screen,
+                    ),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final booking = filteredBookings[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                          child: _buildCheckOutCard(booking),
+                        );
+                      }, childCount: filteredBookings.length),
+                    ),
+                  ),
+              ],
             ),
-          ),
-
-          // 3. Nội dung danh sách / Trạng thái
-          if (_isLoading)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (_errorMessage != null)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: AppEmptyState(
-                  icon: Icons.cloud_off_rounded,
-                  title: 'Không thể tải danh sách',
-                  description: _errorMessage ?? 'Đã xảy ra lỗi kết nối.',
-                  actionText: 'Tải lại',
-                  onAction: _fetchCheckOuts,
-                ),
-              ),
-            )
-          else if (_filteredBookings.isEmpty)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: AppEmptyState(
-                  icon: Icons.no_meeting_room_outlined,
-                  title: 'Không có lượt trả phòng',
-                  description: 'Không tìm thấy phòng nào cần trả hôm nay.',
-                ),
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final booking = _filteredBookings[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: _buildCheckOutCard(booking),
-                    );
-                  },
-                  childCount: _filteredBookings.length,
-                ),
-              ),
-            ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildSearchBar() {
+  // Thanh lọc phải cao cố định để sliver ghim biết trước kích thước.
+  static const double _searchHeight = 46;
+  static const double _tabsHeight = 38;
+  static const double _filterHeight =
+      _searchHeight + AppSpacing.sm + _tabsHeight;
+
+  Widget _buildSearchBar(TodayCheckOutsState state) {
     final palette = context.palette;
     return Container(
+      height: _searchHeight,
       decoration: BoxDecoration(
         color: palette.surface,
         borderRadius: BorderRadius.circular(AppRadius.field),
@@ -266,10 +277,13 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
           hintText: 'Tìm theo mã, tên khách, số phòng...',
           hintStyle: TextStyle(fontSize: 13, color: palette.inkFaint),
           prefixIcon: Icon(Icons.search, size: 20, color: palette.inkMuted),
-          suffixIcon: _searchQuery.isNotEmpty
+          suffixIcon: state.searchQuery.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear, size: 18),
-                  onPressed: () => _searchController.clear(),
+                  onPressed: () {
+                    _searchController.clear();
+                    _bloc.add(const TodayCheckOutsSearchChanged(''));
+                  },
                 )
               : null,
           border: InputBorder.none,
@@ -279,30 +293,47 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
     );
   }
 
-  Widget _buildTabs(int total, int pending, int checkedOut) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildTabItem('Tất cả ($total)', 0),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: _buildTabItem('Chờ trả ($pending)', 1),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: _buildTabItem('Đã trả ($checkedOut)', 2),
-        ),
-      ],
+  Widget _buildTabs(
+    TodayCheckOutsState state,
+    int total,
+    int pending,
+    int checkedOut,
+  ) {
+    return SizedBox(
+      height: _tabsHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _buildTabItem('Tất cả ($total)', 0, state.selectedTabIndex),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: _buildTabItem(
+              'Chờ trả ($pending)',
+              1,
+              state.selectedTabIndex,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: _buildTabItem(
+              'Đã trả ($checkedOut)',
+              2,
+              state.selectedTabIndex,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildTabItem(String label, int index) {
+  Widget _buildTabItem(String label, int index, int selectedIndex) {
     final palette = context.palette;
-    final isSelected = _selectedTabIndex == index;
+    final isSelected = selectedIndex == index;
 
     return GestureDetector(
-      onTap: () => setState(() => _selectedTabIndex = index),
+      onTap: () => _bloc.add(TodayCheckOutsTabChanged(index)),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         decoration: BoxDecoration(
@@ -346,7 +377,9 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm, vertical: 2),
+                      horizontal: AppSpacing.sm,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(AppRadius.xs),
@@ -372,7 +405,9 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm, vertical: 4),
+                  horizontal: AppSpacing.sm,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: isCheckedOut
                       ? palette.success.withValues(alpha: 0.12)
@@ -407,33 +442,39 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
           // Khách hàng & Số điện thoại
           Row(
             children: [
-              Icon(Icons.person_outline_rounded,
-                  size: 16, color: palette.inkMuted),
+              Icon(
+                Icons.person_outline_rounded,
+                size: 16,
+                color: palette.inkMuted,
+              ),
               const SizedBox(width: 4),
               Text(
                 '${booking.customerName ?? 'Khách vãng lai'} (${booking.guestCount} khách)',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: palette.inkMuted,
-                ),
+                style: textTheme.bodyMedium?.copyWith(color: palette.inkMuted),
               ),
               const Spacer(),
               if (booking.customerPhone != null) ...[
                 InkWell(
                   onTap: () {
                     Clipboard.setData(
-                        ClipboardData(text: booking.customerPhone!));
+                      ClipboardData(text: booking.customerPhone!),
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content:
-                            Text('Đã sao chép SĐT: ${booking.customerPhone}'),
+                        content: Text(
+                          'Đã sao chép SĐT: ${booking.customerPhone}',
+                        ),
                         duration: const Duration(seconds: 2),
                       ),
                     );
                   },
                   child: Row(
                     children: [
-                      Icon(Icons.phone_outlined,
-                          size: 14, color: palette.accent),
+                      Icon(
+                        Icons.phone_outlined,
+                        size: 14,
+                        color: palette.accent,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         booking.customerPhone!,
@@ -454,8 +495,11 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
           // Ngày nhận & Trả phòng
           Row(
             children: [
-              Icon(Icons.calendar_today_outlined,
-                  size: 14, color: palette.inkFaint),
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 14,
+                color: palette.inkFaint,
+              ),
               const SizedBox(width: 6),
               Text(
                 'Nhận: ${Formatters.formatDate(booking.checkInDate)}  •  ${booking.nightsCount} đêm',
@@ -500,20 +544,29 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
                             context: context,
                             bookingId: booking.id,
                             roomNumber: booking.roomNumber,
-                            onServiceAdded: () => _fetchCheckOuts(),
+                            onServiceAdded: () => _bloc.add(
+                              const TodayCheckOutsRefreshRequested(),
+                            ),
                           );
                         },
                         icon: const Icon(Icons.room_service_outlined, size: 14),
-                        label: const Text('Dịch vụ', style: TextStyle(fontSize: 12)),
+                        label: const Text(
+                          'Dịch vụ',
+                          style: TextStyle(fontSize: 12),
+                        ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: palette.accent,
-                          side: BorderSide(color: palette.accent.withValues(alpha: 0.5)),
+                          side: BorderSide(
+                            color: palette.accent.withValues(alpha: 0.5),
+                          ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.sm,
                             vertical: AppSpacing.xs,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.button),
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.button,
+                            ),
                           ),
                         ),
                       ),
@@ -530,8 +583,9 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
                             vertical: AppSpacing.xs,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(AppRadius.button),
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.button,
+                            ),
                           ),
                         ),
                         child: const Text(
@@ -549,8 +603,11 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
               else if (isCheckedOut)
                 Row(
                   children: [
-                    Icon(Icons.check_circle_outline_rounded,
-                        size: 16, color: palette.success),
+                    Icon(
+                      Icons.check_circle_outline_rounded,
+                      size: 16,
+                      color: palette.success,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Đã hoàn tất trả phòng',

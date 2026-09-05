@@ -13,6 +13,7 @@ import '../../../shared/models/booking_model.dart';
 import '../../../shared/models/room_model.dart';
 import '../../../shared/repositories/booking_repository.dart';
 import '../../../shared/repositories/room_repository.dart';
+import '../../admin/widgets/edit_room_modal.dart';
 import '../widgets/add_service_sheet.dart';
 import '../widgets/change_room_sheet.dart';
 import '../widgets/check_in_confirm_dialog.dart';
@@ -42,19 +43,23 @@ class RoomMatrixScreen extends StatefulWidget {
 }
 
 class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
-  late final RoomRepository _roomRepo = widget.roomRepository ??
+  late final RoomRepository _roomRepo =
+      widget.roomRepository ??
       (widget.dioClient != null
           ? RoomRepository(dioClient: widget.dioClient)
           : (sl.isRegistered<RoomRepository>()
-              ? sl<RoomRepository>()
-              : RoomRepository(dioClient: widget.dioClient ?? DioClient())));
+                ? sl<RoomRepository>()
+                : RoomRepository(dioClient: widget.dioClient ?? DioClient())));
 
-  late final BookingRepository _bookingRepo = widget.bookingRepository ??
+  late final BookingRepository _bookingRepo =
+      widget.bookingRepository ??
       (widget.dioClient != null
           ? BookingRepository(dioClient: widget.dioClient)
           : (sl.isRegistered<BookingRepository>()
-              ? sl<BookingRepository>()
-              : BookingRepository(dioClient: widget.dioClient ?? DioClient())));
+                ? sl<BookingRepository>()
+                : BookingRepository(
+                    dioClient: widget.dioClient ?? DioClient(),
+                  )));
 
   List<RoomModel> _rooms = [];
   int _todayCheckIns = 0;
@@ -151,16 +156,24 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: Text('Đã cập nhật phòng ${room.roomNumber} sang ${newStatus.label}'),
+                child: Text(
+                  'Đã cập nhật phòng ${room.roomNumber} sang ${newStatus.label}',
+                ),
               ),
             ],
           ),
           backgroundColor: palette.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardSmall)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.cardSmall),
+          ),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -178,16 +191,24 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
+                const Icon(
+                  Icons.error_outline_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Text('Không thể cập nhật phòng ${room.roomNumber}. Đã khôi phục trạng thái cũ.'),
+                  child: Text(
+                    'Không thể cập nhật phòng ${room.roomNumber}. Đã khôi phục trạng thái cũ.',
+                  ),
                 ),
               ],
             ),
             backgroundColor: palette.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardSmall)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.cardSmall),
+            ),
           ),
         );
       }
@@ -258,6 +279,8 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
     final role = context.readRole;
     // `PATCH /rooms/:id/status` chỉ mở cho ADMIN và RECEPTIONIST (§3.4).
     final canChangeStatus = role.canChangeRoomStatus;
+    // Sửa toàn diện phòng qua PUT /rooms/:id dành riêng cho ADMIN
+    final canEditRoom = role.canEditRoom;
     // Check-in / check-out cùng nhóm quyền nhân viên (§3.5).
     final canCheckIn = role.canCheckIn;
     final canCheckOut = role.canCheckOut;
@@ -282,7 +305,10 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -326,7 +352,11 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
               if (!canChangeStatus)
                 Row(
                   children: [
-                    Icon(Icons.lock_outline_rounded, size: 16, color: palette.inkMuted),
+                    Icon(
+                      Icons.lock_outline_rounded,
+                      size: 16,
+                      color: palette.inkMuted,
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -398,7 +428,11 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                         Navigator.pop(ctx);
                         _openAddServiceForRoom(room);
                       },
-                      icon: Icon(Icons.room_service_outlined, size: 18, color: palette.accent),
+                      icon: Icon(
+                        Icons.room_service_outlined,
+                        size: 18,
+                        color: palette.accent,
+                      ),
                       label: Text(
                         'Ghi nhận Dịch vụ / Minibar',
                         style: TextStyle(
@@ -425,7 +459,11 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                           Navigator.pop(ctx);
                           _openChangeRoomForRoom(room);
                         },
-                        icon: Icon(Icons.swap_horiz_rounded, size: 18, color: palette.statusOccupiedInk),
+                        icon: Icon(
+                          Icons.swap_horiz_rounded,
+                          size: 18,
+                          color: palette.statusOccupiedInk,
+                        ),
                         label: Text(
                           'Đổi phòng cho khách (S2)',
                           style: TextStyle(
@@ -438,7 +476,9 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                           side: BorderSide(color: palette.statusOccupied),
                           padding: const EdgeInsets.symmetric(vertical: 11),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.button),
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.button,
+                            ),
                           ),
                         ),
                       ),
@@ -447,6 +487,34 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                 ],
               ],
               const SizedBox(height: AppSpacing.md),
+              if (canEditRoom) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _openEditRoom(room);
+                    },
+                    icon: const Icon(Icons.edit_note_rounded, size: 18),
+                    label: const Text(
+                      'Sửa Thông Tin Phòng (ADMIN)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: palette.accent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.button),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
               SizedBox(
                 width: double.infinity,
                 child: TextButton.icon(
@@ -454,7 +522,11 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                     Navigator.pop(ctx);
                     context.push('/rooms/${room.id}');
                   },
-                  icon: Icon(Icons.photo_library_outlined, size: 18, color: palette.accent),
+                  icon: Icon(
+                    Icons.photo_library_outlined,
+                    size: 18,
+                    color: palette.accent,
+                  ),
                   label: Text(
                     'Xem Chi Tiết Phòng & Album Ảnh',
                     style: TextStyle(
@@ -494,7 +566,11 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -540,7 +616,9 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
       if (bookings.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Không tìm thấy lượt lưu trú đang hoạt động của phòng ${room.roomNumber}'),
+            content: Text(
+              'Không tìm thấy lượt lưu trú đang hoạt động của phòng ${room.roomNumber}',
+            ),
             backgroundColor: context.palette.warning,
           ),
         );
@@ -572,7 +650,9 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
       if (bookings.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Không tìm thấy lượt lưu trú đang hoạt động của phòng ${room.roomNumber}'),
+            content: Text(
+              'Không tìm thấy lượt lưu trú đang hoạt động của phòng ${room.roomNumber}',
+            ),
             backgroundColor: context.palette.warning,
           ),
         );
@@ -593,6 +673,15 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _openEditRoom(RoomModel room) async {
+    await EditRoomModal.show(
+      context: context,
+      room: room,
+      roomRepository: _roomRepo,
+      onSuccess: () => _fetchRooms(isSilent: true),
+    );
   }
 
   Widget _buildActionButton({
@@ -618,8 +707,13 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
         foregroundColor: isCurrent ? color : Colors.white,
         elevation: isCurrent ? 0 : 1,
         side: isCurrent ? BorderSide(color: color, width: 1.5) : null,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.button),
+        ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: 10,
+        ),
       ),
       icon: Icon(isCurrent ? Icons.check : icon, size: 16),
       label: Text(
@@ -637,12 +731,15 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
     final palette = context.palette;
 
     // Thống kê nhanh
-    final availableCount =
-        _rooms.where((r) => r.status == RoomStatus.available).length;
-    final occupiedCount =
-        _rooms.where((r) => r.status == RoomStatus.occupied).length;
-    final cleaningCount =
-        _rooms.where((r) => r.status == RoomStatus.cleaning).length;
+    final availableCount = _rooms
+        .where((r) => r.status == RoomStatus.available)
+        .length;
+    final occupiedCount = _rooms
+        .where((r) => r.status == RoomStatus.occupied)
+        .length;
+    final cleaningCount = _rooms
+        .where((r) => r.status == RoomStatus.cleaning)
+        .length;
 
     // Nhóm theo tầng
     final Map<int, List<RoomModel>> floors = {};
@@ -657,7 +754,10 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
       backgroundColor: palette.canvas,
       // Thanh chú thích 5 màu ghim cố định dưới đáy màn hình
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: 10,
+        ),
         decoration: BoxDecoration(
           color: palette.surface,
           border: Border(top: BorderSide(color: palette.border)),
@@ -689,7 +789,10 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
               // 1. Dải Navy đầu màn + Thống kê nhanh
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.only(top: topPadding + AppSpacing.sm, bottom: AppSpacing.lg),
+                padding: EdgeInsets.only(
+                  top: topPadding + AppSpacing.sm,
+                  bottom: AppSpacing.lg,
+                ),
                 decoration: const BoxDecoration(
                   gradient: AppGradients.navy,
                   borderRadius: BorderRadius.only(
@@ -698,7 +801,9 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screen,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -728,7 +833,9 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                                       shape: BoxShape.circle,
                                       color: _roomRepo.isRealtimeActive
                                           ? const Color(0xFF10B981)
-                                          : Colors.white.withValues(alpha: 0.40),
+                                          : Colors.white.withValues(
+                                              alpha: 0.40,
+                                            ),
                                     ),
                                   ),
                                   const SizedBox(width: 6),
@@ -739,7 +846,9 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                                     style: TextStyle(
                                       color: _roomRepo.isRealtimeActive
                                           ? const Color(0xFF34D399)
-                                          : Colors.white.withValues(alpha: 0.65),
+                                          : Colors.white.withValues(
+                                              alpha: 0.65,
+                                            ),
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -753,11 +862,6 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                               _buildGlassCircleBtn(
                                 icon: Icons.refresh,
                                 onTap: () => _fetchRooms(isSilent: true),
-                              ),
-                              const SizedBox(width: AppSpacing.sm),
-                              _buildGlassCircleBtn(
-                                icon: Icons.logout,
-                                onTap: () => LogoutConfirmationDialog.show(context),
                               ),
                             ],
                           ),
@@ -814,7 +918,8 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                   padding: const EdgeInsets.all(AppSpacing.xxxl),
                   child: AppEmptyState(
                     title: 'Không có dữ liệu buồng phòng',
-                    description: 'Hiện tại chưa có danh sách phòng nào được thiết lập.',
+                    description:
+                        'Hiện tại chưa có danh sách phòng nào được thiết lập.',
                     actionText: 'Tải lại',
                     onAction: () => _fetchRooms(),
                   ),
@@ -844,7 +949,9 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: palette.isDark ? palette.accent : AppColors.primary,
+                                color: palette.isDark
+                                    ? palette.accent
+                                    : AppColors.primary,
                                 letterSpacing: 1.0,
                               ),
                             ),
@@ -871,11 +978,11 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                           physics: const NeverScrollableScrollPhysics(),
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                            mainAxisExtent: 88,
-                          ),
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                                mainAxisExtent: 88,
+                              ),
                           itemCount: floorRooms.length,
                           itemBuilder: (ctx, i) {
                             final room = floorRooms[i];
@@ -889,7 +996,10 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                   // Staggered fade in cho từng tầng khi tải
                   return floorSection
                       .animate()
-                      .fadeIn(duration: AppDurations.normal, delay: (floorIndex * 40).ms)
+                      .fadeIn(
+                        duration: AppDurations.normal,
+                        delay: (floorIndex * 40).ms,
+                      )
                       .slideY(begin: 0.05, curve: AppMotion.enter);
                 }),
               const SizedBox(height: AppSpacing.xl),
@@ -918,7 +1028,9 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
             color: statusColor.withValues(alpha: palette.isDark ? 0.18 : 0.08),
             borderRadius: BorderRadius.circular(AppRadius.image),
             border: Border.all(
-              color: isUpdating ? statusColor.withValues(alpha: 0.4) : statusColor,
+              color: isUpdating
+                  ? statusColor.withValues(alpha: 0.4)
+                  : statusColor,
               width: 1.5,
             ),
             boxShadow: palette.isDark
@@ -931,7 +1043,10 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                     ),
                   ],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.sm,
+          ),
           child: Stack(
             children: [
               Column(
@@ -949,11 +1064,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                               color: statusColor,
                             ),
                           )
-                        : Icon(
-                            iconData,
-                            size: 14,
-                            color: statusColor,
-                          ),
+                        : Icon(iconData, size: 14, color: statusColor),
                   ),
                   // Room Number
                   Text(
@@ -1033,10 +1144,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
         Container(
           width: 8,
           height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 5),
         Text(

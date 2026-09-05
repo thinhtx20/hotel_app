@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hotel_app/core/constants/role_enum.dart';
 import 'package:hotel_app/di/injection_container.dart';
+import 'package:hotel_app/features/auth/bloc/auth_bloc.dart';
+import 'package:hotel_app/features/auth/bloc/auth_state.dart';
 import 'package:hotel_app/features/cashier/screens/cashier_invoices_screen.dart';
-import 'package:hotel_app/features/cashier/widgets/invoice_card.dart';
 import 'package:hotel_app/shared/models/invoice_model.dart';
+import 'package:hotel_app/shared/models/user_model.dart';
 import 'package:hotel_app/shared/repositories/invoice_repository.dart';
+
+class _FakeAuthBloc extends AuthBloc {
+  _FakeAuthBloc(UserModel user) : super() {
+    emit(AuthAuthenticated(user));
+  }
+}
 
 void main() {
   group('InvoiceModel Tests', () {
@@ -226,15 +236,218 @@ void main() {
       await tester.tap(backBtn);
       await tester.pump();
     });
+
+    testWidgets('Lễ tân: Hiển thị nhãn cố định Tuần này kèm khoảng ngày và không thể mở modal', (tester) async {
+      final weekRange = CashierInvoicesScreen.formatCurrentWeekRange();
+      final expectedLabel = 'Tuần này ($weekRange)';
+
+      final stubRepo = _StubInvoiceRepo([]);
+      if (sl.isRegistered<InvoiceRepository>()) {
+        sl.unregister<InvoiceRepository>();
+      }
+      sl.registerLazySingleton<InvoiceRepository>(() => stubRepo);
+
+      final recUser = UserModel(
+        id: 'rec-1',
+        email: 'rec@hotel.com',
+        fullName: 'Lễ Tân A',
+        role: UserRole.receptionist,
+      );
+      final authBloc = _FakeAuthBloc(recUser);
+
+      await tester.pumpWidget(
+        BlocProvider<AuthBloc>.value(
+          value: authBloc,
+          child: const MaterialApp(
+            home: CashierInvoicesScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text(expectedLabel), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_drop_down_rounded), findsNothing);
+
+      // Tapping label does not open bottom sheet
+      await tester.tap(find.text(expectedLabel));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Bộ Lọc Thời Gian Hóa Đơn'), findsNothing);
+
+      // Verify repo called with filterType: 'week', weekOffset: 0
+      expect(stubRepo.lastFilterType, 'week');
+      expect(stubRepo.lastWeekOffset, 0);
+    });
+
+    testWidgets('Admin: Hiển thị chip chọn bộ lọc thời gian, mở modal và đổi bộ lọc theo khoảng tháng', (tester) async {
+      final initialList = [
+        InvoiceModel(
+          id: 'inv-1',
+          invoiceCode: 'INV-001',
+          roomAmount: 1000000,
+          servicesAmount: 0,
+          discount: 0,
+          tax: 0,
+          finalAmount: 1000000,
+          paidAmount: 0,
+          paymentStatus: 'UNPAID',
+        ),
+      ];
+      final monthList = [
+        InvoiceModel(
+          id: 'inv-2',
+          invoiceCode: 'INV-002',
+          roomAmount: 2000000,
+          servicesAmount: 0,
+          discount: 0,
+          tax: 0,
+          finalAmount: 2000000,
+          paidAmount: 0,
+          paymentStatus: 'UNPAID',
+        ),
+      ];
+
+      final stubRepo = _StubInvoiceRepo(initialList);
+      if (sl.isRegistered<InvoiceRepository>()) {
+        sl.unregister<InvoiceRepository>();
+      }
+      sl.registerLazySingleton<InvoiceRepository>(() => stubRepo);
+
+      final adminUser = UserModel(
+        id: 'admin-1',
+        email: 'admin@hotel.com',
+        fullName: 'Quản trị viên',
+        role: UserRole.admin,
+      );
+      final authBloc = _FakeAuthBloc(adminUser);
+
+      await tester.pumpWidget(
+        BlocProvider<AuthBloc>.value(
+          value: authBloc,
+          child: const MaterialApp(
+            home: CashierInvoicesScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Admin has dropdown arrow icon
+      expect(find.byIcon(Icons.arrow_drop_down_rounded), findsOneWidget);
+      expect(find.text('Tuần này'), findsOneWidget);
+
+      // Tap chip to open modal
+      await tester.tap(find.text('Tuần này'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Modal options exist
+      expect(find.text('Bộ Lọc Thời Gian Hóa Đơn'), findsOneWidget);
+      expect(find.text('Tuần này (Mặc định)'), findsOneWidget);
+      expect(find.text('Theo khoảng tháng'), findsOneWidget);
+      expect(find.text('Theo năm'), findsOneWidget);
+
+      // Change stub repo data for the new query
+      stubRepo.stubInvoices = monthList;
+
+      // Select "Theo khoảng tháng"
+      await tester.tap(find.text('Theo khoảng tháng'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      // Tap "Áp Dụng Bộ Lọc"
+      await tester.tap(find.text('Áp Dụng Bộ Lọc'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Query sent to backend
+      expect(stubRepo.lastFilterType, 'month_range');
+      expect(stubRepo.lastYear, DateTime.now().year);
+
+      // Tab counts and list updated
+      expect(find.textContaining('INV-002'), findsOneWidget);
+      expect(find.textContaining('INV-001'), findsNothing);
+    });
+
+    testWidgets('Admin: Đổi bộ lọc theo năm và gọi API với filterType=year', (tester) async {
+      final stubRepo = _StubInvoiceRepo([]);
+      if (sl.isRegistered<InvoiceRepository>()) {
+        sl.unregister<InvoiceRepository>();
+      }
+      sl.registerLazySingleton<InvoiceRepository>(() => stubRepo);
+
+      final adminUser = UserModel(
+        id: 'admin-1',
+        email: 'admin@hotel.com',
+        fullName: 'Quản trị viên',
+        role: UserRole.admin,
+      );
+      final authBloc = _FakeAuthBloc(adminUser);
+
+      await tester.pumpWidget(
+        BlocProvider<AuthBloc>.value(
+          value: authBloc,
+          child: const MaterialApp(
+            home: CashierInvoicesScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Tap chip to open modal
+      await tester.tap(find.text('Tuần này'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Select "Theo năm"
+      await tester.tap(find.text('Theo năm'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      // Tap "Áp Dụng Bộ Lọc"
+      await tester.tap(find.text('Áp Dụng Bộ Lọc'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(stubRepo.lastFilterType, 'year');
+      expect(stubRepo.lastYear, DateTime.now().year);
+      expect(find.text('Năm ${DateTime.now().year}'), findsOneWidget);
+    });
   });
 }
 
 class _StubInvoiceRepo extends InvoiceRepository {
-  final List<InvoiceModel> stubInvoices;
+  List<InvoiceModel> stubInvoices;
+  String? lastFilterType;
+  int? lastYear;
+  int? lastFromMonth;
+  int? lastToMonth;
+  int? lastWeekOffset;
+
   _StubInvoiceRepo(this.stubInvoices);
 
   @override
-  Future<List<InvoiceModel>> fetchAll({String? status}) async => stubInvoices;
+  Future<List<InvoiceModel>> fetchAll({
+    String? status,
+    String? search,
+    String? filterType,
+    int? year,
+    int? fromMonth,
+    int? toMonth,
+    int? month,
+    int? weekOffset,
+    String? startDate,
+    String? endDate,
+  }) async {
+    lastFilterType = filterType;
+    lastYear = year;
+    lastFromMonth = fromMonth;
+    lastToMonth = toMonth;
+    lastWeekOffset = weekOffset;
+    return stubInvoices;
+  }
 
   @override
   Future<Map<String, dynamic>> fetchSummary({DateTime? date}) async => {

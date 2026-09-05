@@ -71,7 +71,7 @@ class _StaffAndServicesScreenState extends State<StaffAndServicesScreen> {
       body: IndexedStack(
         index: _selectedSegment,
         children: const [
-          UserManagementScreen(),
+          UserManagementScreen(isEmbedded: true),
           ServiceCatalogScreen(),
         ],
       ),

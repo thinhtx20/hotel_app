@@ -1,26 +1,39 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/network/api_endpoints.dart';
+import '../../../core/network/api_result.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/models/invoice_model.dart';
+import '../../../shared/repositories/invoice_repository.dart';
 import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/skeletons/invoice_row_skeleton.dart';
 import '../../cashier/widgets/invoice_card.dart';
 import '../../cashier/widgets/invoice_detail_sheet.dart';
 
 /// Tab "Hóa đơn của tôi" của app khách hàng.
 ///
-/// Chỉ gọi `GET /invoices/my` — endpoint duy nhất ở nhóm hóa đơn mà CUSTOMER
-/// được phép (`design/FE-ROLE-MATRIX.md` §3.6). Tuyệt đối không gọi
+/// Khách chỉ đọc `GET /invoices/my` và tự gửi yêu cầu trả tiền qua
+/// `POST /invoices/:id/payment-requests` — endpoint duy nhất ở nhóm hóa đơn mà
+/// CUSTOMER được ghi (`design/FE-ROLE-MATRIX.md` §3.6). Tuyệt đối không gọi
 /// `GET /invoices` (danh sách toàn khách sạn) hay `POST /invoices/:id/pay`:
 /// cả hai đều trả `403` cho khách.
+///
+/// Số còn phải trả đọc thẳng `remainingAmount` của máy chủ; nút thanh toán bám
+/// theo cờ `canRequestPayment`.
 class MyInvoicesScreen extends StatefulWidget {
   final DioClient? dioClient;
-  const MyInvoicesScreen({super.key, this.dioClient});
+  final InvoiceRepository? invoiceRepository;
+
+  const MyInvoicesScreen({
+    super.key,
+    this.dioClient,
+    this.invoiceRepository,
+  });
 
   @override
   State<MyInvoicesScreen> createState() => _MyInvoicesScreenState();
@@ -29,10 +42,16 @@ class MyInvoicesScreen extends StatefulWidget {
 class _MyInvoicesScreenState extends State<MyInvoicesScreen> {
   DioClient get _dioClient => widget.dioClient ?? DioClient();
 
+  late final InvoiceRepository _invoiceRepo =
+      widget.invoiceRepository ?? InvoiceRepository(dioClient: _dioClient);
+
   List<InvoiceModel> _invoices = [];
   bool _isLoading = true;
   bool _hasError = false;
   int _selectedTabIndex = 0; // 0: Chưa thanh toán, 1: Đã hoàn tất, 2: Tất cả
+
+  /// Id hóa đơn đang gửi yêu cầu thanh toán — khóa nút để không gửi hai lần.
+  String? _requestingInvoiceId;
 
   static const List<String> _tabs = ['Chưa thanh toán', 'Đã hoàn tất', 'Tất cả'];
 
@@ -48,19 +67,17 @@ class _MyInvoicesScreenState extends State<MyInvoicesScreen> {
     }
     try {
       final res = await _dioClient.dio.get(ApiEndpoints.invoicesMy);
-      if (res.statusCode == 200 && res.data['success'] == true) {
-        final list = res.data['data'] as List? ?? const [];
-        if (mounted) {
-          setState(() {
-            _invoices = list
-                .map((e) => InvoiceModel.fromJson(e as Map<String, dynamic>))
-                .toList();
-            _isLoading = false;
-            _hasError = false;
-          });
-        }
-        return;
+      final list = ApiResult.unwrapList(res);
+      if (mounted) {
+        setState(() {
+          _invoices = list
+              .map((e) => InvoiceModel.fromJson(e))
+              .toList();
+          _isLoading = false;
+          _hasError = false;
+        });
       }
+      return;
     } catch (_) {
       // Rơi xuống nhánh lỗi bên dưới.
     }
@@ -97,7 +114,46 @@ class _MyInvoicesScreenState extends State<MyInvoicesScreen> {
       invoice: invoice,
       onPrintReceipt: () => Navigator.of(context).maybePop(),
       // onCollectPayment bỏ trống: khách không được ghi nhận thanh toán.
+      onRequestPayment: () {
+        Navigator.of(context).maybePop();
+        _requestFullPayment(invoice);
+      },
     );
+  }
+
+  /// Khách bấm "Thanh toán toàn bộ": `POST /invoices/:id/payment-requests` với
+  /// `amount` bỏ trống — máy chủ tự lấy đúng số còn lại nên không bao giờ lệch
+  /// với `remainingAmount` đang hiển thị.
+  ///
+  /// Tiền chưa vào két ngay: máy chủ tạo một dòng `PENDING`, lễ tân đối chiếu
+  /// sao kê rồi xác nhận thì `paidAmount` mới tăng.
+  Future<void> _requestFullPayment(InvoiceModel invoice) async {
+    if (_requestingInvoiceId != null) return;
+    setState(() => _requestingInvoiceId = invoice.id);
+
+    try {
+      await _invoiceRepo.createPaymentRequest(
+        invoice.id,
+        paymentMethod: 'BANK_TRANSFER',
+      );
+      if (!mounted) return;
+      AppNotification.showSuccess(
+        context,
+        'Đã gửi yêu cầu thanh toán ${Formatters.formatCurrency(invoice.remainingAmount)}. '
+        'Lễ tân sẽ đối chiếu và xác nhận.',
+      );
+      // Nạp lại để lấy dòng PENDING và cờ canRequestPayment mới từ máy chủ.
+      await _fetchInvoices(isSilent: true);
+    } catch (e) {
+      if (!mounted) return;
+      AppNotification.showError(
+        context,
+        e,
+        title: 'Gửi yêu cầu thanh toán thất bại',
+      );
+    } finally {
+      if (mounted) setState(() => _requestingInvoiceId = null);
+    }
   }
 
   @override
@@ -155,7 +211,10 @@ class _MyInvoicesScreenState extends State<MyInvoicesScreen> {
                   child: InvoiceCard(
                     invoice: visible[i],
                     onTap: () => _showDetail(visible[i]),
-                    // Không truyền onCollectPayment — ẩn nút thu tiền.
+                    // Không truyền onCollectPayment — ẩn nút thu tiền của quầy.
+                    onRequestPayment: () => _requestFullPayment(visible[i]),
+                    isRequestingPayment:
+                        _requestingInvoiceId == visible[i].id,
                   ),
                 ),
               ),

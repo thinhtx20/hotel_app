@@ -214,7 +214,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             } else if (_currentStep == ForgotPasswordStep.verifyOtp) {
               setState(() => _currentStep = ForgotPasswordStep.enterEmail);
             } else {
-              context.pop();
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/login');
+              }
             }
           },
         ),

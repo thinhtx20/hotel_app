@@ -911,11 +911,17 @@ class _StickyDiscoveryHeader extends SliverPersistentHeaderDelegate {
   static const double _chipsH = 88;
   static const double _bottomGap = 10;
 
+  /// Đường kẻ dưới lúc dính. `BoxDecoration.border` chiếm chỗ thật trong layout
+  /// nên phải cộng vào chiều cao, nếu không nó ăn mất 1px của [_bottomGap].
+  static const double _dividerHeight = 1;
+
   bool get _hasCategories => categories.length > 1;
 
-  double get _height => _hasCategories
-      ? _topGap + _searchH + _midGap + _chipsH + _bottomGap
-      : _topGap + _searchH + _bottomGap;
+  double get _height =>
+      (_hasCategories
+          ? _topGap + _searchH + _midGap + _chipsH + _bottomGap
+          : _topGap + _searchH + _bottomGap) +
+      _dividerHeight;
 
   @override
   double get maxExtent => _height;
@@ -941,7 +947,7 @@ class _StickyDiscoveryHeader extends SliverPersistentHeaderDelegate {
           border: Border(
             bottom: BorderSide(
               color: overlapsContent ? palette.border : Colors.transparent,
-              width: 1,
+              width: _dividerHeight,
             ),
           ),
           boxShadow: overlapsContent

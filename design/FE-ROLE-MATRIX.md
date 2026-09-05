@@ -320,6 +320,60 @@ class ApiEndpoints {
 
 ---
 
+## 6b. Sổ thu tiền (payments) & Khách trả số còn lại
+
+`invoices.paidAmount` không còn được cộng/trừ thủ công ở bất kỳ đâu. Backend
+luôn tính lại bằng **Σ(PAYMENT + DEPOSIT đã xác nhận) − Σ(REFUND)**. Tiền cọc,
+tiền khách trả qua app, tiền thu tại quầy và tiền hoàn nằm chung một sổ, nên
+`payments[]` trả cho khách là **lịch sử thật**, không phải một dòng dựng lại từ
+số tổng. Dữ liệu cũ được quy đổi thành một dòng thu lúc khởi động
+(`schema-sync.ts`), chạy lại nhiều lần vẫn an toàn.
+
+### Endpoint
+
+| Endpoint | Method | Role | Ghi chú |
+|---|:--:|---|---|
+| `/invoices/:id/payment-requests` | POST | CUSTOMER | Bỏ trống `amount` = trả toàn bộ số còn lại (nút "Thanh toán toàn bộ"). Tạo dòng `PENDING`, **`paidAmount` chưa đổi**. Mỗi hóa đơn chỉ treo được **một** yêu cầu. |
+| `/invoices/payment-requests` | GET | ADMIN, RECEPTIONIST | Danh sách yêu cầu chờ đối chiếu sao kê. |
+| `/invoices/payments/:paymentId/confirm` | POST | ADMIN, RECEPTIONIST | Xác nhận đã nhận tiền → `paidAmount` mới tăng. |
+| `/bookings/:id/checkout-preview` | GET | ADMIN, RECEPTIONIST, CASHIER | Trả `amountDue` + bảng kê đầy đủ, **chỉ đọc**, không đổi trạng thái. Liệt kê luôn các yêu cầu khách gửi qua app chưa đối chiếu để tránh thu trùng. |
+| `/bookings/:id/check-out` | POST | ADMIN, RECEPTIONIST, CASHIER | Nhận `amountCollected` = số thu ngân thực nhận. Bỏ trống = không thu thêm; khách vẫn trả phòng (phòng sang `CLEANING`), hóa đơn ở `PARTIAL`/`UNPAID`. |
+
+Mọi endpoint đều **chặn thu vượt số còn lại**.
+
+### Quy ước phía FE
+
+- **Đọc thẳng `remainingAmount`** của máy chủ, không tự trừ
+  `finalAmount - paidAmount` (`InvoiceModel.remainingAmount`, `rawRemainingAmount`).
+- Nút thanh toán của khách bám cờ **`canRequestPayment`**, không tự suy luận.
+- `GET /invoices/my` **giữ nguyên kiểu mảng** — không bọc thành object tổng,
+  vì sẽ làm hỏng màn `MyInvoicesScreen` đang chạy.
+- Dòng `PENDING` trong `payments[]` là tiền **chưa vào két**: hiển thị riêng
+  ("Chờ đối chiếu"), không cộng vào số đã thu (`PaymentTransactionModel.signedAmount`
+  trả 0 cho dòng chưa xác nhận và dấu âm cho `REFUND`).
+- Hóa đơn còn nợ sau check-out tự hiện trong `GET /invoices/my` với
+  `remainingAmount > 0` để khách trả sau qua app.
+
+### Ảnh hưởng dây chuyền phía backend (FE chỉ hiển thị)
+
+- `approve()` ghi tiền cọc thành một dòng **`DEPOSIT`** thay vì cộng thẳng vào
+  `paidAmount` — nếu không, tiền cọc sẽ bị xóa ở lần tính lại đầu tiên.
+- `amountCollected` trong chốt ca (`GET /invoices/summary?staffId=me`) và
+  `/analytics/staff-performance` nay lấy từ sổ thu tiền, để một hóa đơn thu
+  nhiều lần không bị cộng trọn cho người chạm cuối cùng.
+
+### Màn hình FE liên quan
+
+| Màn hình | Vai trò | Việc |
+|---|---|---|
+| `MyInvoicesScreen` | CUSTOMER | Nút "Thanh toán toàn bộ", trạng thái "Chờ lễ tân đối chiếu". |
+| `PaymentRequestsScreen` 🆕 (`/receptionist/payment-requests`) | ADMIN, RECEPTIONIST | Dò sao kê rồi bấm xác nhận từng yêu cầu. |
+| `CheckOutSheet` | ADMIN, RECEPTIONIST | Nạp `checkout-preview`, ô "Thu tại quầy" → `amountCollected`. |
+| `CashierInvoicesScreen` | ADMIN, RECEPTIONIST | Badge số yêu cầu chờ đối chiếu, doanh thu hôm nay cộng từ sổ. |
+| `InvoiceDetailSheet` | Tất cả | Vẽ sổ thu tiền theo loại (Tiền cọc / Thanh toán / Hoàn tiền) và trạng thái. |
+
+---
+
 ## 7. Checklist Rà soát Mã nguồn FE (Dọn dẹp triệt để `cashier`)
 
 Hãy kiểm tra và thực hiện lần lượt các vị trí sau trong codebase `hotel_app`:

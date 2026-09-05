@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hotel_app/core/constants/role_enum.dart';
@@ -40,6 +41,13 @@ void main() {
   });
 
   testWidgets('AdminTabScaffold renders 5 tabs and navigates correctly', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
     final adminUser = UserModel(
       id: 'admin-1',
       email: 'admin@hotel.com',

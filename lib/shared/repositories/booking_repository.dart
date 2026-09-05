@@ -5,17 +5,29 @@ import '../../core/network/api_error.dart';
 import '../../core/network/api_result.dart';
 import '../../core/network/dio_client.dart';
 import '../models/booking_model.dart';
+import '../models/checkout_preview_model.dart';
 import '../models/invoice_model.dart';
 
 class BookingRepository extends ChangeNotifier {
   final DioClient _dioClient;
   int _pendingCount = 0;
   PageMeta _lastMeta = const PageMeta();
+  List<BookingModel> _cachedAll = [];
+  DateTime? _cachedAllAt;
 
   int get pendingCount => _pendingCount;
 
   /// Thông tin phân trang của lần gọi [fetchBookings] gần nhất.
   PageMeta get lastMeta => _lastMeta;
+
+  /// Danh sách của lần [fetchAllBookings] không kèm bộ lọc gần nhất.
+  ///
+  /// Màn "Duyệt đơn" vẽ ngay dữ liệu này rồi mới gọi API làm mới ngầm, nhờ vậy
+  /// mở lại tab không phải nhìn khung skeleton thêm lần nữa.
+  List<BookingModel> get cachedBookings => List.unmodifiable(_cachedAll);
+
+  /// Thời điểm nạp [cachedBookings]; `null` khi phiên này chưa tải lần nào.
+  DateTime? get cachedBookingsAt => _cachedAllAt;
 
   BookingRepository({DioClient? dioClient})
       : _dioClient = dioClient ?? DioClient();
@@ -25,7 +37,19 @@ class BookingRepository extends ChangeNotifier {
   void clearSession() {
     _pendingCount = 0;
     _lastMeta = const PageMeta();
+    _cachedAll = [];
+    _cachedAllAt = null;
     notifyListeners();
+  }
+
+  /// Ghi đè một đơn trong cache sau khi duyệt / từ chối / nhận phòng để lần mở
+  /// màn kế tiếp không vẽ lại trạng thái cũ.
+  void _syncCache(BookingModel booking) {
+    final idx = _cachedAll.indexWhere((b) => b.id == booking.id);
+    if (idx != -1) {
+      _cachedAll[idx] = booking;
+      _cachedAllAt = DateTime.now();
+    }
   }
 
   /// Định dạng ngày `YYYY-MM-DD` mà API dùng cho các bộ lọc khoảng ngày.
@@ -53,12 +77,92 @@ class BookingRepository extends ChangeNotifier {
     int? page,
     int? limit,
   }) async {
-    try {
-      // API nhận `?status=PENDING,CONFIRMED` hoặc lặp lại tham số.
-      final statusFilter = <String>[
+    final statusFilter = _statusFilter(status, statuses);
+    final result = await _fetchPage(
+      status: status,
+      statuses: statuses,
+      customerId: customerId,
+      roomId: roomId,
+      checkInFrom: checkInFrom,
+      checkInTo: checkInTo,
+      checkOutFrom: checkOutFrom,
+      checkOutTo: checkOutTo,
+      search: search,
+      page: page,
+      limit: limit,
+    );
+
+    _lastMeta = result.meta;
+    final bookings = result.items;
+
+    if (statusFilter.length == 1 && statusFilter.first == 'PENDING') {
+      _pendingCount = result.meta.total > 0 ? result.meta.total : bookings.length;
+      notifyListeners();
+    } else if (statusFilter.isEmpty) {
+      _pendingCount = bookings.where((b) => b.status == 'PENDING').length;
+      notifyListeners();
+    }
+
+    return bookings;
+  }
+
+  /// Lấy một trang danh sách booking kèm thông tin phân trang chuẩn:
+  /// GET /bookings?status=...&page=...&limit=...
+  Future<PaginatedResult<BookingModel>> fetchBookingsPage({
+    String? status,
+    List<String>? statuses,
+    String? customerId,
+    String? roomId,
+    DateTime? checkInFrom,
+    DateTime? checkInTo,
+    DateTime? checkOutFrom,
+    DateTime? checkOutTo,
+    String? search,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final result = await _fetchPage(
+      status: status,
+      statuses: statuses,
+      customerId: customerId,
+      roomId: roomId,
+      checkInFrom: checkInFrom,
+      checkInTo: checkInTo,
+      checkOutFrom: checkOutFrom,
+      checkOutTo: checkOutTo,
+      search: search,
+      page: page,
+      limit: limit,
+    );
+    _lastMeta = result.meta;
+    return PaginatedResult<BookingModel>(items: result.items, meta: result.meta);
+  }
+
+  /// API nhận `?status=PENDING,CONFIRMED` hoặc lặp lại tham số.
+  static List<String> _statusFilter(String? status, List<String>? statuses) => [
         if (status != null && status.isNotEmpty) status,
         ...?statuses,
       ];
+
+  /// Gọi GET /bookings cho đúng một trang và trả kèm `meta`.
+  ///
+  /// Không đụng vào [_lastMeta] / [_pendingCount] nên nhiều trang có thể chạy
+  /// song song mà không giẫm lên state dùng chung của repository.
+  Future<({List<BookingModel> items, PageMeta meta})> _fetchPage({
+    String? status,
+    List<String>? statuses,
+    String? customerId,
+    String? roomId,
+    DateTime? checkInFrom,
+    DateTime? checkInTo,
+    DateTime? checkOutFrom,
+    DateTime? checkOutTo,
+    String? search,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      final statusFilter = _statusFilter(status, statuses);
 
       final queryParams = <String, dynamic>{
         if (statusFilter.isNotEmpty) 'status': statusFilter.join(','),
@@ -79,19 +183,10 @@ class BookingRepository extends ChangeNotifier {
       );
 
       final paged = ApiResult.unwrapPage(res);
-      _lastMeta = paged.meta;
-      final bookings =
-          paged.items.map((e) => BookingModel.fromJson(e)).toList();
-
-      if (statusFilter.length == 1 && statusFilter.first == 'PENDING') {
-        _pendingCount = paged.meta.total > 0 ? paged.meta.total : bookings.length;
-        notifyListeners();
-      } else if (statusFilter.isEmpty) {
-        _pendingCount = bookings.where((b) => b.status == 'PENDING').length;
-        notifyListeners();
-      }
-
-      return bookings;
+      return (
+        items: paged.items.map((e) => BookingModel.fromJson(e)).toList(),
+        meta: paged.meta,
+      );
     } on DioException catch (e) {
       throw ApiError.fromDioException(e);
     } catch (e) {
@@ -103,7 +198,9 @@ class BookingRepository extends ChangeNotifier {
   ///
   /// API mới mặc định chỉ trả 20 bản ghi mỗi trang, nên các màn hình tự chia
   /// tab / lọc phía client phải gom đủ dữ liệu trước khi hiển thị.
-  /// [maxPages] chặn số vòng lặp để không treo UI với dữ liệu quá lớn.
+  /// Trang đầu cho biết `meta.totalPages`, các trang còn lại được gọi song song
+  /// thay vì nối tiếp — trước đây 5 trang là 5 lần chờ round-trip cộng dồn.
+  /// [maxPages] chặn số trang tối đa để không treo UI với dữ liệu quá lớn.
   Future<List<BookingModel>> fetchAllBookings({
     String? status,
     List<String>? statuses,
@@ -117,11 +214,9 @@ class BookingRepository extends ChangeNotifier {
     int maxPages = 10,
   }) async {
     const pageSize = 100; // Giới hạn tối đa mỗi trang theo tài liệu API
-    final all = <BookingModel>[];
-    var page = 1;
 
-    while (page <= maxPages) {
-      final batch = await fetchBookings(
+    Future<({List<BookingModel> items, PageMeta meta})> loadPage(int page) {
+      return _fetchPage(
         status: status,
         statuses: statuses,
         customerId: customerId,
@@ -134,15 +229,43 @@ class BookingRepository extends ChangeNotifier {
         page: page,
         limit: pageSize,
       );
-      all.addAll(batch);
-
-      if (batch.isEmpty || !_lastMeta.hasNextPage) break;
-      page++;
     }
 
-    if (status == null && (statuses == null || statuses.isEmpty)) {
+    final first = await loadPage(1);
+    _lastMeta = first.meta;
+
+    final all = <BookingModel>[...first.items];
+    final lastPage =
+        first.meta.totalPages < maxPages ? first.meta.totalPages : maxPages;
+
+    if (first.items.isNotEmpty && lastPage > 1) {
+      final rest = await Future.wait([
+        for (var page = 2; page <= lastPage; page++) loadPage(page),
+      ]);
+      for (final batch in rest) {
+        all.addAll(batch.items);
+      }
+    }
+
+    final statusFilter = _statusFilter(status, statuses);
+    if (statusFilter.isEmpty) {
       _pendingCount = all.where((b) => b.status == 'PENDING').length;
       notifyListeners();
+    }
+
+    // Chỉ cache lần gọi "lấy tất cả" thật sự, vì đây là dữ liệu màn Duyệt đơn
+    // dùng lại; các lần gọi kèm bộ lọc là tập con nên không được ghi đè.
+    final isUnfiltered = statusFilter.isEmpty &&
+        (customerId == null || customerId.isEmpty) &&
+        (roomId == null || roomId.isEmpty) &&
+        checkInFrom == null &&
+        checkInTo == null &&
+        checkOutFrom == null &&
+        checkOutTo == null &&
+        (search == null || search.isEmpty);
+    if (isUnfiltered) {
+      _cachedAll = List.of(all);
+      _cachedAllAt = DateTime.now();
     }
 
     return all;
@@ -211,7 +334,26 @@ class BookingRepository extends ChangeNotifier {
     try {
       final res = await _dioClient.dio.post(ApiEndpoints.checkIn(id));
       final data = ApiResult.unwrapMap(res);
-      return BookingModel.fromJson(data);
+      final booking = BookingModel.fromJson(data);
+      _syncCache(booking);
+      return booking;
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Bảng kê & số còn phải thu trước khi trả phòng:
+  /// GET /bookings/:id/checkout-preview
+  ///
+  /// Chỉ đọc — không đổi trạng thái đơn hay phòng, nên gọi được nhiều lần khi
+  /// thu ngân sửa giảm giá / VAT trên sheet.
+  Future<CheckoutPreviewModel> fetchCheckOutPreview(String id) async {
+    try {
+      final res = await _dioClient.dio.get(ApiEndpoints.checkOutPreview(id));
+      final data = ApiResult.unwrapMap(res);
+      return CheckoutPreviewModel.fromJson(data);
     } on DioException catch (e) {
       throw ApiError.fromDioException(e);
     } catch (e) {
@@ -220,18 +362,25 @@ class BookingRepository extends ChangeNotifier {
   }
 
   /// Trả phòng & xuất hóa đơn: POST /bookings/:id/check-out
-  /// Server trả về cả Booking và Invoice
+  /// Server trả về cả Booking và Invoice.
+  ///
+  /// [amountCollected] là số thu ngân **thực nhận** tại quầy. Bỏ trống nghĩa là
+  /// không thu thêm: khách vẫn được trả phòng (phòng sang `CLEANING`), hóa đơn
+  /// ở `PARTIAL`/`UNPAID` và tự xuất hiện trong `GET /invoices/my` với
+  /// `remainingAmount > 0`, `canRequestPayment: true` để khách trả sau qua app.
   Future<(BookingModel, InvoiceModel)> checkOut(
     String id, {
     String paymentMethod = 'CASH',
     num? discount,
     num? taxRate,
+    num? amountCollected,
   }) async {
     try {
       final payload = {
         'paymentMethod': paymentMethod,
         'discount': ?discount,
         'taxRate': ?taxRate,
+        'amountCollected': ?amountCollected,
       };
 
       final res = await _dioClient.dio.post(
@@ -271,7 +420,9 @@ class BookingRepository extends ChangeNotifier {
       );
 
       final data = ApiResult.unwrapMap(res);
-      return BookingModel.fromJson(data);
+      final booking = BookingModel.fromJson(data);
+      _syncCache(booking);
+      return booking;
     } on DioException catch (e) {
       throw ApiError.fromDioException(e);
     } catch (e) {
@@ -329,6 +480,7 @@ class BookingRepository extends ChangeNotifier {
       final booking =
           BookingModel.fromJson(ApiResult.unwrapNestedMap(res, 'booking'));
 
+      _syncCache(booking);
       _decreasePendingCount();
       return booking;
     } on DioException catch (e) {
@@ -371,6 +523,7 @@ class BookingRepository extends ChangeNotifier {
       final booking =
           BookingModel.fromJson(ApiResult.unwrapNestedMap(res, 'booking'));
 
+      _syncCache(booking);
       _decreasePendingCount();
       return booking;
     } on DioException catch (e) {
@@ -399,6 +552,7 @@ class BookingRepository extends ChangeNotifier {
       final booking =
           BookingModel.fromJson(ApiResult.unwrapNestedMap(res, 'booking'));
 
+      _syncCache(booking);
       _decreasePendingCount();
       return booking;
     } on DioException catch (e) {
@@ -434,7 +588,9 @@ class BookingRepository extends ChangeNotifier {
       final data = ApiResult.unwrapMap(res);
       // API may return { booking: {...} } or {...} directly
       final bookingData = data.containsKey('booking') ? data['booking'] : data;
-      return BookingModel.fromJson(bookingData);
+      final booking = BookingModel.fromJson(bookingData);
+      _syncCache(booking);
+      return booking;
     } on DioException catch (e) {
       throw ApiError.fromDioException(e);
     } catch (e) {

@@ -18,12 +18,17 @@ class InvoiceDetailSheet extends StatelessWidget {
   final VoidCallback? onCollectPayment;
   final Function(InvoiceModel updated)? onRefund;
 
+  /// Nút "Thanh toán toàn bộ" của khách —
+  /// `POST /invoices/:id/payment-requests` với `amount` bỏ trống.
+  final VoidCallback? onRequestPayment;
+
   const InvoiceDetailSheet({
     super.key,
     required this.invoice,
     required this.onPrintReceipt,
     this.onCollectPayment,
     this.onRefund,
+    this.onRequestPayment,
   });
 
   static Future<void> show({
@@ -32,6 +37,7 @@ class InvoiceDetailSheet extends StatelessWidget {
     required VoidCallback onPrintReceipt,
     VoidCallback? onCollectPayment,
     Function(InvoiceModel updated)? onRefund,
+    VoidCallback? onRequestPayment,
   }) {
     return AppBottomSheet.show(
       context: context,
@@ -40,6 +46,7 @@ class InvoiceDetailSheet extends StatelessWidget {
         onPrintReceipt: onPrintReceipt,
         onCollectPayment: onCollectPayment,
         onRefund: onRefund,
+        onRequestPayment: onRequestPayment,
       ),
     );
   }
@@ -88,6 +95,121 @@ class InvoiceDetailSheet extends StatelessWidget {
               color: isNegative
                   ? palette.error
                   : (color ?? (isBold ? palette.ink : palette.ink)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Một dòng của sổ thu tiền.
+  ///
+  /// Dòng `PENDING` là tiền khách đã bấm trả qua app nhưng chưa vào két — vẽ
+  /// khác hẳn để không ai nhầm là đã thu.
+  Widget _buildLedgerRow(BuildContext context, PaymentTransactionModel txn) {
+    final palette = context.palette;
+
+    final Color tone;
+    final IconData icon;
+    if (txn.isPending) {
+      tone = palette.warningInk;
+      icon = Icons.schedule_rounded;
+    } else if (txn.isRefund) {
+      tone = palette.error;
+      icon = Icons.undo_rounded;
+    } else if (txn.isDeposit) {
+      tone = palette.accent;
+      icon = Icons.savings_outlined;
+    } else {
+      tone = palette.statusAvailable;
+      icon = Icons.check_rounded;
+    }
+
+    final sign = txn.isRefund ? '- ' : '';
+    final subtitle = [
+      txn.typeLabel,
+      _getMethodLabel(txn.paymentMethod),
+      Formatters.formatDateTime(txn.timestamp),
+      if (txn.cashierName != null && txn.cashierName!.isNotEmpty)
+        txn.cashierName!,
+    ].join(' • ');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: txn.isPending ? palette.warningSurface : palette.surface,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(
+          color: txn.isPending
+              ? palette.warning.withValues(alpha: 0.4)
+              : palette.border,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: tone.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 16, color: tone),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '$sign${Formatters.formatCurrency(txn.amount.abs())}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: txn.isRefund ? palette.error : palette.ink,
+                        ),
+                      ),
+                    ),
+                    if (txn.isPending) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: palette.warning.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                        ),
+                        child: Text(
+                          'CHỜ ĐỐI CHIẾU',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: palette.warningInk,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 11, color: palette.inkMuted),
+                ),
+                if (txn.notes != null && txn.notes!.isNotEmpty)
+                  Text(
+                    txn.notes!,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: palette.inkFaint,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
@@ -324,6 +446,8 @@ class InvoiceDetailSheet extends StatelessWidget {
                     fontSize: 15,
                   ),
                   const SizedBox(height: 6),
+                  // `paidAmount` = Σ(PAYMENT + DEPOSIT đã xác nhận) − Σ(REFUND),
+                  // do máy chủ tính lại nên FE chỉ hiển thị.
                   _buildSummaryRow(
                     context,
                     'Đã thanh toán',
@@ -331,6 +455,21 @@ class InvoiceDetailSheet extends StatelessWidget {
                     color: palette.statusAvailableInk,
                     isBold: true,
                   ),
+                  if (invoice.depositAmount > 0)
+                    _buildSummaryRow(
+                      context,
+                      'Trong đó tiền cọc',
+                      Formatters.formatCurrency(invoice.depositAmount),
+                      fontSize: 12,
+                    ),
+                  if (invoice.refundedAmount > 0)
+                    _buildSummaryRow(
+                      context,
+                      'Đã hoàn trả khách',
+                      '- ${Formatters.formatCurrency(invoice.refundedAmount)}',
+                      fontSize: 12,
+                      isNegative: true,
+                    ),
                   if (invoice.remainingAmount > 0) ...[
                     const SizedBox(height: 6),
                     _buildSummaryRow(
@@ -342,15 +481,24 @@ class InvoiceDetailSheet extends StatelessWidget {
                       fontSize: 15,
                     ),
                   ],
+                  if (invoice.hasPendingPaymentRequest)
+                    _buildSummaryRow(
+                      context,
+                      'Khách đã gửi, chờ đối chiếu',
+                      Formatters.formatCurrency(invoice.pendingRequestedAmount),
+                      color: palette.warningInk,
+                      fontSize: 12,
+                    ),
                 ],
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            // Payment Transactions Timeline
+            // Sổ thu tiền: tiền cọc, tiền khách trả qua app, tiền thu tại quầy
+            // và tiền hoàn nằm chung một dòng thời gian — đây là lịch sử thật.
             if (invoice.transactions.isNotEmpty) ...[
               Text(
-                'Lịch sử các đợt thanh toán:',
+                'Sổ thu tiền của hóa đơn:',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -359,63 +507,7 @@ class InvoiceDetailSheet extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               for (final txn in invoice.transactions)
-                Container(
-                  margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: palette.surface,
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                    border: Border.all(color: palette.border),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(AppSpacing.sm),
-                        decoration: BoxDecoration(
-                          color: palette.statusAvailable.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.check_rounded,
-                          size: 16,
-                          color: palette.statusAvailable,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              Formatters.formatCurrency(txn.amount),
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: palette.ink,
-                              ),
-                            ),
-                            Text(
-                              '${_getMethodLabel(txn.paymentMethod)} • ${Formatters.formatDateTime(txn.timestamp)}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: palette.inkMuted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (txn.notes != null && txn.notes!.isNotEmpty)
-                        Text(
-                          txn.notes!,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: palette.inkFaint,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+                _buildLedgerRow(context, txn),
             ],
             const SizedBox(height: AppSpacing.lg),
 
@@ -459,6 +551,52 @@ class InvoiceDetailSheet extends StatelessWidget {
                       side: BorderSide(color: palette.statusOccupied),
                       padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
+                    ),
+                  ),
+                ],
+                if (!isPaid &&
+                    onCollectPayment == null &&
+                    onRequestPayment != null &&
+                    invoice.canRequestPayment) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    flex: 2,
+                    child: PressableScale(
+                      onTap: onRequestPayment!,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: AppGradients.gold,
+                          borderRadius: BorderRadius.circular(AppRadius.button),
+                          boxShadow: AppShadows.goldGlow,
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius:
+                                BorderRadius.circular(AppRadius.button),
+                            onTap: onRequestPayment,
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 13),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.account_balance_wallet_rounded,
+                                      color: Colors.white, size: 18),
+                                  SizedBox(width: AppSpacing.sm),
+                                  Text(
+                                    'Thanh toán toàn bộ',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],

@@ -1,7 +1,10 @@
 import 'package:get_it/get_it.dart';
 import '../core/network/dio_client.dart';
 import '../core/storage/token_storage.dart';
+import '../features/admin/bloc/today_check_outs_bloc.dart';
+import '../features/admin/bloc/user_bloc.dart';
 import '../features/auth/bloc/auth_bloc.dart';
+import '../features/cashier/bloc/invoice_bloc.dart';
 import '../shared/repositories/analytics_repository.dart';
 import '../shared/repositories/booking_repository.dart';
 import '../shared/repositories/invoice_repository.dart';
@@ -47,6 +50,21 @@ Future<void> initDependencies() async {
       tokenStorage: sl<TokenStorage>(),
       onSessionReset: clearUserScopedCaches,
     ),
+  );
+
+  // Features - Cashier / Invoices
+  sl.registerFactory<InvoiceBloc>(
+    () => InvoiceBloc(invoiceRepository: sl<InvoiceRepository>()),
+  );
+
+  // Features - Admin / Users
+  sl.registerFactory<UserBloc>(
+    () => UserBloc(userRepository: sl<UserRepository>()),
+  );
+
+  // Features - Admin / Today Check-Outs
+  sl.registerFactory<TodayCheckOutsBloc>(
+    () => TodayCheckOutsBloc(bookingRepository: sl<BookingRepository>()),
   );
 }
 

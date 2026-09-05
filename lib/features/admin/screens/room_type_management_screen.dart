@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
@@ -21,11 +22,13 @@ class RoomTypeManagementScreen extends StatefulWidget {
   const RoomTypeManagementScreen({super.key, this.roomRepository});
 
   @override
-  State<RoomTypeManagementScreen> createState() => _RoomTypeManagementScreenState();
+  State<RoomTypeManagementScreen> createState() =>
+      _RoomTypeManagementScreenState();
 }
 
 class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
-  late final RoomRepository _roomRepo = widget.roomRepository ?? sl<RoomRepository>();
+  late final RoomRepository _roomRepo =
+      widget.roomRepository ?? sl<RoomRepository>();
 
   bool _isLoading = true;
   String? _errorMessage;
@@ -72,7 +75,9 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = e is ApiError ? e.message : 'Không thể tải danh sách hạng phòng';
+          _errorMessage = e is ApiError
+              ? e.message
+              : 'Không thể tải danh sách hạng phòng';
         });
       }
     }
@@ -93,12 +98,20 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
     final isEditing = existingType != null;
     final formKey = GlobalKey<FormState>();
 
-    final nameController = TextEditingController(text: existingType?.name ?? '');
-    final codeController = TextEditingController(text: existingType?.code ?? '');
-    final priceController = TextEditingController(
-      text: existingType != null ? Formatters.formatNumber(existingType.basePrice.toInt()) : '',
+    final nameController = TextEditingController(
+      text: existingType?.name ?? '',
     );
-    final descController = TextEditingController(text: existingType?.description ?? '');
+    final codeController = TextEditingController(
+      text: existingType?.code ?? '',
+    );
+    final priceController = TextEditingController(
+      text: existingType != null
+          ? Formatters.formatNumber(existingType.basePrice.toInt())
+          : '',
+    );
+    final descController = TextEditingController(
+      text: existingType?.description ?? '',
+    );
     final adultsController = TextEditingController(
       text: existingType != null ? '${existingType.capacityAdults}' : '2',
     );
@@ -109,7 +122,9 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
       text: existingType != null ? '${existingType.sizeSqM}' : '30',
     );
     final imageController = TextEditingController(
-      text: existingType != null && existingType.images.isNotEmpty ? existingType.images.first : '',
+      text: existingType != null && existingType.images.isNotEmpty
+          ? existingType.images.first
+          : '',
     );
 
     bool isSubmitting = false;
@@ -133,7 +148,9 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                       label: 'Tên hạng phòng *',
                       hint: 'VD: Deluxe Ocean View',
                       prefixIcon: Icons.king_bed_outlined,
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tên hạng phòng' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Vui lòng nhập tên hạng phòng'
+                          : null,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Row(
@@ -144,7 +161,9 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                             label: 'Mã hạng phòng *',
                             hint: 'VD: DLX_OCN',
                             prefixIcon: Icons.tag_rounded,
-                            validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập mã' : null,
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Nhập mã'
+                                : null,
                           ),
                         ),
                         const SizedBox(width: AppSpacing.md),
@@ -156,7 +175,9 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                             keyboardType: TextInputType.number,
                             prefixIcon: Icons.payments_outlined,
                             inputFormatters: [CurrencyInputFormatter()],
-                            validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập giá' : null,
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Nhập giá'
+                                : null,
                           ),
                         ),
                       ],
@@ -217,7 +238,10 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                       maxLines: 3,
                       decoration: InputDecoration(
                         hintText: 'Mô tả không gian, góc nhìn, dịch vụ...',
-                        hintStyle: TextStyle(color: palette.inkFaint, fontSize: 13),
+                        hintStyle: TextStyle(
+                          color: palette.inkFaint,
+                          fontSize: 13,
+                        ),
                         filled: true,
                         fillColor: palette.surfaceMuted,
                         border: OutlineInputBorder(
@@ -239,11 +263,29 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
 
                                 final payload = {
                                   'name': nameController.text.trim(),
-                                  'code': codeController.text.trim().toUpperCase(),
-                                  'basePrice': Formatters.parseCurrency(priceController.text) ?? 1000000,
-                                  'capacityAdults': int.tryParse(adultsController.text.trim()) ?? 2,
-                                  'capacityChildren': int.tryParse(childrenController.text.trim()) ?? 0,
-                                  'sizeSqM': num.tryParse(sizeController.text.trim()) ?? 30,
+                                  'code': codeController.text
+                                      .trim()
+                                      .toUpperCase(),
+                                  'basePrice':
+                                      Formatters.parseCurrency(
+                                        priceController.text,
+                                      ) ??
+                                      1000000,
+                                  'capacityAdults':
+                                      int.tryParse(
+                                        adultsController.text.trim(),
+                                      ) ??
+                                      2,
+                                  'capacityChildren':
+                                      int.tryParse(
+                                        childrenController.text.trim(),
+                                      ) ??
+                                      0,
+                                  'sizeSqM':
+                                      num.tryParse(
+                                        sizeController.text.trim(),
+                                      ) ??
+                                      30,
                                   if (descController.text.trim().isNotEmpty)
                                     'description': descController.text.trim(),
                                   if (imageController.text.trim().isNotEmpty)
@@ -252,7 +294,10 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
 
                                 try {
                                   if (isEditing) {
-                                    await _roomRepo.updateRoomType(existingType.id, payload);
+                                    await _roomRepo.updateRoomType(
+                                      existingType.id,
+                                      payload,
+                                    );
                                   } else {
                                     await _roomRepo.createRoomType(payload);
                                   }
@@ -268,7 +313,8 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                                               ? 'Đã cập nhật hạng phòng ${nameController.text}'
                                               : 'Đã tạo hạng phòng mới thành công!',
                                         ),
-                                        backgroundColor: context.palette.success,
+                                        backgroundColor:
+                                            context.palette.success,
                                       ),
                                     );
                                   }
@@ -288,12 +334,17 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                           backgroundColor: palette.accent,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.button),
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.button,
+                            ),
                           ),
                         ),
                         child: Text(
                           isEditing ? 'Lưu thay đổi' : 'Tạo hạng phòng',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),
@@ -317,11 +368,17 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
           'Bạn có chắc muốn xóa hạng phòng "${type.name}" (${type.code})? Hành động này không thể hoàn tác.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.rose),
-            child: const Text('Xác nhận xóa', style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Xác nhận xóa',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -356,6 +413,22 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
     }
   }
 
+  void _handleBack(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    try {
+      if (context.canPop()) {
+        context.pop();
+        return;
+      }
+      context.go('/admin/dashboard');
+    } catch (_) {
+      context.go('/admin/dashboard');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
@@ -366,10 +439,6 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
       appBar: AppBar(
         backgroundColor: palette.surface,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: palette.ink, size: 20),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
         title: Text(
           'Quản Lý Hạng Phòng',
           style: TextStyle(
@@ -392,7 +461,10 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
               icon: const Icon(Icons.add_rounded, color: Colors.white),
               label: const Text(
                 'Thêm hạng phòng',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             )
           : null,
@@ -400,7 +472,10 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
         children: [
           // Search box
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen, vertical: AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screen,
+              vertical: AppSpacing.sm,
+            ),
             color: palette.surface,
             child: TextField(
               controller: _searchController,
@@ -408,10 +483,18 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
               decoration: InputDecoration(
                 hintText: 'Tìm theo tên hoặc mã hạng phòng...',
                 hintStyle: TextStyle(color: palette.inkFaint, fontSize: 13),
-                prefixIcon: Icon(Icons.search_rounded, color: palette.inkMuted, size: 20),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: palette.inkMuted,
+                  size: 20,
+                ),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.clear_rounded, color: palette.inkMuted, size: 18),
+                        icon: Icon(
+                          Icons.clear_rounded,
+                          color: palette.inkMuted,
+                          size: 18,
+                        ),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = '');
@@ -438,37 +521,38 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _errorMessage != null
-                      ? Padding(
-                          padding: const EdgeInsets.all(AppSpacing.xxxl),
-                          child: AppErrorView(
-                            error: _errorMessage!,
-                            onRetry: () => _fetchRoomTypes(),
-                          ),
-                        )
-                      : types.isEmpty
-                          ? Center(
-                              child: AppEmptyState(
-                                title: 'Không có hạng phòng nào',
-                                description: _searchQuery.isNotEmpty
-                                    ? 'Không tìm thấy kết quả phù hợp.'
-                                    : 'Chưa có hạng phòng nào được tạo trên hệ thống.',
-                                actionText: 'Tạo hạng phòng',
-                                onAction: () => _openCreateOrEditModal(),
-                              ),
-                            )
-                          : ListView.separated(
-                              padding: const EdgeInsets.fromLTRB(
-                                AppSpacing.screen,
-                                AppSpacing.screen,
-                                AppSpacing.screen,
-                                80, // bottom padding for FAB
-                              ),
-                              itemCount: types.length,
-                              separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
-                              itemBuilder: (ctx, i) {
-                                return _buildRoomTypeCard(types[i]);
-                              },
-                            ),
+                  ? Padding(
+                      padding: const EdgeInsets.all(AppSpacing.xxxl),
+                      child: AppErrorView(
+                        error: _errorMessage!,
+                        onRetry: () => _fetchRoomTypes(),
+                      ),
+                    )
+                  : types.isEmpty
+                  ? Center(
+                      child: AppEmptyState(
+                        title: 'Không có hạng phòng nào',
+                        description: _searchQuery.isNotEmpty
+                            ? 'Không tìm thấy kết quả phù hợp.'
+                            : 'Chưa có hạng phòng nào được tạo trên hệ thống.',
+                        actionText: 'Tạo hạng phòng',
+                        onAction: () => _openCreateOrEditModal(),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.screen,
+                        AppSpacing.screen,
+                        AppSpacing.screen,
+                        80, // bottom padding for FAB
+                      ),
+                      itemCount: types.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: AppSpacing.md),
+                      itemBuilder: (ctx, i) {
+                        return _buildRoomTypeCard(types[i]);
+                      },
+                    ),
             ),
           ),
         ],
@@ -488,7 +572,9 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
           // Banner Image (if any)
           if (type.images.isNotEmpty)
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.card)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppRadius.card),
+              ),
               child: SizedBox(
                 height: 130,
                 width: double.infinity,
@@ -497,7 +583,10 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                   fit: BoxFit.cover,
                   errorWidget: (context, url, error) => Container(
                     color: palette.surfaceMuted,
-                    child: Icon(Icons.broken_image_outlined, color: palette.inkMuted),
+                    child: Icon(
+                      Icons.broken_image_outlined,
+                      color: palette.inkMuted,
+                    ),
                   ),
                 ),
               ),
@@ -522,7 +611,10 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: palette.accent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(AppRadius.xs),
@@ -554,14 +646,22 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                 // Specs: Capacity, Size, Rooms count
                 Row(
                   children: [
-                    Icon(Icons.people_outline, size: 14, color: palette.inkMuted),
+                    Icon(
+                      Icons.people_outline,
+                      size: 14,
+                      color: palette.inkMuted,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '${type.capacityAdults} Lớn, ${type.capacityChildren} Nhỏ',
                       style: TextStyle(fontSize: 12, color: palette.inkMuted),
                     ),
                     const SizedBox(width: AppSpacing.md),
-                    Icon(Icons.square_foot_outlined, size: 14, color: palette.inkMuted),
+                    Icon(
+                      Icons.square_foot_outlined,
+                      size: 14,
+                      color: palette.inkMuted,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '${type.sizeSqM.toInt()} m²',
@@ -569,7 +669,11 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                     ),
                     if (type.roomsCount != null) ...[
                       const SizedBox(width: AppSpacing.md),
-                      Icon(Icons.door_front_door_outlined, size: 14, color: palette.inkMuted),
+                      Icon(
+                        Icons.door_front_door_outlined,
+                        size: 14,
+                        color: palette.inkMuted,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${type.roomsCount} phòng',
@@ -578,7 +682,8 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                     ],
                   ],
                 ),
-                if (type.description != null && type.description!.isNotEmpty) ...[
+                if (type.description != null &&
+                    type.description!.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     type.description!,
@@ -604,17 +709,28 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                         )
                       else ...[
                         TextButton.icon(
-                          onPressed: () => _openCreateOrEditModal(existingType: type),
+                          onPressed: () =>
+                              _openCreateOrEditModal(existingType: type),
                           icon: const Icon(Icons.edit_outlined, size: 16),
-                          label: const Text('Chỉnh sửa', style: TextStyle(fontSize: 12)),
-                          style: TextButton.styleFrom(foregroundColor: palette.accent),
+                          label: const Text(
+                            'Chỉnh sửa',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: palette.accent,
+                          ),
                         ),
                         const SizedBox(width: AppSpacing.xs),
                         TextButton.icon(
                           onPressed: () => _deleteRoomType(type),
                           icon: const Icon(Icons.delete_outline, size: 16),
-                          label: const Text('Xóa', style: TextStyle(fontSize: 12)),
-                          style: TextButton.styleFrom(foregroundColor: palette.error),
+                          label: const Text(
+                            'Xóa',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: palette.error,
+                          ),
                         ),
                       ],
                     ],

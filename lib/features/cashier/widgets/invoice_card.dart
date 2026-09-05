@@ -16,12 +16,21 @@ class InvoiceCard extends StatelessWidget {
   final VoidCallback? onCollectPayment;
   final VoidCallback? onViewReceipt;
 
+  /// Nút "Thanh toán toàn bộ" của khách — `POST /invoices/:id/payment-requests`.
+  /// Chỉ truyền ở app khách; nhân viên dùng [onCollectPayment].
+  final VoidCallback? onRequestPayment;
+
+  /// Đang gửi yêu cầu thanh toán cho chính hóa đơn này.
+  final bool isRequestingPayment;
+
   const InvoiceCard({
     super.key,
     required this.invoice,
     required this.onTap,
     this.onCollectPayment,
     this.onViewReceipt,
+    this.onRequestPayment,
+    this.isRequestingPayment = false,
   });
 
   Widget _buildStatusBadge(BuildContext context, InvoiceModel inv) {
@@ -242,6 +251,40 @@ class InvoiceCard extends StatelessWidget {
                 ],
               ),
             ),
+            // Khách đã bấm trả qua app, tiền chưa vào két: chờ lễ tân đối chiếu
+            // sao kê. Không cho gửi thêm — mỗi hóa đơn chỉ treo một yêu cầu.
+            if (invoice.hasPendingPaymentRequest) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: palette.surfaceMuted,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  border: Border.all(color: palette.border),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.schedule_rounded,
+                        size: 16, color: palette.warningInk),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Đã gửi yêu cầu ${Formatters.formatCurrency(invoice.pendingRequestedAmount)} — chờ lễ tân đối chiếu',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: palette.warningInk,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             // Button: Ghi nhận Thu tiền — chỉ vai trò được `pay` mới thấy
             if (onCollectPayment != null) ...[
               const SizedBox(height: AppSpacing.md),
@@ -268,6 +311,49 @@ class InvoiceCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              ),
+            ]
+            // Nút của khách: gửi yêu cầu trả toàn bộ số còn lại. `amount` bỏ
+            // trống nên máy chủ tự lấy đúng `remainingAmount`.
+            else if (onRequestPayment != null && invoice.canRequestPayment) ...[
+              const SizedBox(height: AppSpacing.md),
+              PressableScale(
+                onTap: isRequestingPayment ? null : onRequestPayment,
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: AppGradients.gold,
+                    borderRadius: BorderRadius.circular(AppRadius.button),
+                    boxShadow: AppShadows.goldGlow,
+                  ),
+                  child: Center(
+                    child: isRequestingPayment
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.account_balance_wallet_rounded,
+                                  color: Colors.white, size: 18),
+                              SizedBox(width: AppSpacing.sm),
+                              Text(
+                                'Thanh toán toàn bộ',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
               ),

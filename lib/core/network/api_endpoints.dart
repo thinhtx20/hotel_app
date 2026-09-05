@@ -29,7 +29,7 @@ class ApiEndpoints {
   static const String roomsAvailable = '/rooms/available';
   /// GET — Public
   static String roomDetail(String id) => '/rooms/$id';
-  /// PATCH / DELETE — ADMIN
+  /// PUT / PATCH — ADMIN (Cập nhật thông tin phòng toàn diện tại /api/v1/rooms/:id)
   static String updateRoom(String id) => '/rooms/$id';
   /// DELETE — ADMIN
   static String deleteRoom(String id) => '/rooms/$id';
@@ -59,7 +59,12 @@ class ApiEndpoints {
   /// POST — ADMIN, RECEPTIONIST
   static String checkIn(String id) => '/bookings/$id/check-in';
   /// POST — ADMIN, RECEPTIONIST, CASHIER
+  /// Nhận `amountCollected` = số thu ngân thực nhận; bỏ trống = không thu thêm
+  /// (khách vẫn trả phòng, hóa đơn ở PARTIAL/UNPAID).
   static String checkOut(String id) => '/bookings/$id/check-out';
+  /// GET — ADMIN, RECEPTIONIST, CASHIER (bảng kê & `amountDue` trước khi trả
+  /// phòng — chỉ đọc, không đổi trạng thái đơn/phòng)
+  static String checkOutPreview(String id) => '/bookings/$id/checkout-preview';
   /// POST — ADMIN, RECEPTIONIST
   static String addServices(String id) => '/bookings/$id/services';
   /// POST / PATCH — Tất cả role (CUSTOMER chỉ được hủy đơn của mình)
@@ -89,10 +94,21 @@ class ApiEndpoints {
   static const String invoiceSummary = '/invoices/summary';
   /// GET — ADMIN, RECEPTIONIST (CUSTOMER xem được nếu thuộc đơn của mình)
   static String invoiceDetail(String id) => '/invoices/$id';
-  /// POST — ADMIN, RECEPTIONIST
+  /// POST — ADMIN, RECEPTIONIST (thu tại quầy — ghi thẳng một dòng đã xác nhận)
   static String payInvoice(String id) => '/invoices/$id/pay';
   /// POST — ADMIN, RECEPTIONIST (Hoàn tiền S4)
   static String invoiceRefund(String id) => '/invoices/$id/refund';
+  /// POST — CUSTOMER (khách xin trả số còn lại; bỏ trống `amount` = trả toàn bộ).
+  /// Tạo một dòng PENDING trong sổ thu tiền, `paidAmount` **chưa** đổi.
+  /// Mỗi hóa đơn chỉ treo được một yêu cầu tại một thời điểm.
+  static String invoicePaymentRequest(String id) =>
+      '/invoices/$id/payment-requests';
+  /// GET — ADMIN, RECEPTIONIST (danh sách yêu cầu khách gửi qua app, chờ đối
+  /// chiếu sao kê)
+  static const String invoicePaymentRequests = '/invoices/payment-requests';
+  /// POST — ADMIN, RECEPTIONIST (xác nhận đã nhận tiền → `paidAmount` mới tăng)
+  static String confirmInvoicePayment(String paymentId) =>
+      '/invoices/payments/$paymentId/confirm';
 
   // --- Analytics (§3.7) -----------------------------------------------------
   /// GET — ADMIN, RECEPTIONIST

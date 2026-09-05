@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/role_enum.dart';
 import '../../../core/constants/role_permissions.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/network/dio_client.dart';
@@ -15,6 +17,7 @@ import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
+import '../../../shared/widgets/sticky_header.dart';
 import '../../receptionist/widgets/check_in_confirm_dialog.dart';
 
 /// Màn hình Chi tiết Lượt nhận phòng hôm nay (Today Check-Ins Screen)
@@ -83,7 +86,11 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
         _isLoading = false;
       });
       if (isSilent || _bookings.isNotEmpty) {
-        AppNotification.showError(context, e, title: 'Làm mới danh sách thất bại');
+        AppNotification.showError(
+          context,
+          e,
+          title: 'Làm mới danh sách thất bại',
+        );
       }
     }
   }
@@ -131,10 +138,16 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: Text('Đã nhận phòng thành công cho đơn ${booking.bookingCode ?? booking.id}!'),
+                child: Text(
+                  'Đã nhận phòng thành công cho đơn ${booking.bookingCode ?? booking.id}!',
+                ),
               ),
             ],
           ),
@@ -156,14 +169,36 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
     }
   }
 
+  void _handleBack(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    try {
+      if (context.canPop()) {
+        context.pop();
+        return;
+      }
+      final role = context.currentRole;
+      if (role == UserRole.admin) {
+        context.go('/admin/dashboard');
+      } else {
+        context.go('/receptionist/rooms');
+      }
+    } catch (_) {
+      Navigator.of(context).maybePop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
     final textTheme = Theme.of(context).textTheme;
 
     final totalCount = _bookings.length;
-    final checkedInCount =
-        _bookings.where((b) => b.status == 'CHECKED_IN').length;
+    final checkedInCount = _bookings
+        .where((b) => b.status == 'CHECKED_IN')
+        .length;
     final pendingCount = totalCount - checkedInCount;
 
     return Scaffold(
@@ -175,17 +210,6 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
             expandedHeight: 140,
             pinned: true,
             backgroundColor: AppColors.primary,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 20),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                onPressed: _fetchCheckIns,
-              ),
-            ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
               title: Column(
@@ -210,17 +234,20 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
                 ],
               ),
               background: Container(
-                decoration: const BoxDecoration(
-                  gradient: AppGradients.navy,
-                ),
+                decoration: const BoxDecoration(gradient: AppGradients.navy),
               ),
             ),
           ),
 
-          // 2. Search & Tabs
-          SliverToBoxAdapter(
+          // 2. Search & Tabs — ghim ngay dưới app bar khi cuộn danh sách.
+          SliverStickyHeader(
+            contentHeight: _filterHeight,
+            topGap: AppSpacing.screen,
+            bottomGap: AppSpacing.screen,
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.screen),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screen,
+              ),
               child: Column(
                 children: [
                   _buildSearchBar(),
@@ -263,18 +290,17 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screen,
+              ),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final booking = _filteredBookings[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: _buildCheckInCard(booking),
-                    );
-                  },
-                  childCount: _filteredBookings.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final booking = _filteredBookings[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: _buildCheckInCard(booking),
+                  );
+                }, childCount: _filteredBookings.length),
               ),
             ),
         ],
@@ -282,9 +308,16 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
     );
   }
 
+  // Thanh lọc phải cao cố định để sliver ghim biết trước kích thước.
+  static const double _searchHeight = 46;
+  static const double _tabsHeight = 38;
+  static const double _filterHeight =
+      _searchHeight + AppSpacing.sm + _tabsHeight;
+
   Widget _buildSearchBar() {
     final palette = context.palette;
     return Container(
+      height: _searchHeight,
       decoration: BoxDecoration(
         color: palette.surface,
         borderRadius: BorderRadius.circular(AppRadius.field),
@@ -311,20 +344,18 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
   }
 
   Widget _buildTabs(int total, int pending, int checkedIn) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildTabItem('Tất cả ($total)', 0),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: _buildTabItem('Chờ nhận ($pending)', 1),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: _buildTabItem('Đã nhận ($checkedIn)', 2),
-        ),
-      ],
+    return SizedBox(
+      height: _tabsHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: _buildTabItem('Tất cả ($total)', 0)),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(child: _buildTabItem('Chờ nhận ($pending)', 1)),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(child: _buildTabItem('Đã nhận ($checkedIn)', 2)),
+        ],
+      ),
     );
   }
 
@@ -378,7 +409,9 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm, vertical: 2),
+                      horizontal: AppSpacing.sm,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(AppRadius.xs),
@@ -404,7 +437,9 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm, vertical: 4),
+                  horizontal: AppSpacing.sm,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: isCheckedIn
                       ? palette.success.withValues(alpha: 0.12)
@@ -437,33 +472,39 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
           // Khách hàng & Số điện thoại
           Row(
             children: [
-              Icon(Icons.person_outline_rounded,
-                  size: 16, color: palette.inkMuted),
+              Icon(
+                Icons.person_outline_rounded,
+                size: 16,
+                color: palette.inkMuted,
+              ),
               const SizedBox(width: 4),
               Text(
                 '${booking.customerName ?? 'Khách vãng lai'} (${booking.guestCount} khách)',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: palette.inkMuted,
-                ),
+                style: textTheme.bodyMedium?.copyWith(color: palette.inkMuted),
               ),
               const Spacer(),
               if (booking.customerPhone != null) ...[
                 InkWell(
                   onTap: () {
                     Clipboard.setData(
-                        ClipboardData(text: booking.customerPhone!));
+                      ClipboardData(text: booking.customerPhone!),
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content:
-                            Text('Đã sao chép SĐT: ${booking.customerPhone}'),
+                        content: Text(
+                          'Đã sao chép SĐT: ${booking.customerPhone}',
+                        ),
                         duration: const Duration(seconds: 2),
                       ),
                     );
                   },
                   child: Row(
                     children: [
-                      Icon(Icons.phone_outlined,
-                          size: 14, color: palette.accent),
+                      Icon(
+                        Icons.phone_outlined,
+                        size: 14,
+                        color: palette.accent,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         booking.customerPhone!,
@@ -484,8 +525,11 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
           // Thời gian lưu trú
           Row(
             children: [
-              Icon(Icons.calendar_today_outlined,
-                  size: 14, color: palette.inkFaint),
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 14,
+                color: palette.inkFaint,
+              ),
               const SizedBox(width: 6),
               Text(
                 'Trả phòng: ${Formatters.formatDate(booking.checkOutDate)} (${booking.nightsCount} đêm)',
@@ -523,8 +567,9 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
                 PressableScale(
                   onTap: isProcessing ? null : () => _performCheckIn(booking),
                   child: ElevatedButton(
-                    onPressed:
-                        isProcessing ? null : () => _performCheckIn(booking),
+                    onPressed: isProcessing
+                        ? null
+                        : () => _performCheckIn(booking),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: palette.accent,
                       padding: const EdgeInsets.symmetric(
@@ -532,8 +577,7 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
                         vertical: AppSpacing.xs,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(AppRadius.button),
+                        borderRadius: BorderRadius.circular(AppRadius.button),
                       ),
                     ),
                     child: isProcessing
@@ -558,8 +602,11 @@ class _TodayCheckInsScreenState extends State<TodayCheckInsScreen> {
               else if (isCheckedIn)
                 Row(
                   children: [
-                    Icon(Icons.check_circle_outline_rounded,
-                        size: 16, color: palette.success),
+                    Icon(
+                      Icons.check_circle_outline_rounded,
+                      size: 16,
+                      color: palette.success,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Đã hoàn tất thủ tục',

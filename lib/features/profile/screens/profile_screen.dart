@@ -40,16 +40,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _customPhone;
   String _selectedLanguage = 'Tiếng Việt';
 
-  void _quickSwitchRole(BuildContext context, String email, String password, String roleName) {
+  void _quickSwitchRole(
+    BuildContext context,
+    String email,
+    String password,
+    String roleName,
+  ) {
     AppNotification.showSuccess(
       context,
       'Đang chuyển sang vai trò: $roleName...',
     );
     context.read<AuthBloc>().add(
-      AuthLoginSubmitted(
-        email: email,
-        password: password,
-      ),
+      AuthLoginSubmitted(email: email, password: password),
     );
   }
 
@@ -74,7 +76,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.lock_reset_rounded, color: palette.accent, size: 24),
+                    Icon(
+                      Icons.lock_reset_rounded,
+                      color: palette.accent,
+                      size: 24,
+                    ),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
                       'Đổi Mật Khẩu',
@@ -94,18 +100,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: InputDecoration(
                     labelText: 'Mật khẩu hiện tại',
                     labelStyle: TextStyle(color: palette.inkMuted),
-                    prefixIcon: Icon(Icons.lock_outline, size: 20, color: palette.inkMuted),
+                    prefixIcon: Icon(
+                      Icons.lock_outline,
+                      size: 20,
+                      color: palette.inkMuted,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        hideCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        hideCurrent
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         size: 20,
                         color: palette.inkMuted,
                       ),
-                      onPressed: () => setModalState(() => hideCurrent = !hideCurrent),
+                      onPressed: () =>
+                          setModalState(() => hideCurrent = !hideCurrent),
                     ),
                     filled: true,
                     fillColor: palette.surfaceMuted,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.field),
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -116,10 +131,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: InputDecoration(
                     labelText: 'Mật khẩu mới (tối thiểu 6 ký tự)',
                     labelStyle: TextStyle(color: palette.inkMuted),
-                    prefixIcon: Icon(Icons.lock_reset, size: 20, color: palette.inkMuted),
+                    prefixIcon: Icon(
+                      Icons.lock_reset,
+                      size: 20,
+                      color: palette.inkMuted,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        hideNew ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        hideNew
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         size: 20,
                         color: palette.inkMuted,
                       ),
@@ -127,7 +148,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     filled: true,
                     fillColor: palette.surfaceMuted,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.field),
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -138,18 +161,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: InputDecoration(
                     labelText: 'Xác nhận mật khẩu mới',
                     labelStyle: TextStyle(color: palette.inkMuted),
-                    prefixIcon: Icon(Icons.check_circle_outline, size: 20, color: palette.inkMuted),
+                    prefixIcon: Icon(
+                      Icons.check_circle_outline,
+                      size: 20,
+                      color: palette.inkMuted,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        hideConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        hideConfirm
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         size: 20,
                         color: palette.inkMuted,
                       ),
-                      onPressed: () => setModalState(() => hideConfirm = !hideConfirm),
+                      onPressed: () =>
+                          setModalState(() => hideConfirm = !hideConfirm),
                     ),
                     filled: true,
                     fillColor: palette.surfaceMuted,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.field),
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -164,7 +196,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             final newP = newPassController.text;
                             final confirmP = confirmPassController.text;
 
-                            if (current.isEmpty || newP.isEmpty || confirmP.isEmpty) {
+                            if (current.isEmpty ||
+                                newP.isEmpty ||
+                                confirmP.isEmpty) {
                               AppNotification.showWarning(
                                 context,
                                 'Vui lòng nhập đầy đủ thông tin mật khẩu',
@@ -197,7 +231,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               );
                               if (mounted &&
                                   ctx.mounted &&
-                                  (res.statusCode == 200 || res.statusCode == 201) &&
+                                  (res.statusCode == 200 ||
+                                      res.statusCode == 201) &&
                                   res.data['success'] == true) {
                                 Navigator.pop(ctx);
                                 if (context.mounted) {
@@ -211,7 +246,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             } on DioException catch (e) {
                               final err = ApiError.fromDioException(e);
                               if (context.mounted) {
-                                AppNotification.showError(context, err.displayMessage);
+                                AppNotification.showError(
+                                  context,
+                                  err.displayMessage,
+                                );
                               }
                             } catch (_) {
                               if (context.mounted) {
@@ -277,7 +315,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.phone_android_rounded, color: palette.accent, size: 24),
+                  Icon(
+                    Icons.phone_android_rounded,
+                    color: palette.accent,
+                    size: 24,
+                  ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     'Cập Nhật Số Điện Thoại',
@@ -297,10 +339,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 decoration: InputDecoration(
                   labelText: 'Số điện thoại liên hệ',
                   labelStyle: TextStyle(color: palette.inkMuted),
-                  prefixIcon: Icon(Icons.phone_outlined, size: 20, color: palette.inkMuted),
+                  prefixIcon: Icon(
+                    Icons.phone_outlined,
+                    size: 20,
+                    color: palette.inkMuted,
+                  ),
                   filled: true,
                   fillColor: palette.surfaceMuted,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.field),
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -322,8 +370,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           setModalState(() => isSaving = true);
                           try {
-                            final updatedUser =
-                                await sl<UserRepository>().updateMe({'phone': phone});
+                            final updatedUser = await sl<UserRepository>()
+                                .updateMe({'phone': phone});
                             await TokenStorage().saveUser(updatedUser);
 
                             if (mounted) {
@@ -425,7 +473,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
                   setModalState(() {});
                   Navigator.pop(ctx);
-                  AppNotification.showSuccess(context, 'Đã chọn phương thức thanh toán: Ví MoMo');
+                  AppNotification.showSuccess(
+                    context,
+                    'Đã chọn phương thức thanh toán: Ví MoMo',
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -441,7 +492,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
                   setModalState(() {});
                   Navigator.pop(ctx);
-                  AppNotification.showSuccess(context, 'Đã chọn phương thức thanh toán: VNPAY-QR');
+                  AppNotification.showSuccess(
+                    context,
+                    'Đã chọn phương thức thanh toán: VNPAY-QR',
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -450,14 +504,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 iconColor: palette.statusAvailable,
                 title: 'Thanh toán tại khách sạn',
                 subtitle: 'Thanh toán khi làm thủ tục Check-in',
-                isSelected: _selectedPaymentMethod == 'Thanh toán tại khách sạn',
+                isSelected:
+                    _selectedPaymentMethod == 'Thanh toán tại khách sạn',
                 onTap: () {
                   setState(() {
                     _selectedPaymentMethod = 'Thanh toán tại khách sạn';
                   });
                   setModalState(() {});
                   Navigator.pop(ctx);
-                  AppNotification.showSuccess(context, 'Đã chọn thanh toán trực tiếp tại sảnh');
+                  AppNotification.showSuccess(
+                    context,
+                    'Đã chọn thanh toán trực tiếp tại sảnh',
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -482,7 +540,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? palette.accent.withValues(alpha: 0.12) : palette.surfaceMuted,
+          color: isSelected
+              ? palette.accent.withValues(alpha: 0.12)
+              : palette.surfaceMuted,
           borderRadius: BorderRadius.circular(AppRadius.image),
           border: Border.all(
             color: isSelected ? palette.accent : palette.border,
@@ -515,10 +575,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: palette.inkMuted,
-                    ),
+                    style: TextStyle(fontSize: 12, color: palette.inkMuted),
                   ),
                 ],
               ),
@@ -558,7 +615,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   setState(() => _selectedLanguage = 'Tiếng Việt');
                   setModalState(() {});
                   Navigator.pop(ctx);
-                  AppNotification.showSuccess(context, 'Đã chuyển sang Tiếng Việt');
+                  AppNotification.showSuccess(
+                    context,
+                    'Đã chuyển sang Tiếng Việt',
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -593,7 +653,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? palette.accent.withValues(alpha: 0.12) : palette.surfaceMuted,
+          color: isSelected
+              ? palette.accent.withValues(alpha: 0.12)
+              : palette.surfaceMuted,
           borderRadius: BorderRadius.circular(AppRadius.image),
           border: Border.all(
             color: isSelected ? palette.accent : palette.border,
@@ -616,10 +678,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: palette.inkMuted,
-                    ),
+                    style: TextStyle(fontSize: 12, color: palette.inkMuted),
                   ),
                 ],
               ),
@@ -644,8 +703,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (pickedFile == null) return;
 
       final uploadRepo = sl<UploadRepository>();
-      final updatedUser =
-          await uploadRepo.uploadAvatar(pickedFile.path, updateProfile: true);
+      final updatedUser = await uploadRepo.uploadAvatar(
+        pickedFile.path,
+        updateProfile: true,
+      );
       await TokenStorage().saveUser(updatedUser);
 
       if (mounted) {
@@ -676,20 +737,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             ListTile(
               leading: Icon(Icons.camera_alt_outlined, color: palette.accent),
-              title: Text('Chụp ảnh mới',
-                  style: TextStyle(
-                      color: palette.ink, fontWeight: FontWeight.w600)),
+              title: Text(
+                'Chụp ảnh mới',
+                style: TextStyle(
+                  color: palette.ink,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 _pickAndUploadAvatar(ImageSource.camera);
               },
             ),
             ListTile(
-              leading:
-                  Icon(Icons.photo_library_outlined, color: palette.accent),
-              title: Text('Chọn từ thư viện',
-                  style: TextStyle(
-                      color: palette.ink, fontWeight: FontWeight.w600)),
+              leading: Icon(
+                Icons.photo_library_outlined,
+                color: palette.accent,
+              ),
+              title: Text(
+                'Chọn từ thư viện',
+                style: TextStyle(
+                  color: palette.ink,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 _pickAndUploadAvatar(ImageSource.gallery);
@@ -731,8 +802,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final email = user?.email ?? 'customer@hotel.com';
           final roleLabel = user?.role.label ?? 'Khách hàng';
           final phone = _customPhone ?? user?.phone ?? '0912345678';
-          final initialChar =
-              fullName.isNotEmpty ? fullName[0].toUpperCase() : 'N';
+          final initialChar = fullName.isNotEmpty
+              ? fullName[0].toUpperCase()
+              : 'N';
 
           final topPadding = MediaQuery.of(context).padding.top;
           final canPop = context.canPop();
@@ -769,7 +841,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               bottom: false,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 4),
+                                  horizontal: 20,
+                                  vertical: 4,
+                                ),
                                 child: Column(
                                   children: [
                                     // Top Bar
@@ -779,8 +853,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       children: [
                                         if (canPop)
                                           IconButton(
-                                            icon: const Icon(Icons.arrow_back,
-                                                color: Colors.white),
+                                            icon: const Icon(
+                                              Icons.arrow_back,
+                                              color: Colors.white,
+                                            ),
                                             onPressed: () => context.pop(),
                                           )
                                         else
@@ -793,16 +869,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
-                                        IconButton(
-                                          icon: const Icon(Icons.settings,
-                                              color: Colors.white),
-                                          onPressed: () {
-                                            AppNotification.showSuccess(
-                                              context,
-                                              'Cài đặt tài khoản Luxe Grand',
-                                            );
-                                          },
-                                        ),
+                                        const SizedBox(width: 48),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
@@ -827,30 +894,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 ),
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: AppColors.secondaryLight
-                                                        .withValues(alpha: 0.25),
+                                                    color: AppColors
+                                                        .secondaryLight
+                                                        .withValues(
+                                                          alpha: 0.25,
+                                                        ),
                                                     blurRadius: 20,
                                                     spreadRadius: 2,
                                                   ),
                                                 ],
                                               ),
                                               child: ClipOval(
-                                                child: user?.avatar != null &&
+                                                child:
+                                                    user?.avatar != null &&
                                                         user!.avatar!.isNotEmpty
                                                     ? CachedNetworkImage(
                                                         imageUrl: user.avatar!,
                                                         fit: BoxFit.cover,
                                                         placeholder: (_, _) =>
                                                             const Center(
-                                                          child:
-                                                              CircularProgressIndicator(
-                                                            strokeWidth: 2,
-                                                            color: AppColors
-                                                                .secondaryLight,
-                                                          ),
-                                                        ),
-                                                        errorWidget:
-                                                            (_, _, _) => Center(
+                                                              child: CircularProgressIndicator(
+                                                                strokeWidth: 2,
+                                                                color: AppColors
+                                                                    .secondaryLight,
+                                                              ),
+                                                            ),
+                                                        errorWidget: (_, _, _) => Center(
                                                           child: Text(
                                                             initialChar,
                                                             style: const TextStyle(
@@ -867,8 +936,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     : Center(
                                                         child: Text(
                                                           initialChar,
-                                                          style:
-                                                              const TextStyle(
+                                                          style: const TextStyle(
                                                             color: AppColors
                                                                 .secondaryLight,
                                                             fontSize: 38,
@@ -923,8 +991,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     Text(
                                       email,
                                       style: TextStyle(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.65),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.65,
+                                        ),
                                         fontSize: 13,
                                       ),
                                     ),
@@ -933,12 +1002,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     // Role Pill Badge
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 14, vertical: 5),
+                                        horizontal: 14,
+                                        vertical: 5,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.secondary
-                                            .withValues(alpha: 0.22),
-                                        borderRadius:
-                                            BorderRadius.circular(999),
+                                        color: AppColors.secondary.withValues(
+                                          alpha: 0.22,
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                         border: Border.all(
                                           color: AppColors.secondaryLight
                                               .withValues(alpha: 0.85),
@@ -992,13 +1065,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   user?.role == UserRole.admin
                                       ? '100%'
                                       : user?.role == UserRole.receptionist
-                                          ? 'Ca trực'
-                                          : '12',
+                                      ? 'Ca trực'
+                                      : '12',
                                   user?.role == UserRole.admin
                                       ? 'Toàn quyền'
                                       : user?.role == UserRole.receptionist
-                                          ? 'Đang mở'
-                                          : 'Lượt đặt',
+                                      ? 'Đang mở'
+                                      : 'Lượt đặt',
                                 ),
                               ),
                               Container(
@@ -1011,13 +1084,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   user?.role == UserRole.admin
                                       ? '24'
                                       : user?.role == UserRole.receptionist
-                                          ? 'Sơ đồ'
-                                          : '3',
+                                      ? 'Sơ đồ'
+                                      : '3',
                                   user?.role == UserRole.admin
                                       ? 'Phòng KS'
                                       : user?.role == UserRole.receptionist
-                                          ? 'Buồng phòng'
-                                          : 'Đang hoạt động',
+                                      ? 'Buồng phòng'
+                                      : 'Đang hoạt động',
                                 ),
                               ),
                               Container(
@@ -1030,13 +1103,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   user?.role == UserRole.admin
                                       ? '4.95'
                                       : user?.role == UserRole.receptionist
-                                          ? '5.0'
-                                          : '4.9',
+                                      ? '5.0'
+                                      : '4.9',
                                   user?.role == UserRole.admin
                                       ? 'Đánh giá KS'
                                       : user?.role == UserRole.receptionist
-                                          ? 'Tiêu chuẩn'
-                                              : 'Đánh giá',
+                                      ? 'Tiêu chuẩn'
+                                      : 'Đánh giá',
                                   hasStar: true,
                                 ),
                               ),
@@ -1051,7 +1124,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // 3. Section Label: TÀI KHOẢN
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screen,
+                  ),
                   child: Text(
                     'TÀI KHOẢN',
                     style: TextStyle(
@@ -1066,7 +1141,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // 4. Menu Card 1 (Tài khoản) gom bằng AppCard
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screen,
+                  ),
                   child: AppCard(
                     padding: EdgeInsets.zero,
                     child: Column(
@@ -1101,7 +1178,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // 5. Section Label: ỨNG DỤNG
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screen,
+                  ),
                   child: Text(
                     'ỨNG DỤNG',
                     style: TextStyle(
@@ -1116,23 +1195,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // 6. Menu Card 2 (Ứng dụng) gom bằng AppCard kèm Dark Mode Switch
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screen,
+                  ),
                   child: AppCard(
                     padding: EdgeInsets.zero,
                     child: Column(
                       children: [
                         // Công tắc Dark Mode mượt mà kết nối ThemeCubit
                         _buildMenuItem(
-                          icon: palette.isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                          icon: palette.isDark
+                              ? Icons.dark_mode_rounded
+                              : Icons.light_mode_rounded,
                           iconColor: palette.accent,
                           title: 'Giao diện tối (Dark Mode)',
-                          subtitle: palette.isDark ? 'Đang bật nền tối' : 'Đang bật nền sáng',
+                          subtitle: palette.isDark
+                              ? 'Đang bật nền tối'
+                              : 'Đang bật nền sáng',
                           trailing: Switch(
                             value: palette.isDark,
                             activeThumbColor: Colors.white,
                             activeTrackColor: palette.accent,
                             onChanged: (_) {
-                              context.read<ThemeCubit>().toggleDarkMode(context);
+                              context.read<ThemeCubit>().toggleDarkMode(
+                                context,
+                              );
                             },
                           ),
                         ),
@@ -1172,7 +1259,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // Section: CHUYỂN VAI TRÒ KIỂM THỬ (DEMO ROLE SWITCHER)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screen,
+                  ),
                   child: Text(
                     'CHUYỂN VAI TRÒ KIỂM THỬ (DEMO SWITCHER)',
                     style: TextStyle(
@@ -1185,7 +1274,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screen,
+                  ),
                   child: AppCard(
                     padding: const EdgeInsets.all(AppSpacing.md),
                     child: Column(
@@ -1193,12 +1284,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.switch_account_rounded, size: 20, color: palette.accent),
+                            Icon(
+                              Icons.switch_account_rounded,
+                              size: 20,
+                              color: palette.accent,
+                            ),
                             const SizedBox(width: AppSpacing.sm),
                             Expanded(
                               child: Text(
                                 'Đổi vai trò 1-chạm để trải nghiệm giao diện khác biệt:',
-                                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: palette.ink),
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: palette.ink,
+                                ),
                               ),
                             ),
                           ],
@@ -1212,7 +1311,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 role: UserRole.admin,
                                 color: Colors.purple,
                                 isCurrent: user?.role == UserRole.admin,
-                                onTap: () => _quickSwitchRole(context, 'admin@hotel.com', 'Admin@123', 'Quản trị viên'),
+                                onTap: () => _quickSwitchRole(
+                                  context,
+                                  'admin@hotel.com',
+                                  'Admin@123',
+                                  'Quản trị viên',
+                                ),
                                 palette: palette,
                               ),
                             ),
@@ -1223,7 +1327,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 role: UserRole.receptionist,
                                 color: Colors.blue,
                                 isCurrent: user?.role == UserRole.receptionist,
-                                onTap: () => _quickSwitchRole(context, 'reception@hotel.com', 'Staff@123', 'Lễ tân – Thu ngân'),
+                                onTap: () => _quickSwitchRole(
+                                  context,
+                                  'reception@hotel.com',
+                                  'Staff@123',
+                                  'Lễ tân – Thu ngân',
+                                ),
                                 palette: palette,
                               ),
                             ),
@@ -1235,7 +1344,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           role: UserRole.customer,
                           color: palette.accent,
                           isCurrent: user?.role == UserRole.customer,
-                          onTap: () => _quickSwitchRole(context, 'customer@hotel.com', 'Cust@123', 'Khách hàng'),
+                          onTap: () => _quickSwitchRole(
+                            context,
+                            'customer@hotel.com',
+                            'Cust@123',
+                            'Khách hàng',
+                          ),
                           palette: palette,
                         ),
                       ],
@@ -1246,7 +1360,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // 7. Nút Đăng Xuất (viền đỏ với PressableScale)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screen,
+                  ),
                   child: PressableScale(
                     onTap: () => LogoutConfirmationDialog.show(context),
                     child: SizedBox(
@@ -1258,7 +1374,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           foregroundColor: palette.error,
                           side: BorderSide(color: palette.error, width: 1.5),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.button),
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.button,
+                            ),
                           ),
                         ),
                         icon: const Icon(Icons.logout, size: 20),
@@ -1279,19 +1397,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Center(
                   child: Text(
                     'Luxe Grand Hotel • Phiên bản 1.0.0',
-                    style: TextStyle(
-                      color: palette.inkFaint,
-                      fontSize: 11,
-                    ),
+                    style: TextStyle(color: palette.inkFaint, fontSize: 11),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xxxl),
               ],
             ),
-          )
-          .animate()
-          .fadeIn(duration: AppDurations.normal)
-          .slideY(begin: 0.04, curve: AppMotion.enter);
+          ).animate().fadeIn(duration: AppDurations.normal).slideY(begin: 0.04, curve: AppMotion.enter);
         },
       ),
     );
@@ -1306,11 +1418,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (hasStar) ...[
-              Icon(
-                Icons.star_rounded,
-                color: palette.accent,
-                size: 18,
-              ),
+              Icon(Icons.star_rounded, color: palette.accent, size: 18),
               const SizedBox(width: 2),
             ],
             Flexible(
@@ -1332,10 +1440,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 2),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 11,
-            color: palette.inkMuted,
-          ),
+          style: TextStyle(fontSize: 11, color: palette.inkMuted),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -1356,7 +1461,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.card),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
         child: Row(
           children: [
             Container(
@@ -1387,10 +1495,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: palette.inkMuted,
-                      ),
+                      style: TextStyle(fontSize: 12, color: palette.inkMuted),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -1424,7 +1529,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Container(
         height: 42,
         decoration: BoxDecoration(
-          color: isCurrent ? color.withValues(alpha: 0.15) : palette.surfaceMuted,
+          color: isCurrent
+              ? color.withValues(alpha: 0.15)
+              : palette.surfaceMuted,
           borderRadius: BorderRadius.circular(AppRadius.button),
           border: Border.all(
             color: isCurrent ? color : palette.border,
@@ -1438,10 +1545,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               width: 8,
               height: 8,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 6),
             Flexible(

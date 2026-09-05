@@ -17,6 +17,7 @@ import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/status_badge.dart';
+import '../../admin/widgets/edit_room_modal.dart';
 import '../widgets/create_booking_modal.dart';
 
 class RoomDetailScreen extends StatefulWidget {
@@ -130,6 +131,19 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
     );
   }
 
+  Future<void> _openEditModal() async {
+    if (_room == null) return;
+    final updated = await EditRoomModal.show(
+      context: context,
+      room: _room!,
+      roomRepository: _roomRepository,
+      onSuccess: () => _fetchRoomDetail(),
+    );
+    if (updated == true && mounted) {
+      _fetchRoomDetail();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
@@ -162,7 +176,13 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_rounded, color: palette.ink),
-            onPressed: () => context.pop(),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/customer');
+              }
+            },
           ),
         ),
         body: Center(
@@ -241,6 +261,15 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                   ),
                 ),
                 actions: [
+                  if (context.currentRole.canEditRoom) ...[
+                    Center(
+                      child: _buildFrostedCircleButton(
+                        icon: Icons.edit_note_rounded,
+                        onTap: _openEditModal,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                  ],
                   Center(
                     child: _buildFrostedCircleButton(
                       icon: _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
@@ -1126,6 +1155,24 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
             ],
           ),
           const SizedBox(width: AppSpacing.lg),
+          if (context.currentRole.canEditRoom) ...[
+            SizedBox(
+              height: 50,
+              child: OutlinedButton.icon(
+                onPressed: _openEditModal,
+                icon: const Icon(Icons.edit_rounded, size: 18),
+                label: const Text('Sửa phòng'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: palette.accent,
+                  side: BorderSide(color: palette.accent, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.button),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+          ],
           Expanded(
             child: PressableScale(
               onTap: canBook ? _onBookPressed : null,

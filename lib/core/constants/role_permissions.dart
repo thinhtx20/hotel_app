@@ -47,6 +47,11 @@ extension RolePermissions on UserRole {
   bool get canViewAllInvoices => isStaff;
   bool get canPayInvoice => isStaff;
   bool get canViewInvoiceSummary => isStaff;
+  /// Đối chiếu sao kê & xác nhận tiền khách trả qua app:
+  /// `GET /invoices/payment-requests` + `POST /invoices/payments/:id/confirm`.
+  bool get canConfirmPaymentRequest => isStaff;
+  /// Khách tự xin trả số còn lại: `POST /invoices/:id/payment-requests`.
+  bool get canRequestInvoicePayment => isCustomer;
 
   // --- Analytics (§3.7) ---
   bool get canViewDashboard => isStaff;

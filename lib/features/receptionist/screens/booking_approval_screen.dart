@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -32,9 +34,13 @@ class _BookingApprovalScreenState extends State<BookingApprovalScreen>
   int _selectedTabIndex = 0; // 0: Chờ duyệt, 1: Đã duyệt / Giữ chỗ, 2: Đang lưu trú, 3: Đã hủy
   String _searchQuery = '';
   bool _isLoading = false;
+  bool _isSlowResponse = false;
   String? _errorMessage;
   List<BookingModel> _bookings = [];
   final Set<String> _processingIds = {};
+  Timer? _searchDebounce;
+  Timer? _slowResponseTimer;
+  int _fetchToken = 0;
 
   final List<String> _tabs = const [
     'Chờ duyệt',
@@ -52,25 +58,49 @@ class _BookingApprovalScreenState extends State<BookingApprovalScreen>
       duration: const Duration(milliseconds: 900),
     );
 
-    _searchController.addListener(() {
-      setState(() => _searchQuery = _searchController.text.trim());
-    });
+    _searchController.addListener(_onSearchChanged);
 
+    // Vẽ ngay danh sách của lần tải trước trong phiên này rồi mới làm mới ngầm,
+    // nhờ vậy mở lại tab "Duyệt đơn" không phải chờ mạng thêm lần nữa.
+    _bookings = _bookingRepository.cachedBookings.toList();
     _fetchBookings();
   }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
+    _slowResponseTimer?.cancel();
     _searchController.dispose();
     _refreshIconController.dispose();
     super.dispose();
   }
 
+  /// Hoãn việc lọc lại danh sách tới khi người dùng ngừng gõ; nút xóa trong ô
+  /// tìm kiếm tự cập nhật riêng qua [ValueListenableBuilder] nên vẫn nhạy.
+  void _onSearchChanged() {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 250), () {
+      final query = _searchController.text.trim();
+      if (!mounted || query == _searchQuery) return;
+      setState(() => _searchQuery = query);
+    });
+  }
+
   Future<void> _fetchBookings({bool isSilent = false}) async {
-    if (!isSilent && _bookings.isEmpty) {
+    final token = ++_fetchToken;
+    final showSkeleton = !isSilent && _bookings.isEmpty;
+    if (showSkeleton) {
       setState(() {
         _isLoading = true;
+        _isSlowResponse = false;
         _errorMessage = null;
+      });
+      // Máy chủ trên Render ngủ sau một lúc không ai gọi, request đánh thức
+      // đầu tiên mất hàng chục giây — báo cho lễ tân biết thay vì để họ đoán.
+      _slowResponseTimer?.cancel();
+      _slowResponseTimer = Timer(const Duration(seconds: 6), () {
+        if (!mounted || !_isLoading) return;
+        setState(() => _isSlowResponse = true);
       });
     }
     _refreshIconController.repeat();
@@ -78,13 +108,14 @@ class _BookingApprovalScreenState extends State<BookingApprovalScreen>
     try {
       // Màn này tự chia tab theo trạng thái nên phải gom đủ mọi trang.
       final list = await _bookingRepository.fetchAllBookings();
-      if (!mounted) return;
+      if (!mounted || token != _fetchToken) return;
       setState(() {
         _bookings = list;
         _isLoading = false;
+        _errorMessage = null;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || token != _fetchToken) return;
       final apiErr = ApiError.fromDynamic(e);
       setState(() {
         if (_bookings.isEmpty) {
@@ -96,7 +127,9 @@ class _BookingApprovalScreenState extends State<BookingApprovalScreen>
         AppNotification.showError(context, e, title: 'Làm mới danh sách thất bại');
       }
     } finally {
-      if (mounted) {
+      if (mounted && token == _fetchToken) {
+        _slowResponseTimer?.cancel();
+        _isSlowResponse = false;
         _refreshIconController.stop();
         _refreshIconController.reset();
       }
@@ -668,10 +701,23 @@ class _BookingApprovalScreenState extends State<BookingApprovalScreen>
     final textTheme = Theme.of(context).textTheme;
     final filtered = _filteredBookings;
 
-    final pendingCount = _bookings.where((b) => b.status == 'PENDING').length;
-    final confirmedCount = _bookings.where((b) => b.status == 'CONFIRMED').length;
-    final checkedInCount = _bookings.where((b) => b.status == 'CHECKED_IN').length;
-    final cancelledCount = _bookings.where((b) => b.status == 'CANCELLED').length;
+    // Đếm 4 trạng thái trong một lượt duyệt thay vì bốn lượt `where` riêng.
+    var pendingCount = 0;
+    var confirmedCount = 0;
+    var checkedInCount = 0;
+    var cancelledCount = 0;
+    for (final booking in _bookings) {
+      switch (booking.status) {
+        case 'PENDING':
+          pendingCount++;
+        case 'CONFIRMED':
+          confirmedCount++;
+        case 'CHECKED_IN':
+          checkedInCount++;
+        case 'CANCELLED':
+          cancelledCount++;
+      }
+    }
 
     return Scaffold(
       backgroundColor: palette.canvas,
@@ -762,12 +808,15 @@ class _BookingApprovalScreenState extends State<BookingApprovalScreen>
                   hintText: 'Tìm theo tên khách, SĐT, mã đặt phòng...',
                   hintStyle: TextStyle(fontSize: 12.5, color: palette.inkMuted),
                   prefixIcon: Icon(Icons.search_rounded, size: 20, color: palette.inkMuted),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, size: 18),
-                          onPressed: () => _searchController.clear(),
-                        )
-                      : null,
+                  suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _searchController,
+                    builder: (_, value, _) => value.text.isEmpty
+                        ? const SizedBox.shrink()
+                        : IconButton(
+                            icon: const Icon(Icons.clear, size: 18),
+                            onPressed: () => _searchController.clear(),
+                          ),
+                  ),
                   filled: true,
                   fillColor: palette.surface,
                   contentPadding: const EdgeInsets.symmetric(vertical: 10),
@@ -859,11 +908,44 @@ class _BookingApprovalScreenState extends State<BookingApprovalScreen>
             // 4. Danh Sách Đơn Đặt Phòng
             Expanded(
               child: _isLoading
-                  ? ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
-                      itemCount: 4,
-                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-                      itemBuilder: (_, _) => const SkeletonBox(width: double.infinity, height: 160, borderRadius: 16),
+                  ? Column(
+                      children: [
+                        if (_isSlowResponse)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              left: AppSpacing.screen,
+                              right: AppSpacing.screen,
+                              bottom: AppSpacing.sm,
+                            ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: palette.accent,
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: Text(
+                                    'Máy chủ đang khởi động lại, lần tải đầu có thể mất tới 1 phút...',
+                                    style: TextStyle(fontSize: 11.5, color: palette.inkMuted),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        Expanded(
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                            itemCount: 4,
+                            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+                            itemBuilder: (_, _) => const SkeletonBox(width: double.infinity, height: 160, borderRadius: 16),
+                          ),
+                        ),
+                      ],
                     )
                   : _errorMessage != null && _bookings.isEmpty
                       ? AppEmptyState(

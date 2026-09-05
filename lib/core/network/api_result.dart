@@ -7,12 +7,14 @@ class PageMeta {
   final int page;
   final int limit;
   final int totalPages;
+  final Map<String, dynamic>? timeFilter;
 
   const PageMeta({
     this.total = 0,
     this.page = 1,
     this.limit = 20,
     this.totalPages = 1,
+    this.timeFilter,
   });
 
   factory PageMeta.fromJson(Map<String, dynamic>? json) {
@@ -27,18 +29,43 @@ class PageMeta {
       page: parseInt(json['page'], 1),
       limit: parseInt(json['limit'], 20),
       totalPages: parseInt(json['totalPages'], 1),
+      timeFilter: json['timeFilter'] as Map<String, dynamic>?,
     );
   }
 
+  String? get timeFilterLabel => timeFilter?['label'] as String?;
+  String? get timeFilterType => timeFilter?['type'] as String?;
   bool get hasNextPage => page < totalPages;
+  bool get hasPrevPage => page > 1;
 }
 
-/// Một trang dữ liệu kèm thông tin phân trang.
+/// Một trang dữ liệu kèm thông tin phân trang thô (dạng Map).
 class PagedData {
   final List<Map<String, dynamic>> items;
   final PageMeta meta;
 
   const PagedData(this.items, this.meta);
+}
+
+/// Kết quả phân trang chuẩn hóa cho toàn bộ hệ thống client.
+class PaginatedResult<T> {
+  final List<T> items;
+  final PageMeta meta;
+
+  const PaginatedResult({
+    required this.items,
+    required this.meta,
+  });
+
+  bool get hasNextPage => meta.hasNextPage;
+  bool get hasPrevPage => meta.hasPrevPage;
+  int get total => meta.total;
+  int get page => meta.page;
+  int get limit => meta.limit;
+  int get totalPages => meta.totalPages;
+  bool get isEmpty => items.isEmpty;
+  bool get isNotEmpty => items.isNotEmpty;
+  int get length => items.length;
 }
 
 /// Helper bóc envelope NestJS `{statusCode, success, message, data, timestamp}`.
@@ -143,6 +170,19 @@ class ApiResult {
     return PagedData(
       items,
       PageMeta(total: items.length, limit: items.isEmpty ? 20 : items.length),
+    );
+  }
+
+  /// Bóc danh sách kèm thông tin phân trang đã được ánh xạ sang model [T].
+  static PaginatedResult<T> unwrapPaginatedList<T>(
+    Response res,
+    T Function(Map<String, dynamic> json) fromJson, {
+    String? nestedKey,
+  }) {
+    final paged = unwrapPage(res, nestedKey: nestedKey);
+    return PaginatedResult<T>(
+      items: paged.items.map(fromJson).toList(),
+      meta: paged.meta,
     );
   }
 

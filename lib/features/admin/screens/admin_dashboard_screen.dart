@@ -78,7 +78,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     try {
       if (days == 365) {
         final currentYear = DateTime.now().year;
-        final data = await sl<AnalyticsRepository>().revenueYearly(year: currentYear);
+        final data = await sl<AnalyticsRepository>().revenueYearly(
+          year: currentYear,
+        );
         List<_RevenuePoint> points = [];
 
         // API trả về `{year, summary, monthly: [{month, totalRevenue, ...}]}`
@@ -86,7 +88,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         if (rawList is List) {
           points = rawList.whereType<Map>().map((m) {
             final monthNum = m['month'] ?? m['m'] ?? '';
-            final rev = num.tryParse(
+            final rev =
+                num.tryParse(
                   '${m['totalRevenue'] ?? m['revenue'] ?? m['total'] ?? 0}',
                 )?.toDouble() ??
                 0.0;
@@ -94,7 +97,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           }).toList();
         } else {
           for (int m = 1; m <= 12; m++) {
-            final rev = num.tryParse('${data['$m'] ?? data['m$m'] ?? 0}')?.toDouble() ?? 0.0;
+            final rev =
+                num.tryParse('${data['$m'] ?? data['m$m'] ?? 0}')?.toDouble() ??
+                0.0;
             points.add(_RevenuePoint(label: 'T$m', revenue: rev));
           }
         }
@@ -167,10 +172,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     final palette = context.palette;
     final textTheme = Theme.of(context).textTheme;
 
-    final rawRevenue = _dashboardData?['todayRevenue'] ??
-        _dashboardData?['totalRevenueToday'];
-    final double revenueNum =
-        num.tryParse('$rawRevenue')?.toDouble() ?? 0.0;
+    final rawRevenue =
+        _dashboardData?['todayRevenue'] ?? _dashboardData?['totalRevenueToday'];
+    final double revenueNum = num.tryParse('$rawRevenue')?.toDouble() ?? 0.0;
     final num? revenueChangePercent =
         _dashboardData?['revenueChangePercent'] as num?;
 
@@ -189,12 +193,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     final num? rawRate = _dashboardData?['occupancyRate'] as num?;
     final int occupiedRooms =
         (_dashboardData?['occupiedRooms'] as num?)?.toInt() ??
-            (_dashboardData?['rooms']?['occupied'] as num?)?.toInt() ??
-            0;
+        (_dashboardData?['rooms']?['occupied'] as num?)?.toInt() ??
+        0;
     final int totalRooms =
         (_dashboardData?['totalRooms'] as num?)?.toInt() ??
-            (_dashboardData?['rooms']?['total'] as num?)?.toInt() ??
-            0;
+        (_dashboardData?['rooms']?['total'] as num?)?.toInt() ??
+        0;
 
     final double occupancyPercent = rawRate != null
         ? rawRate.toDouble()
@@ -204,16 +208,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
     final int checkIns =
         (_dashboardData?['checkInsToday'] as num?)?.toInt() ??
-            (_dashboardData?['todayCheckIns'] as num?)?.toInt() ??
-            (_dashboardData?['todayActivity']?['expectedCheckIns'] as num?)
-                ?.toInt() ??
-            0;
+        (_dashboardData?['todayCheckIns'] as num?)?.toInt() ??
+        (_dashboardData?['todayActivity']?['expectedCheckIns'] as num?)
+            ?.toInt() ??
+        0;
     final int checkOuts =
         (_dashboardData?['checkOutsToday'] as num?)?.toInt() ??
-            (_dashboardData?['todayCheckOuts'] as num?)?.toInt() ??
-            (_dashboardData?['todayActivity']?['expectedCheckOuts'] as num?)
-                ?.toInt() ??
-            0;
+        (_dashboardData?['todayCheckOuts'] as num?)?.toInt() ??
+        (_dashboardData?['todayActivity']?['expectedCheckOuts'] as num?)
+            ?.toInt() ??
+        0;
     final int pendingBookings =
         (_dashboardData?['pendingBookings'] as num?)?.toInt() ?? 0;
 
@@ -222,20 +226,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         (breakdown?['OCCUPIED'] as num?)?.toInt() ?? occupiedRooms;
     final int availableCount =
         (breakdown?['AVAILABLE'] as num?)?.toInt() ??
-            (_dashboardData?['availableRooms'] as num?)?.toInt() ??
-            0;
+        (_dashboardData?['availableRooms'] as num?)?.toInt() ??
+        0;
     final int cleaningCount =
         (breakdown?['CLEANING'] as num?)?.toInt() ??
-            (_dashboardData?['cleaningRooms'] as num?)?.toInt() ??
-            0;
+        (_dashboardData?['cleaningRooms'] as num?)?.toInt() ??
+        0;
     final int reservedCount =
         (breakdown?['RESERVED'] as num?)?.toInt() ??
-            (_dashboardData?['reservedRooms'] as num?)?.toInt() ??
-            0;
+        (_dashboardData?['reservedRooms'] as num?)?.toInt() ??
+        0;
     final int maintenanceCount =
         (breakdown?['MAINTENANCE'] as num?)?.toInt() ??
-            (_dashboardData?['maintenanceRooms'] as num?)?.toInt() ??
-            0;
+        (_dashboardData?['maintenanceRooms'] as num?)?.toInt() ??
+        0;
 
     final topPadding = MediaQuery.of(context).padding.top;
 
@@ -268,7 +272,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       bottom: false,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.screen),
+                          horizontal: AppSpacing.screen,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -283,18 +288,29 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                     Row(
                                       children: [
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 7,
+                                            vertical: 2,
+                                          ),
                                           decoration: BoxDecoration(
-                                            color: Colors.white.withValues(alpha: 0.15),
-                                            borderRadius: BorderRadius.circular(4),
-                                            border: Border.all(color: Colors.white30),
+                                            color: Colors.white.withValues(
+                                              alpha: 0.15,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white30,
+                                            ),
                                           ),
                                           child: Text(
-                                            context.currentRole == UserRole.admin
+                                            context.currentRole ==
+                                                    UserRole.admin
                                                 ? 'QUẢN TRỊ VIÊN'
-                                                : context.currentRole == UserRole.receptionist
-                                                    ? 'LỄ TÂN – THU NGÂN'
-                                                    : 'TỔNG QUAN',
+                                                : context.currentRole ==
+                                                      UserRole.receptionist
+                                                ? 'LỄ TÂN – THU NGÂN'
+                                                : 'TỔNG QUAN',
                                             style: const TextStyle(
                                               color: AppColors.secondaryLight,
                                               fontSize: 10,
@@ -309,9 +325,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                     Text(
                                       context.currentRole == UserRole.admin
                                           ? 'Báo Cáo Quản Trị'
-                                          : context.currentRole == UserRole.receptionist
-                                              ? 'Bàn Trực Lễ Tân – Thu Ngân'
-                                              : 'Báo Cáo Tổng Quan',
+                                          : context.currentRole ==
+                                                UserRole.receptionist
+                                          ? 'Bàn Trực Lễ Tân – Thu Ngân'
+                                          : 'Báo Cáo Tổng Quan',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 22,
@@ -323,44 +340,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                 ),
                                 Row(
                                   children: [
-                                    if (context.currentRole == UserRole.admin) ...[
-                                      _buildGlassCircleBtn(
-                                        icon: Icons.manage_accounts_outlined,
-                                        onTap: () => context.push('/admin/users'),
-                                      ),
-                                      const SizedBox(width: AppSpacing.sm),
-                                      _buildGlassCircleBtn(
-                                        icon: Icons.bedroom_parent_outlined,
-                                        onTap: () => context.push('/admin/room-types'),
-                                      ),
-                                      const SizedBox(width: AppSpacing.sm),
-                                    ] else if (context.currentRole == UserRole.receptionist) ...[
+                                    if (context.currentRole ==
+                                        UserRole.receptionist) ...[
                                       _buildGlassCircleBtn(
                                         icon: Icons.people_outline_rounded,
-                                        onTap: () => context.push('/staff/users'),
+                                        onTap: () =>
+                                            context.push('/staff/users'),
                                       ),
                                       const SizedBox(width: AppSpacing.sm),
                                     ],
-                                    _buildGlassCircleBtn(
-                                      onTap: () {
-                                        _fetchDashboardData();
-                                        _fetchRevenueSeries(_revenueDays);
-                                      },
-                                      customIcon: RotationTransition(
-                                        turns: _refreshIconController,
-                                        child: const Icon(
-                                          Icons.refresh,
-                                          color: Colors.white,
-                                          size: 18,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: AppSpacing.sm),
-                                    _buildGlassCircleBtn(
-                                      icon: Icons.logout,
-                                      onTap: () =>
-                                          LogoutConfirmationDialog.show(context),
-                                    ),
                                   ],
                                 ),
                               ],
@@ -408,12 +396,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                       vertical: 3,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: (revenueChangePercent >= 0
-                                              ? const Color(0xFF10B981)
-                                              : const Color(0xFFEF4444))
-                                          .withValues(alpha: 0.20),
-                                      borderRadius:
-                                          BorderRadius.circular(AppRadius.pill),
+                                      color:
+                                          (revenueChangePercent >= 0
+                                                  ? const Color(0xFF10B981)
+                                                  : const Color(0xFFEF4444))
+                                              .withValues(alpha: 0.20),
+                                      borderRadius: BorderRadius.circular(
+                                        AppRadius.pill,
+                                      ),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -444,8 +434,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                   Text(
                                     'so với hôm qua',
                                     style: TextStyle(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.50),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.50,
+                                      ),
                                       fontSize: 12,
                                     ),
                                   ),
@@ -542,9 +533,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             child: TweenAnimationBuilder<double>(
                               tween: Tween<double>(
                                 begin: 0.0,
-                                end: _isStatsLoading
-                                    ? 0.0
-                                    : occupancyFraction,
+                                end: _isStatsLoading ? 0.0 : occupancyFraction,
                               ),
                               duration: const Duration(milliseconds: 700),
                               curve: Curves.easeOutCubic,
@@ -567,7 +556,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
               // 3. Nhãn mục "HÔM NAY"
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.screen,
+                ),
                 child: Text(
                   'HÔM NAY',
                   style: TextStyle(
@@ -582,7 +573,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
               // 4. 3 Ô Thống kê nhỏ (96px height)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.screen,
+                ),
                 child: Row(
                   children: [
                     Expanded(
@@ -652,7 +645,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
               // 6. Thẻ Cơ cấu Buồng phòng (Stacked Bar + Legend)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.screen,
+                ),
                 child: AppCard(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   child: Column(
@@ -690,21 +685,36 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         spacing: 14,
                         runSpacing: 8,
                         children: [
-                          _buildLegendItem('Đang có khách', '$occupiedCount',
-                              AppColors.occupied,
-                              isLoading: _isStatsLoading),
-                          _buildLegendItem('Phòng trống', '$availableCount',
-                              AppColors.available,
-                              isLoading: _isStatsLoading),
-                          _buildLegendItem('Đang dọn dẹp', '$cleaningCount',
-                              AppColors.cleaning,
-                              isLoading: _isStatsLoading),
-                          _buildLegendItem('Đã đặt cọc', '$reservedCount',
-                              AppColors.reserved,
-                              isLoading: _isStatsLoading),
-                          _buildLegendItem('Bảo trì', '$maintenanceCount',
-                              AppColors.maintenance,
-                              isLoading: _isStatsLoading),
+                          _buildLegendItem(
+                            'Đang có khách',
+                            '$occupiedCount',
+                            AppColors.occupied,
+                            isLoading: _isStatsLoading,
+                          ),
+                          _buildLegendItem(
+                            'Phòng trống',
+                            '$availableCount',
+                            AppColors.available,
+                            isLoading: _isStatsLoading,
+                          ),
+                          _buildLegendItem(
+                            'Đang dọn dẹp',
+                            '$cleaningCount',
+                            AppColors.cleaning,
+                            isLoading: _isStatsLoading,
+                          ),
+                          _buildLegendItem(
+                            'Đã đặt cọc',
+                            '$reservedCount',
+                            AppColors.reserved,
+                            isLoading: _isStatsLoading,
+                          ),
+                          _buildLegendItem(
+                            'Bảo trì',
+                            '$maintenanceCount',
+                            AppColors.maintenance,
+                            isLoading: _isStatsLoading,
+                          ),
                         ],
                       ),
                     ],
@@ -788,7 +798,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     final series = _revenueSeries;
     final title = _revenueDays == 365
         ? 'Doanh thu năm ${DateTime.now().year}'
-        : (_revenueDays == 1 ? 'Doanh thu hôm nay' : 'Doanh thu $_revenueDays ngày');
+        : (_revenueDays == 1
+              ? 'Doanh thu hôm nay'
+              : 'Doanh thu $_revenueDays ngày');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
@@ -830,18 +842,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         ),
                       )
                     : series.isEmpty
-                        ? Center(
-                            child: Text(
-                              _revenueLoadFailed
-                                  ? 'Không tải được dữ liệu doanh thu'
-                                  : 'Chưa có dữ liệu doanh thu',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: palette.inkMuted,
-                              ),
-                            ),
-                          )
-                        : _buildRevenueLineChart(series, palette),
+                    ? Center(
+                        child: Text(
+                          _revenueLoadFailed
+                              ? 'Không tải được dữ liệu doanh thu'
+                              : 'Chưa có dữ liệu doanh thu',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: palette.inkMuted,
+                          ),
+                        ),
+                      )
+                    : _buildRevenueLineChart(series, palette),
               ),
             ],
           ),
@@ -912,17 +924,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               ),
             ),
             const SizedBox(width: 2),
-            Icon(Icons.keyboard_arrow_down_rounded,
-                size: 14, color: palette.inkMuted),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 14,
+              color: palette.inkMuted,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRevenueLineChart(List<_RevenuePoint> series, AppPalette palette) {
-    final maxRevenue =
-        series.map((e) => e.revenue).reduce((a, b) => a > b ? a : b);
+  Widget _buildRevenueLineChart(
+    List<_RevenuePoint> series,
+    AppPalette palette,
+  ) {
+    final maxRevenue = series
+        .map((e) => e.revenue)
+        .reduce((a, b) => a > b ? a : b);
     final axisMax = _niceCeil(maxRevenue > 0 ? maxRevenue : 1000000);
     final interval = axisMax / 4;
 
@@ -945,15 +964,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           show: true,
           drawVerticalLine: false,
           horizontalInterval: interval,
-          getDrawingHorizontalLine: (value) => FlLine(
-            color: palette.border,
-            strokeWidth: 1,
-          ),
+          getDrawingHorizontalLine: (value) =>
+              FlLine(color: palette.border, strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -1173,19 +1193,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     return Row(
       children: segments
           .where((s) => s.count > 0)
-          .map((s) => Expanded(
-                flex: (s.count * 1000 / total).round().clamp(1, 1000),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 0.5),
-                  color: s.color,
-                ),
-              ))
+          .map(
+            (s) => Expanded(
+              flex: (s.count * 1000 / total).round().clamp(1, 1000),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 0.5),
+                color: s.color,
+              ),
+            ),
+          )
           .toList(),
     );
   }
 
-  Widget _buildLegendItem(String label, String count, Color color,
-      {required bool isLoading}) {
+  Widget _buildLegendItem(
+    String label,
+    String count,
+    Color color, {
+    required bool isLoading,
+  }) {
     final palette = context.palette;
 
     return Row(
@@ -1194,19 +1220,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         Container(
           width: 8,
           height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: palette.inkMuted,
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: palette.inkMuted)),
         const SizedBox(width: 4),
         Text(
           '($count)',
@@ -1232,11 +1249,7 @@ class _RevenuePoint {
   final double revenue;
   final DateTime? date;
 
-  _RevenuePoint({
-    required this.label,
-    required this.revenue,
-    this.date,
-  });
+  _RevenuePoint({required this.label, required this.revenue, this.date});
 
   factory _RevenuePoint.fromJson(Map json) {
     DateTime? parsedDate;
@@ -1247,8 +1260,10 @@ class _RevenuePoint {
     return _RevenuePoint(
       label: json['label']?.toString() ?? json['dateLabel']?.toString() ?? '',
       revenue:
-          num.tryParse('${json['revenue'] ?? json['amount'] ?? 0}')?.toDouble() ??
-              0.0,
+          num.tryParse(
+            '${json['revenue'] ?? json['amount'] ?? 0}',
+          )?.toDouble() ??
+          0.0,
       date: parsedDate,
     );
   }

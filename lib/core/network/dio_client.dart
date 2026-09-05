@@ -20,6 +20,17 @@ class DioClient {
     return AppConstants.productionApiUrl;
   }
 
+  /// In nguyên body JSON của mọi phản hồi ra console debug.
+  ///
+  /// Tắt mặc định: các endpoint danh sách (GET /bookings, /rooms...) trả về
+  /// hàng chục bản ghi, mỗi lần log là hàng trăm dòng ghi đồng bộ xuống console
+  /// và chặn luôn isolate UI — bản debug vì thế tải chậm hơn hẳn bản release.
+  /// Bật lại tạm thời khi cần soi payload của một API.
+  static const bool logResponseBody = bool.fromEnvironment(
+    'LOG_RESPONSE_BODY',
+    defaultValue: false,
+  );
+
   DioClient._internal() {
     dio = Dio(
       BaseOptions(
@@ -38,7 +49,7 @@ class DioClient {
         PrettyDioLogger(
           requestHeader: true,
           requestBody: true,
-          responseBody: true,
+          responseBody: logResponseBody,
           responseHeader: false,
           error: true,
           compact: true,

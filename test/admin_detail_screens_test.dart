@@ -434,5 +434,35 @@ void main() {
 
       expect(find.text('Khách đã nhận phòng thành công!'), findsOneWidget);
     });
+
+    testWidgets('TodayCheckInsScreen back button triggers back action',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TodayCheckInsScreen(dioClient: mockClient),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final backBtn = find.byIcon(Icons.arrow_back_ios_new_rounded);
+      expect(backBtn, findsOneWidget);
+      await tester.tap(backBtn);
+      await tester.pump();
+    });
+
+    testWidgets('TodayCheckOutsScreen back button triggers back action',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TodayCheckOutsScreen(dioClient: mockClient),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final backBtn = find.byIcon(Icons.arrow_back_ios_new_rounded);
+      expect(backBtn, findsOneWidget);
+      await tester.tap(backBtn);
+      await tester.pump();
+    });
   });
 }
