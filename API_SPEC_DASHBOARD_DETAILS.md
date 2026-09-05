@@ -481,6 +481,64 @@ Nếu có lỗi xảy ra:
 
 ---
 
+### 2.9. API / Trường Dữ Liệu Danh Sách Năm Báo Cáo Doanh Thu (Available Revenue Years)
+
+*Phục vụ màn hình: Dropdown bộ lọc chọn năm trong Báo Cáo Doanh Thu & Hiệu Suất (`ReportsScreen` của ADMIN).*
+
+- **Bối cảnh hiện tại:** Mobile App cần danh sách các năm khách sạn có phát sinh doanh thu / hóa đơn để người dùng có thể chọn xem biểu đồ doanh thu theo từng năm. Hiện tại API `GET /analytics/revenue?year=...` chỉ trả về dữ liệu của một năm được yêu cầu (`year`, `summary`, `monthly`) mà không kèm danh sách các năm có sẵn trong hệ thống.
+- **Yêu cầu từ Mobile Team:** Backend hỗ trợ một trong hai phương án sau (ưu tiên Phương án 1 để tối ưu số lượng request):
+
+#### Phương án 1 (Khuyến nghị - Gộp vào response `GET /analytics/revenue`):
+Bổ sung trường `availableYears: number[]` trực tiếp vào object `data` của API `GET /analytics/revenue`:
+
+```json
+{
+  "statusCode": 200,
+  "success": true,
+  "message": "Thành công",
+  "data": {
+    "year": 2026,
+    "availableYears": [2024, 2025, 2026],
+    "summary": {
+      "totalYearRevenue": 52092000,
+      "totalRoomRevenue": 46600000,
+      "totalServicesRevenue": 3470000,
+      "totalInvoices": 9
+    },
+    "monthly": [
+      {
+        "month": 1,
+        "totalRevenue": 0,
+        "roomRevenue": 0,
+        "serviceRevenue": 0,
+        "invoiceCount": 0
+      }
+    ]
+  },
+  "timestamp": "2026-09-05T06:51:14.990Z"
+}
+```
+
+#### Phương án 2 (Cung cấp Endpoint độc lập):
+Nếu BE muốn tách riêng danh mục các năm có dữ liệu:
+- **Method:** `GET`
+- **Endpoint:** `/analytics/revenue/years`
+- **Quyền hạn:** `ADMIN`
+- **Mô tả:** Trả về mảng các năm (số nguyên, sắp xếp tăng dần hoặc giảm dần) mà hệ thống có ghi nhận hóa đơn / đơn đặt phòng / doanh thu.
+
+**Response 200 OK:**
+```json
+{
+  "statusCode": 200,
+  "success": true,
+  "message": "Thành công",
+  "data": [2024, 2025, 2026],
+  "timestamp": "2026-09-05T06:51:14.990Z"
+}
+```
+
+---
+
 ## 3. BẢNG MÃ LỖI (ERROR CODES) CHO BE
 
 | HTTP Status | Error Code | Ý nghĩa |

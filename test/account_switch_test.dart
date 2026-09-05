@@ -9,7 +9,6 @@ import 'package:hotel_app/core/router/app_router.dart';
 import 'package:hotel_app/core/session/session_scope.dart';
 import 'package:hotel_app/core/storage/token_storage.dart';
 import 'package:hotel_app/features/admin/screens/admin_dashboard_screen.dart';
-import 'package:hotel_app/features/cashier/screens/cashier_invoices_screen.dart';
 import 'package:hotel_app/features/customer/screens/home_screen.dart';
 import 'package:hotel_app/features/receptionist/screens/room_matrix_screen.dart';
 import 'package:hotel_app/di/injection_container.dart';
@@ -193,7 +192,6 @@ void main() {
       final screenOfRole = <UserRole, Type>{
         UserRole.admin: AdminDashboardScreen,
         UserRole.receptionist: RoomMatrixScreen,
-        UserRole.cashier: CashierInvoicesScreen,
       };
 
       for (final role in screenOfRole.keys) {
@@ -230,7 +228,7 @@ void main() {
         ),
       );
 
-      // `/staff/today-check-outs` hợp lệ với cả ADMIN lẫn CASHIER, nên nếu
+      // `/staff/today-check-outs` hợp lệ với cả ADMIN lẫn RECEPTIONIST, nên nếu
       // không có guard đổi tài khoản thì người dùng ở nguyên màn cũ.
       router.go('/staff/today-check-outs');
       await tester.pump();
@@ -238,13 +236,26 @@ void main() {
       expect(router.routerDelegate.currentConfiguration.uri.path,
           '/staff/today-check-outs');
 
-      authBloc.push(AuthAuthenticated(_userFor(UserRole.cashier)));
+      authBloc.push(AuthAuthenticated(_userFor(UserRole.receptionist)));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       expect(
         router.routerDelegate.currentConfiguration.uri.path,
-        '/cashier',
+        '/receptionist',
       );
+    });
+
+    test('phiên cũ lưu CASHIER trong storage được hồi sinh thành RECEPTIONIST', () {
+      final cachedUserJson = {
+        'id': 'legacy-cashier-1',
+        'email': 'cashier@hotel.com',
+        'fullName': 'Thu Ngân Cũ',
+        'role': 'CASHIER',
+      };
+      final user = UserModel.fromJson(cachedUserJson);
+      expect(user.role, UserRole.receptionist);
+      expect(user.role.label, 'Lễ tân – Thu ngân');
+      expect(user.role.homeRoute, '/receptionist');
     });
 
     testWidgets('SessionScope dựng lại màn hình khi đổi tài khoản',

@@ -1,4 +1,4 @@
-﻿import 'package:equatable/equatable.dart';
+import 'package:equatable/equatable.dart';
 
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
@@ -37,3 +37,14 @@ class AuthRegisterSubmitted extends AuthEvent {
 }
 
 class AuthLogoutRequested extends AuthEvent {}
+
+class AuthSessionRevoked extends AuthEvent {
+  final String reason;
+
+  const AuthSessionRevoked({
+    this.reason = 'Tài khoản vừa đăng nhập ở thiết bị khác',
+  });
+
+  @override
+  List<Object?> get props => [reason];
+}

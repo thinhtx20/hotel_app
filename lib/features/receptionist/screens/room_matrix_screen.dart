@@ -9,21 +9,33 @@ import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
+import '../../../shared/models/booking_model.dart';
 import '../../../shared/models/room_model.dart';
 import '../../../shared/repositories/booking_repository.dart';
 import '../../../shared/repositories/room_repository.dart';
 import '../widgets/add_service_sheet.dart';
+import '../widgets/change_room_sheet.dart';
+import '../widgets/check_in_confirm_dialog.dart';
+import '../widgets/check_out_sheet.dart';
+import '../widgets/room_stay_actions.dart';
 import '../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/logout_confirmation_dialog.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
+import '../../../shared/widgets/shift_kpi_strip.dart';
 import '../../../shared/widgets/skeletons/room_matrix_skeleton.dart';
 
 class RoomMatrixScreen extends StatefulWidget {
   final DioClient? dioClient;
   final RoomRepository? roomRepository;
-  const RoomMatrixScreen({super.key, this.dioClient, this.roomRepository});
+  final BookingRepository? bookingRepository;
+  const RoomMatrixScreen({
+    super.key,
+    this.dioClient,
+    this.roomRepository,
+    this.bookingRepository,
+  });
 
   @override
   State<RoomMatrixScreen> createState() => _RoomMatrixScreenState();
@@ -37,7 +49,15 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
               ? sl<RoomRepository>()
               : RoomRepository(dioClient: widget.dioClient ?? DioClient())));
 
+  late final BookingRepository _bookingRepo = widget.bookingRepository ??
+      (widget.dioClient != null
+          ? BookingRepository(dioClient: widget.dioClient)
+          : (sl.isRegistered<BookingRepository>()
+              ? sl<BookingRepository>()
+              : BookingRepository(dioClient: widget.dioClient ?? DioClient())));
+
   List<RoomModel> _rooms = [];
+  int _todayCheckIns = 0;
   bool _isLoading = true;
   String _lastUpdatedTime = '09:42';
   final Set<String> _updatingRoomIds = {};
@@ -45,8 +65,23 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
   @override
   void initState() {
     super.initState();
+    _roomRepo.addListener(_onRoomRepoChanged);
+    _roomRepo.startRealtimeStream();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _fetchRooms();
+    });
+  }
+
+  @override
+  void dispose() {
+    _roomRepo.removeListener(_onRoomRepoChanged);
+    super.dispose();
+  }
+
+  void _onRoomRepoChanged() {
+    if (!mounted) return;
+    setState(() {
+      _rooms = List.from(_roomRepo.rooms);
     });
   }
 
@@ -60,9 +95,19 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
 
     try {
       await _roomRepo.fetchRooms(forceRefresh: true);
+      int todayIns = 0;
+      try {
+        final bList = await _bookingRepo.fetchBookings(
+          checkInFrom: DateTime(now.year, now.month, now.day),
+          checkInTo: DateTime(now.year, now.month, now.day),
+        );
+        todayIns = bList.length;
+      } catch (_) {}
+
       if (mounted) {
         setState(() {
           _rooms = List.from(_roomRepo.rooms);
+          _todayCheckIns = todayIns;
           _isLoading = false;
         });
       }
@@ -210,174 +255,284 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
     final palette = context.palette;
     final statusColor = _getStatusColor(room.status, palette);
     final statusInk = _getStatusInk(room.status, palette);
+    final role = context.readRole;
     // `PATCH /rooms/:id/status` chỉ mở cho ADMIN và RECEPTIONIST (§3.4).
-    final canChangeStatus = context.readRole.canChangeRoomStatus;
+    final canChangeStatus = role.canChangeRoomStatus;
+    // Check-in / check-out cùng nhóm quyền nhân viên (§3.5).
+    final canCheckIn = role.canCheckIn;
+    final canCheckOut = role.canCheckOut;
 
     AppBottomSheet.show(
       context: context,
       builder: (ctx) => AppBottomSheet(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Phòng ${room.roomNumber}',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: palette.ink,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                    child: Text(
+                      room.status.label,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                        color: statusInk,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Tầng ${room.floor} • Hạng ${room.roomTypeName ?? "Tiêu Chuẩn"} • ${Formatters.formatCurrency(room.pricePerNight)}/đêm',
+                style: TextStyle(color: palette.inkMuted, fontSize: 13),
+              ),
+              Divider(height: 28, color: palette.divider),
+              // Thủ tục nhận / trả phòng ngay tại ô phòng — lễ tân không phải
+              // sang tab "Hôm nay" dò lại đơn của khách.
+              if (canCheckIn || canCheckOut) ...[
+                RoomStayActions(
+                  room: room,
+                  bookingRepository: _bookingRepo,
+                  canCheckIn: canCheckIn,
+                  canCheckOut: canCheckOut,
+                  onCheckIn: (booking) {
+                    Navigator.pop(ctx);
+                    _performCheckIn(room, booking);
+                  },
+                  onCheckOut: (booking) {
+                    Navigator.pop(ctx);
+                    _performCheckOut(room, booking);
+                  },
+                ),
+                Divider(height: 28, color: palette.divider),
+              ],
+              if (!canChangeStatus)
+                Row(
+                  children: [
+                    Icon(Icons.lock_outline_rounded, size: 16, color: palette.inkMuted),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Vai trò của bạn chỉ được xem sơ đồ phòng.',
+                        style: TextStyle(fontSize: 13, color: palette.inkMuted),
+                      ),
+                    ),
+                  ],
+                )
+              else ...[
                 Text(
-                  'Phòng ${room.roomNumber}',
+                  'Thao tác nhanh 1 chạm:',
                   style: TextStyle(
-                    fontSize: 22,
                     fontWeight: FontWeight.w700,
+                    fontSize: 14,
                     color: palette.ink,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                  ),
-                  child: Text(
-                    room.status.label,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                      color: statusInk,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Tầng ${room.floor} • Hạng ${room.roomTypeName ?? "Tiêu Chuẩn"} • ${Formatters.formatCurrency(room.pricePerNight)}/đêm',
-              style: TextStyle(color: palette.inkMuted, fontSize: 13),
-            ),
-            Divider(height: 28, color: palette.divider),
-            if (!canChangeStatus)
-              Row(
-                children: [
-                  Icon(Icons.lock_outline_rounded, size: 16, color: palette.inkMuted),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      'Vai trò của bạn chỉ được xem sơ đồ phòng.',
-                      style: TextStyle(fontSize: 13, color: palette.inkMuted),
-                    ),
-                  ),
-                ],
-              )
-            else ...[
-              Text(
-                'Thao tác nhanh 1 chạm:',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                  color: palette.ink,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: [
-                  _buildActionButton(
-                    ctx: ctx,
-                    room: room,
-                    label: 'Sẵn sàng',
-                    status: RoomStatus.available,
-                    icon: Icons.check_circle_outline,
-                  ),
-                  _buildActionButton(
-                    ctx: ctx,
-                    room: room,
-                    label: 'Dọn dẹp',
-                    status: RoomStatus.cleaning,
-                    icon: Icons.cleaning_services_outlined,
-                  ),
-                  _buildActionButton(
-                    ctx: ctx,
-                    room: room,
-                    label: 'Có khách',
-                    status: RoomStatus.occupied,
-                    icon: Icons.person_outline,
-                  ),
-                  _buildActionButton(
-                    ctx: ctx,
-                    room: room,
-                    label: 'Đặt cọc',
-                    status: RoomStatus.reserved,
-                    icon: Icons.vpn_key_outlined,
-                  ),
-                  _buildActionButton(
-                    ctx: ctx,
-                    room: room,
-                    label: 'Bảo trì',
-                    status: RoomStatus.maintenance,
-                    icon: Icons.build_outlined,
-                  ),
-                ],
-              ),
-              if (room.status == RoomStatus.occupied) ...[
-                const SizedBox(height: AppSpacing.lg),
-                Divider(height: 1, color: palette.divider),
                 const SizedBox(height: AppSpacing.md),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      _openAddServiceForRoom(room);
-                    },
-                    icon: Icon(Icons.room_service_outlined, size: 18, color: palette.accent),
-                    label: Text(
-                      'Ghi nhận Dịch vụ / Minibar',
-                      style: TextStyle(
-                        color: palette.accent,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    _buildActionButton(
+                      ctx: ctx,
+                      room: room,
+                      label: 'Sẵn sàng',
+                      status: RoomStatus.available,
+                      icon: Icons.check_circle_outline,
                     ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: palette.accent),
-                      padding: const EdgeInsets.symmetric(vertical: 11),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.button),
+                    _buildActionButton(
+                      ctx: ctx,
+                      room: room,
+                      label: 'Dọn dẹp',
+                      status: RoomStatus.cleaning,
+                      icon: Icons.cleaning_services_outlined,
+                    ),
+                    _buildActionButton(
+                      ctx: ctx,
+                      room: room,
+                      label: 'Có khách',
+                      status: RoomStatus.occupied,
+                      icon: Icons.person_outline,
+                    ),
+                    _buildActionButton(
+                      ctx: ctx,
+                      room: room,
+                      label: 'Đặt cọc',
+                      status: RoomStatus.reserved,
+                      icon: Icons.vpn_key_outlined,
+                    ),
+                    _buildActionButton(
+                      ctx: ctx,
+                      room: room,
+                      label: 'Bảo trì',
+                      status: RoomStatus.maintenance,
+                      icon: Icons.build_outlined,
+                    ),
+                  ],
+                ),
+                if (room.status == RoomStatus.occupied) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  Divider(height: 1, color: palette.divider),
+                  const SizedBox(height: AppSpacing.md),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _openAddServiceForRoom(room);
+                      },
+                      icon: Icon(Icons.room_service_outlined, size: 18, color: palette.accent),
+                      label: Text(
+                        'Ghi nhận Dịch vụ / Minibar',
+                        style: TextStyle(
+                          color: palette.accent,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: palette.accent),
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.button),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  if (context.readRole.canChangeRoom) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _openChangeRoomForRoom(room);
+                        },
+                        icon: Icon(Icons.swap_horiz_rounded, size: 18, color: palette.statusOccupiedInk),
+                        label: Text(
+                          'Đổi phòng cho khách (S2)',
+                          style: TextStyle(
+                            color: palette.statusOccupiedInk,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: palette.statusOccupied),
+                          padding: const EdgeInsets.symmetric(vertical: 11),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.button),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ],
-            ],
-            const SizedBox(height: AppSpacing.md),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton.icon(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  context.push('/rooms/${room.id}');
-                },
-                icon: Icon(Icons.photo_library_outlined, size: 18, color: palette.accent),
-                label: Text(
-                  'Xem Chi Tiết Phòng & Album Ảnh',
-                  style: TextStyle(
-                    color: palette.accent,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
+              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    context.push('/rooms/${room.id}');
+                  },
+                  icon: Icon(Icons.photo_library_outlined, size: 18, color: palette.accent),
+                  label: Text(
+                    'Xem Chi Tiết Phòng & Album Ảnh',
+                    style: TextStyle(
+                      color: palette.accent,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-          ],
+              const SizedBox(height: AppSpacing.sm),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  /// Nhận phòng cho đơn đang gắn với ô phòng vừa chọn.
+  Future<void> _performCheckIn(RoomModel room, BookingModel booking) async {
+    final confirmed = await CheckInConfirmDialog.show(
+      context: context,
+      booking: booking,
+    );
+    if (!confirmed || !mounted) return;
+
+    setState(() => _updatingRoomIds.add(room.id));
+    try {
+      await _bookingRepo.checkIn(booking.id);
+      if (!mounted) return;
+      setState(() => _updatingRoomIds.remove(room.id));
+
+      // Backend đẩy phòng sang OCCUPIED — nạp lại sơ đồ để khớp trạng thái.
+      await _fetchRooms(isSilent: true);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  'Đã nhận phòng ${room.roomNumber} cho đơn ${booking.displayCode}',
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: context.palette.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.cardSmall),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _updatingRoomIds.remove(room.id));
+      AppNotification.showError(context, e, title: 'Nhận phòng thất bại');
+    }
+  }
+
+  /// Trả phòng & xuất hóa đơn cho lượt khách đang ở ô phòng vừa chọn.
+  Future<void> _performCheckOut(RoomModel room, BookingModel booking) async {
+    final result = await CheckOutSheet.show(
+      context: context,
+      booking: booking,
+      bookingRepository: _bookingRepo,
+    );
+    if (result == null || !mounted) return;
+
+    // Phòng chuyển sang chờ dọn sau khi khách trả — nạp lại trạng thái thật.
+    await _fetchRooms(isSilent: true);
+  }
+
   Future<void> _openAddServiceForRoom(RoomModel room) async {
     try {
-      final bookings = await sl<BookingRepository>().fetchBookings(
+      final bookings = await _bookingRepo.fetchBookings(
         roomId: room.id,
         status: 'CHECKED_IN',
       );
@@ -401,6 +556,39 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi khi tải thông tin đặt phòng: ${e.toString()}'),
+          backgroundColor: context.palette.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _openChangeRoomForRoom(RoomModel room) async {
+    try {
+      final bookings = await _bookingRepo.fetchBookings(
+        roomId: room.id,
+        status: 'CHECKED_IN',
+      );
+      if (!mounted) return;
+      if (bookings.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Không tìm thấy lượt lưu trú đang hoạt động của phòng ${room.roomNumber}'),
+            backgroundColor: context.palette.warning,
+          ),
+        );
+        return;
+      }
+      ChangeRoomSheet.show(
+        context: context,
+        bookingId: bookings.first.id,
+        currentRoom: room,
+        onSuccess: () => _fetchRooms(isSilent: true),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi khi tải thông tin đổi phòng: ${e.toString()}'),
           backgroundColor: context.palette.error,
         ),
       );
@@ -530,13 +718,33 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                                   letterSpacing: -0.3,
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Cập nhật lúc $_lastUpdatedTime',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.60),
-                                  fontSize: 12,
-                                ),
+                              const SizedBox(height: 3),
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _roomRepo.isRealtimeActive
+                                          ? const Color(0xFF10B981)
+                                          : Colors.white.withValues(alpha: 0.40),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    _roomRepo.isRealtimeActive
+                                        ? 'Realtime trực tiếp'
+                                        : 'Cập nhật lúc $_lastUpdatedTime',
+                                    style: TextStyle(
+                                      color: _roomRepo.isRealtimeActive
+                                          ? const Color(0xFF34D399)
+                                          : Colors.white.withValues(alpha: 0.65),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -586,7 +794,17 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sm),
+
+              // Dải KPI ca trực FE-ROLE-MATRIX §5.1
+              ShiftKpiStrip(
+                available: availableCount,
+                occupied: occupiedCount,
+                cleaning: cleaningCount,
+                checkIns: _todayCheckIns,
+              ),
+
+              const SizedBox(height: AppSpacing.md),
 
               // 2. Danh sách tầng & Lưới phòng 3 cột
               if (_isLoading && _rooms.isEmpty)

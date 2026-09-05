@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/role_permissions.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
@@ -36,17 +37,23 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
   @override
   void initState() {
     super.initState();
+    _roomRepo.addListener(_onRoomRepoChanged);
     _fetchRoomTypes();
   }
 
   @override
   void dispose() {
+    _roomRepo.removeListener(_onRoomRepoChanged);
     _searchController.dispose();
     super.dispose();
   }
 
+  void _onRoomRepoChanged() {
+    if (mounted) setState(() {});
+  }
+
   Future<void> _fetchRoomTypes({bool isSilent = false}) async {
-    if (!isSilent) {
+    if (!isSilent && _roomRepo.roomTypes.isEmpty) {
       setState(() {
         _isLoading = true;
         _errorMessage = null;
@@ -378,15 +385,17 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openCreateOrEditModal(),
-        backgroundColor: palette.accent,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text(
-          'Thêm hạng phòng',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-        ),
-      ),
+      floatingActionButton: context.currentRole.canManageRoomTypes
+          ? FloatingActionButton.extended(
+              onPressed: () => _openCreateOrEditModal(),
+              backgroundColor: palette.accent,
+              icon: const Icon(Icons.add_rounded, color: Colors.white),
+              label: const Text(
+                'Thêm hạng phòng',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+              ),
+            )
+          : null,
       body: Column(
         children: [
           // Search box
@@ -582,33 +591,34 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
                 Divider(height: 1, color: palette.divider),
                 const SizedBox(height: AppSpacing.sm),
 
-                // Actions
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (isDeleting)
-                      const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    else ...[
-                      TextButton.icon(
-                        onPressed: () => _openCreateOrEditModal(existingType: type),
-                        icon: const Icon(Icons.edit_outlined, size: 16),
-                        label: const Text('Chỉnh sửa', style: TextStyle(fontSize: 12)),
-                        style: TextButton.styleFrom(foregroundColor: palette.accent),
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      TextButton.icon(
-                        onPressed: () => _deleteRoomType(type),
-                        icon: const Icon(Icons.delete_outline, size: 16),
-                        label: const Text('Xóa', style: TextStyle(fontSize: 12)),
-                        style: TextButton.styleFrom(foregroundColor: palette.error),
-                      ),
+                // Actions: chỉ ADMIN mới có quyền sửa/xóa hạng phòng (§3.3 & §4.2)
+                if (context.currentRole.canManageRoomTypes)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (isDeleting)
+                        const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      else ...[
+                        TextButton.icon(
+                          onPressed: () => _openCreateOrEditModal(existingType: type),
+                          icon: const Icon(Icons.edit_outlined, size: 16),
+                          label: const Text('Chỉnh sửa', style: TextStyle(fontSize: 12)),
+                          style: TextButton.styleFrom(foregroundColor: palette.accent),
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        TextButton.icon(
+                          onPressed: () => _deleteRoomType(type),
+                          icon: const Icon(Icons.delete_outline, size: 16),
+                          label: const Text('Xóa', style: TextStyle(fontSize: 12)),
+                          style: TextButton.styleFrom(foregroundColor: palette.error),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
+                  ),
               ],
             ),
           ),

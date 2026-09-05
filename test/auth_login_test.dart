@@ -25,7 +25,7 @@ void main() {
       expect(UserRole.fromString('CUSTOMER'), UserRole.customer);
       expect(UserRole.fromString('ADMIN'), UserRole.admin);
       expect(UserRole.fromString('RECEPTIONIST'), UserRole.receptionist);
-      expect(UserRole.fromString('CASHIER'), UserRole.cashier);
+      expect(UserRole.fromString('CASHIER'), UserRole.receptionist);
     });
   });
 }

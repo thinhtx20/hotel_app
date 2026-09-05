@@ -179,6 +179,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     final role = context.currentRole;
     final canViewOccupancy = role.canViewOccupancy;
     final canApproveBooking = role.canApproveBooking;
+    if (!role.canViewYearlyRevenue && _revenueDays == 365) {
+      _revenueDays = 7;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _fetchRevenueSeries(7);
+      });
+    }
 
     final num? rawRate = _dashboardData?['occupancyRate'] as num?;
     final int occupiedRooms =
@@ -287,10 +293,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                             context.currentRole == UserRole.admin
                                                 ? 'QUẢN TRỊ VIÊN'
                                                 : context.currentRole == UserRole.receptionist
-                                                    ? 'LỄ TÂN SẢNH'
-                                                    : context.currentRole == UserRole.cashier
-                                                        ? 'THU NGÂN'
-                                                        : 'TỔNG QUAN',
+                                                    ? 'LỄ TÂN – THU NGÂN'
+                                                    : 'TỔNG QUAN',
                                             style: const TextStyle(
                                               color: AppColors.secondaryLight,
                                               fontSize: 10,
@@ -306,10 +310,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                       context.currentRole == UserRole.admin
                                           ? 'Báo Cáo Quản Trị'
                                           : context.currentRole == UserRole.receptionist
-                                              ? 'Bàn Trực Lễ Tân'
-                                              : context.currentRole == UserRole.cashier
-                                                  ? 'Bàn Thu Ngân'
-                                                  : 'Báo Cáo Tổng Quan',
+                                              ? 'Bàn Trực Lễ Tân – Thu Ngân'
+                                              : 'Báo Cáo Tổng Quan',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 22,
@@ -330,6 +332,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                       _buildGlassCircleBtn(
                                         icon: Icons.bedroom_parent_outlined,
                                         onTap: () => context.push('/admin/room-types'),
+                                      ),
+                                      const SizedBox(width: AppSpacing.sm),
+                                    ] else if (context.currentRole == UserRole.receptionist) ...[
+                                      _buildGlassCircleBtn(
+                                        icon: Icons.people_outline_rounded,
+                                        onTap: () => context.push('/staff/users'),
                                       ),
                                       const SizedBox(width: AppSpacing.sm),
                                     ],
@@ -487,12 +495,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    Icons.chevron_right_rounded,
-                                    size: 14,
-                                    color: palette.inkMuted,
-                                  ),
+                                  if (canViewOccupancy) ...[
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.chevron_right_rounded,
+                                      size: 14,
+                                      color: palette.inkMuted,
+                                    ),
+                                  ],
                                 ],
                               ),
                               const SizedBox(height: 2),
@@ -855,29 +865,35 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         setState(() => _revenueDays = days);
         _fetchRevenueSeries(days);
       },
-      itemBuilder: (context) => _revenueRangeOptions.map((days) {
-        final selected = days == _revenueDays;
-        final labelText = days == 365 ? 'Năm nay (12 tháng)' : '$days ngày';
-        return PopupMenuItem<int>(
-          value: days,
-          height: 42,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                labelText,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                  color: selected ? palette.accent : palette.ink,
+      itemBuilder: (context) {
+        // Doanh thu năm (365) chỉ dành cho ADMIN (§3.7, §4.2, §4.3, §5)
+        final options = context.currentRole.canViewYearlyRevenue
+            ? _revenueRangeOptions
+            : _revenueRangeOptions.where((days) => days != 365).toList();
+        return options.map((days) {
+          final selected = days == _revenueDays;
+          final labelText = days == 365 ? 'Năm nay (12 tháng)' : '$days ngày';
+          return PopupMenuItem<int>(
+            value: days,
+            height: 42,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  labelText,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    color: selected ? palette.accent : palette.ink,
+                  ),
                 ),
-              ),
-              if (selected)
-                Icon(Icons.check_rounded, size: 16, color: palette.accent),
-            ],
-          ),
-        );
-      }).toList(),
+                if (selected)
+                  Icon(Icons.check_rounded, size: 16, color: palette.accent),
+              ],
+            ),
+          );
+        }).toList();
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(

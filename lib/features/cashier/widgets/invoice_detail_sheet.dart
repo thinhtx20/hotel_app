@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/role_permissions.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/models/invoice_model.dart';
 import '../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
+import 'refund_sheet.dart';
 
 class InvoiceDetailSheet extends StatelessWidget {
   final InvoiceModel invoice;
@@ -14,12 +16,14 @@ class InvoiceDetailSheet extends StatelessWidget {
   /// Bỏ trống với vai trò không được `POST /invoices/:id/pay` (khách hàng) —
   /// nút "Ghi nhận Thu tiền" sẽ không hiện.
   final VoidCallback? onCollectPayment;
+  final Function(InvoiceModel updated)? onRefund;
 
   const InvoiceDetailSheet({
     super.key,
     required this.invoice,
     required this.onPrintReceipt,
     this.onCollectPayment,
+    this.onRefund,
   });
 
   static Future<void> show({
@@ -27,6 +31,7 @@ class InvoiceDetailSheet extends StatelessWidget {
     required InvoiceModel invoice,
     required VoidCallback onPrintReceipt,
     VoidCallback? onCollectPayment,
+    Function(InvoiceModel updated)? onRefund,
   }) {
     return AppBottomSheet.show(
       context: context,
@@ -34,6 +39,7 @@ class InvoiceDetailSheet extends StatelessWidget {
         invoice: invoice,
         onPrintReceipt: onPrintReceipt,
         onCollectPayment: onCollectPayment,
+        onRefund: onRefund,
       ),
     );
   }
@@ -432,8 +438,32 @@ class InvoiceDetailSheet extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (invoice.paidAmount > 0 && context.currentRole.canRefundInvoice) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      RefundSheet.show(
+                        context: context,
+                        invoice: invoice,
+                        onRefundSuccess: (updated) {
+                          onRefund?.call(updated);
+                        },
+                      );
+                    },
+                    icon: Icon(Icons.assignment_return_outlined, size: 18, color: palette.statusOccupiedInk),
+                    label: Text(
+                      'Hoàn tiền',
+                      style: TextStyle(color: palette.statusOccupiedInk, fontWeight: FontWeight.w600),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: palette.statusOccupied),
+                      padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
+                    ),
+                  ),
+                ],
                 if (!isPaid && onCollectPayment != null) ...[
-                  const SizedBox(width: AppSpacing.md),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     flex: 2,
                     child: PressableScale(
@@ -457,7 +487,7 @@ class InvoiceDetailSheet extends StatelessWidget {
                                   Icon(Icons.credit_card_rounded, color: Colors.white, size: 18),
                                   SizedBox(width: AppSpacing.sm),
                                   Text(
-                                    'Ghi nhận Thu tiền',
+                                    'Thu tiền',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 14,

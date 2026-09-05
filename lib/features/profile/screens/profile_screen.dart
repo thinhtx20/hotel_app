@@ -993,16 +993,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ? '100%'
                                       : user?.role == UserRole.receptionist
                                           ? 'Ca trực'
-                                          : user?.role == UserRole.cashier
-                                              ? 'Quầy thu'
-                                              : '12',
+                                          : '12',
                                   user?.role == UserRole.admin
                                       ? 'Toàn quyền'
                                       : user?.role == UserRole.receptionist
                                           ? 'Đang mở'
-                                          : user?.role == UserRole.cashier
-                                              ? 'Sẵn sàng'
-                                              : 'Lượt đặt',
+                                          : 'Lượt đặt',
                                 ),
                               ),
                               Container(
@@ -1016,16 +1012,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ? '24'
                                       : user?.role == UserRole.receptionist
                                           ? 'Sơ đồ'
-                                          : user?.role == UserRole.cashier
-                                              ? 'Hóa đơn'
-                                              : '3',
+                                          : '3',
                                   user?.role == UserRole.admin
                                       ? 'Phòng KS'
                                       : user?.role == UserRole.receptionist
                                           ? 'Buồng phòng'
-                                          : user?.role == UserRole.cashier
-                                              ? 'Báo cáo ngày'
-                                              : 'Đang hoạt động',
+                                          : 'Đang hoạt động',
                                 ),
                               ),
                               Container(
@@ -1039,17 +1031,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ? '4.95'
                                       : user?.role == UserRole.receptionist
                                           ? '5.0'
-                                          : user?.role == UserRole.cashier
-                                              ? '100%'
-                                              : '4.9',
+                                          : '4.9',
                                   user?.role == UserRole.admin
                                       ? 'Đánh giá KS'
                                       : user?.role == UserRole.receptionist
                                           ? 'Tiêu chuẩn'
-                                          : user?.role == UserRole.cashier
-                                              ? 'Chính xác'
                                               : 'Đánh giá',
-                                  hasStar: user?.role != UserRole.cashier,
+                                  hasStar: true,
                                 ),
                               ),
                             ],
@@ -1180,6 +1168,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: AppSpacing.xl),
+
                 // Section: CHUYỂN VAI TRÒ KIỂM THỬ (DEMO ROLE SWITCHER)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
@@ -1229,41 +1219,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const SizedBox(width: AppSpacing.sm),
                             Expanded(
                               child: _buildRoleSwitchButton(
-                                label: 'Lễ tân sảnh',
+                                label: 'Lễ tân – Thu ngân',
                                 role: UserRole.receptionist,
                                 color: Colors.blue,
                                 isCurrent: user?.role == UserRole.receptionist,
-                                onTap: () => _quickSwitchRole(context, 'reception@hotel.com', 'Staff@123', 'Lễ tân'),
+                                onTap: () => _quickSwitchRole(context, 'reception@hotel.com', 'Staff@123', 'Lễ tân – Thu ngân'),
                                 palette: palette,
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: AppSpacing.sm),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildRoleSwitchButton(
-                                label: 'Thu ngân',
-                                role: UserRole.cashier,
-                                color: Colors.green,
-                                isCurrent: user?.role == UserRole.cashier,
-                                onTap: () => _quickSwitchRole(context, 'cashier@hotel.com', 'Staff@123', 'Thu ngân'),
-                                palette: palette,
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: _buildRoleSwitchButton(
-                                label: 'Khách hàng',
-                                role: UserRole.customer,
-                                color: palette.accent,
-                                isCurrent: user?.role == UserRole.customer,
-                                onTap: () => _quickSwitchRole(context, 'customer@hotel.com', 'Cust@123', 'Khách hàng'),
-                                palette: palette,
-                              ),
-                            ),
-                          ],
+                        _buildRoleSwitchButton(
+                          label: 'Khách hàng',
+                          role: UserRole.customer,
+                          color: palette.accent,
+                          isCurrent: user?.role == UserRole.customer,
+                          onTap: () => _quickSwitchRole(context, 'customer@hotel.com', 'Cust@123', 'Khách hàng'),
+                          palette: palette,
                         ),
                       ],
                     ),

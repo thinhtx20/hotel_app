@@ -8,9 +8,12 @@ import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
 import '../../../shared/models/booking_model.dart';
 import '../../../shared/repositories/booking_repository.dart';
+import '../../../shared/repositories/invoice_repository.dart';
 import '../../../shared/repositories/room_repository.dart';
 import '../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../cashier/widgets/invoice_detail_sheet.dart';
+import 'my_invoices_screen.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/custom_button.dart';
@@ -26,10 +29,12 @@ class MyBookingsScreen extends StatefulWidget {
 }
 
 class _MyBookingsScreenState extends State<MyBookingsScreen> {
+  int _mainSegment = 0; // 0: Đơn đặt phòng, 1: Hóa đơn của tôi (FE-ROLE-MATRIX §4.3)
   int _selectedTabIndex = 0;
   List<BookingModel> _bookings = [];
   bool _isLoading = true;
   dynamic _error;
+  final Set<String> _cancellingBookingIds = {};
   late final BookingRepository _bookingRepository = widget.bookingRepository ??
       (sl.isRegistered<BookingRepository>()
           ? sl<BookingRepository>()
@@ -274,6 +279,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
     if (cancelReason == null || !mounted) return;
 
+    setState(() => _cancellingBookingIds.add(booking.id));
+
     try {
       final updated = await _bookingRepository.cancel(booking.id, reason: cancelReason);
       if (mounted) {
@@ -283,6 +290,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         // ADMIN/RECEPTIONIST.
         sl<RoomRepository>().fetchRooms(forceRefresh: true).catchError((_) {});
         setState(() {
+          _cancellingBookingIds.remove(booking.id);
           final idx = _bookings.indexWhere((b) => b.id == booking.id);
           if (idx != -1) {
             _bookings[idx] = updated;
@@ -295,6 +303,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       }
     } catch (e) {
       if (mounted) {
+        setState(() => _cancellingBookingIds.remove(booking.id));
         AppNotification.showError(
           context,
           e,
@@ -368,7 +377,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Đơn Đặt Phòng',
+                          'Chuyến Đi Của Tôi',
                           style: textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: palette.ink,
@@ -377,7 +386,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Lịch sử & trạng thái phòng của bạn',
+                          'Lịch sử đặt phòng & hóa đơn của bạn',
                           style: textTheme.bodySmall?.copyWith(
                             color: palette.inkMuted,
                           ),
@@ -406,6 +415,69 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               ),
             ),
 
+            // Segment switcher: Đơn đặt phòng vs Hóa đơn
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+              child: Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  color: palette.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  border: Border.all(color: palette.border),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: PressableScale(
+                        onTap: () => setState(() => _mainSegment = 0),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          decoration: BoxDecoration(
+                            color: _mainSegment == 0 ? palette.accent : Colors.transparent,
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Đơn đặt phòng',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: _mainSegment == 0 ? FontWeight.w700 : FontWeight.w500,
+                              color: _mainSegment == 0 ? Colors.white : palette.inkMuted,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: PressableScale(
+                        onTap: () => setState(() => _mainSegment = 1),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          decoration: BoxDecoration(
+                            color: _mainSegment == 1 ? palette.accent : Colors.transparent,
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Hóa đơn của tôi',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: _mainSegment == 1 ? FontWeight.w700 : FontWeight.w500,
+                              color: _mainSegment == 1 ? Colors.white : palette.inkMuted,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            if (_mainSegment == 1)
+              const Expanded(child: MyInvoicesScreen())
+            else ...[
             // 2. Pill Tabs
             SizedBox(
               height: 38,
@@ -543,6 +615,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           ),
               ),
             ),
+            ],
           ],
         ),
       ),
@@ -1032,6 +1105,43 @@ class _BookingDetailsModal extends StatelessWidget {
     return Formatters.formatNumber(amount);
   }
 
+  Future<void> _viewInvoice(BuildContext context) async {
+    final invoiceId = booking.invoiceId;
+    if (invoiceId == null || invoiceId.isEmpty) return;
+
+    try {
+      final repo = sl.isRegistered<InvoiceRepository>()
+          ? sl<InvoiceRepository>()
+          : InvoiceRepository();
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final inv = await repo.fetchDetail(invoiceId);
+
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        InvoiceDetailSheet.show(
+          context: context,
+          invoice: inv,
+          onPrintReceipt: () => Navigator.of(context).maybePop(),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        AppNotification.showError(
+          context,
+          e,
+          title: 'Không thể tải thông tin hóa đơn',
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
@@ -1142,6 +1252,23 @@ class _BookingDetailsModal extends StatelessWidget {
             const SizedBox(height: AppSpacing.xl),
 
             // Actions
+            if (booking.invoiceId != null && booking.invoiceId!.isNotEmpty) ...[
+              OutlinedButton.icon(
+                onPressed: () => _viewInvoice(context),
+                icon: const Icon(Icons.receipt_long_rounded, size: 18),
+                label: const Text('Xem hóa đơn thanh toán'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: palette.accent,
+                  side: BorderSide(color: palette.accent),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+
             if (canCancel) ...[
               OutlinedButton.icon(
                 onPressed: onCancel,

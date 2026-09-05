@@ -42,8 +42,10 @@ class _MyInvoicesScreenState extends State<MyInvoicesScreen> {
     _fetchInvoices();
   }
 
-  Future<void> _fetchInvoices() async {
-    if (mounted) setState(() => _isLoading = true);
+  Future<void> _fetchInvoices({bool isSilent = false}) async {
+    if (mounted && !isSilent && _invoices.isEmpty) {
+      setState(() => _isLoading = true);
+    }
     try {
       final res = await _dioClient.dio.get(ApiEndpoints.invoicesMy);
       if (res.statusCode == 200 && res.data['success'] == true) {

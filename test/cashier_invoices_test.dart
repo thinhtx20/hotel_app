@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hotel_app/di/injection_container.dart';
 import 'package:hotel_app/features/cashier/screens/cashier_invoices_screen.dart';
+import 'package:hotel_app/features/cashier/widgets/invoice_card.dart';
 import 'package:hotel_app/shared/models/invoice_model.dart';
+import 'package:hotel_app/shared/repositories/invoice_repository.dart';
 
 void main() {
   group('InvoiceModel Tests', () {
@@ -74,7 +77,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
 
-      expect(find.text('Thu Ngân'), findsOneWidget);
+      expect(find.text('Hóa Đơn & Thu Quỹ'), findsOneWidget);
       expect(find.text('Chưa thanh toán'), findsOneWidget);
       expect(find.text('Thanh toán 1 phần'), findsOneWidget);
       expect(find.text('Đã hoàn tất'), findsOneWidget);
@@ -142,7 +145,101 @@ void main() {
       await tester.tap(paidTab);
       await tester.pump();
     });
+
+    testWidgets('paginates 20 items per load and loads more on demand', (tester) async {
+      final mockList = List.generate(
+        45,
+        (i) => InvoiceModel(
+          id: 'inv-$i',
+          invoiceCode: 'INV-TEST-$i',
+          roomAmount: 1000000,
+          servicesAmount: 0,
+          discount: 0,
+          tax: 0,
+          finalAmount: 1000000,
+          paidAmount: 0,
+          paymentStatus: 'UNPAID',
+        ),
+      );
+
+      if (sl.isRegistered<InvoiceRepository>()) {
+        sl.unregister<InvoiceRepository>();
+      }
+      sl.registerLazySingleton<InvoiceRepository>(() => _StubInvoiceRepo(mockList));
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: CashierInvoicesScreen(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final state = tester.state(find.byType(CashierInvoicesScreen)) as dynamic;
+
+      // Initially only 20 items are displayed
+      expect(state.displayedCount, 20);
+
+      // Trigger load more -> increases by 20 to 40
+      state.loadMoreForTesting();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(state.displayedCount, 40);
+
+      // Trigger load more again -> loads remaining 5 items up to 45
+      state.loadMoreForTesting();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(state.displayedCount, 45);
+
+      // Switching tabs resets displayed count back to 20
+      final allTab = find.text('Tất cả');
+      await tester.tap(allTab);
+      await tester.pump();
+      expect(state.displayedCount, 20);
+
+      // Load more again
+      state.loadMoreForTesting();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(state.displayedCount, 40);
+
+      // Typing in search bar resets displayed count back to 20
+      final searchField = find.byType(TextField).first;
+      await tester.enterText(searchField, 'TEST');
+      await tester.pump();
+      expect(state.displayedCount, 20);
+    });
+
+    testWidgets('back button exists in top bar and triggers back action', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: CashierInvoicesScreen(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final backBtn = find.byIcon(Icons.arrow_back_ios_new_rounded);
+      expect(backBtn, findsOneWidget);
+
+      await tester.tap(backBtn);
+      await tester.pump();
+    });
   });
+}
+
+class _StubInvoiceRepo extends InvoiceRepository {
+  final List<InvoiceModel> stubInvoices;
+  _StubInvoiceRepo(this.stubInvoices);
+
+  @override
+  Future<List<InvoiceModel>> fetchAll({String? status}) async => stubInvoices;
+
+  @override
+  Future<Map<String, dynamic>> fetchSummary({DateTime? date}) async => {
+    'todayRevenue': 0,
+  };
 }
 
 

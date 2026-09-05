@@ -3,13 +3,35 @@ import '../../core/network/api_endpoints.dart';
 import '../../core/network/api_error.dart';
 import '../../core/network/api_result.dart';
 import '../../core/network/dio_client.dart';
+import '../../core/network/sse_client.dart';
+import '../../core/storage/token_storage.dart';
+import '../../di/injection_container.dart';
 import '../models/user_model.dart';
 
 class UserRepository {
   final DioClient _dioClient;
+  final TokenStorage _tokenStorage;
 
-  UserRepository({DioClient? dioClient})
-      : _dioClient = dioClient ?? DioClient();
+  UserRepository({DioClient? dioClient, TokenStorage? tokenStorage})
+      : _dioClient = dioClient ?? DioClient(),
+        _tokenStorage = tokenStorage ??
+            (sl.isRegistered<TokenStorage>() ? sl<TokenStorage>() : TokenStorage());
+
+  /// Tạo SseClient kết nối luồng realtime danh sách tài khoản GET /users/stream
+  SseClient createUsersSseClient({String? token}) {
+    return SseClient(
+      path: ApiEndpoints.usersStream,
+      dioClient: _dioClient,
+      tokenProvider: () async {
+        if (token != null && token.isNotEmpty) return token;
+        try {
+          return await _tokenStorage.getAccessToken();
+        } catch (_) {
+          return null;
+        }
+      },
+    );
+  }
 
   /// Lấy danh sách người dùng / nhân sự: GET /users?role=
   Future<List<UserModel>> fetchAll({String? role}) async {
@@ -108,6 +130,10 @@ class UserRepository {
         data: data,
       );
       final resData = ApiResult.unwrapMap(res);
+      if (resData['user'] is Map) {
+        return UserModel.fromJson(
+            Map<String, dynamic>.from(resData['user'] as Map));
+      }
       return UserModel.fromJson(resData);
     } on DioException catch (e) {
       throw ApiError.fromDioException(e);
@@ -116,15 +142,39 @@ class UserRepository {
     }
   }
 
-  /// Vô hiệu hóa tài khoản: DELETE /users/:id (ADMIN)
+  /// Khóa / mở khóa tài khoản thủ công: PATCH /users/:id body { isActive: false | true }
+  /// Tham chiếu: update-user.dto.ts:26-29
+  Future<UserModel> setActiveStatus(String id, bool isActive) async {
+    return updateUser(id, {'isActive': isActive});
+  }
+
+  /// Khóa tài khoản thủ công: PATCH /users/:id { isActive: false }
+  Future<UserModel> lockUser(String id) async {
+    return setActiveStatus(id, false);
+  }
+
+  /// Mở khóa tài khoản thủ công: PATCH /users/:id { isActive: true }
+  Future<UserModel> unlockUser(String id) async {
+    return setActiveStatus(id, true);
+  }
+
+  /// Khóa tài khoản (soft-delete): DELETE /users/:id -> isActive = false
+  /// Tham chiếu: users.service.ts:146-152
   Future<void> deactivate(String id) async {
     try {
       final res = await _dioClient.dio.delete(ApiEndpoints.deleteUser(id));
-      ApiResult.unwrapMap(res);
+      if (res.data != null && res.data is Map) {
+        ApiResult.unwrapMap(res);
+      }
     } on DioException catch (e) {
       throw ApiError.fromDioException(e);
     } catch (e) {
       throw ApiError.fromDynamic(e);
     }
+  }
+
+  /// Alias cho xóa mềm tài khoản: DELETE /users/:id
+  Future<void> softDeleteUser(String id) async {
+    return deactivate(id);
   }
 }

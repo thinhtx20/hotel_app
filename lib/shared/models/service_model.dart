@@ -21,6 +21,9 @@ class ServiceModel {
     this.isAvailable = true,
   });
 
+  num get price => unitPrice;
+  String? get imageUrl => icon;
+
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
     num parsePrice(dynamic val) {
       if (val == null) return 0;

@@ -66,11 +66,13 @@ class _BookingApprovalScreenState extends State<BookingApprovalScreen>
     super.dispose();
   }
 
-  Future<void> _fetchBookings() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _fetchBookings({bool isSilent = false}) async {
+    if (!isSilent && _bookings.isEmpty) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
     _refreshIconController.repeat();
 
     try {
@@ -85,9 +87,14 @@ class _BookingApprovalScreenState extends State<BookingApprovalScreen>
       if (!mounted) return;
       final apiErr = ApiError.fromDynamic(e);
       setState(() {
-        _errorMessage = apiErr.displayMessage;
+        if (_bookings.isEmpty) {
+          _errorMessage = apiErr.displayMessage;
+        }
         _isLoading = false;
       });
+      if (isSilent || _bookings.isNotEmpty) {
+        AppNotification.showError(context, e, title: 'Làm mới danh sách thất bại');
+      }
     } finally {
       if (mounted) {
         _refreshIconController.stop();

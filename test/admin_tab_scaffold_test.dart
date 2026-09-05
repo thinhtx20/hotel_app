@@ -39,7 +39,7 @@ void main() {
     }
   });
 
-  testWidgets('AdminTabScaffold renders 4 tabs and navigates correctly', (WidgetTester tester) async {
+  testWidgets('AdminTabScaffold renders 5 tabs and navigates correctly', (WidgetTester tester) async {
     final adminUser = UserModel(
       id: 'admin-1',
       email: 'admin@hotel.com',
@@ -63,39 +63,33 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
-    // Verify 4 tabs exist
+    // Verify 5 tabs exist (FE-ROLE-MATRIX §4.1)
     expect(find.text('Tổng quan'), findsWidgets);
-    expect(find.text('Duyệt phòng'), findsOneWidget);
-    expect(find.text('Sơ đồ phòng'), findsOneWidget);
-    expect(find.text('Thu ngân'), findsOneWidget);
+    expect(find.text('Báo cáo'), findsOneWidget);
+    expect(find.text('Vận hành phòng'), findsOneWidget);
+    expect(find.text('Nhân sự & DV'), findsOneWidget);
+    expect(find.text('Hồ sơ'), findsOneWidget);
 
-    // Tap on 'Duyệt phòng' tab
-    await tester.tap(find.text('Duyệt phòng'));
+    // Tap on 'Báo cáo' tab
+    await tester.tap(find.text('Báo cáo'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
+    expect(find.textContaining('Báo Cáo'), findsWidgets);
 
-    // Verify Room Approval screen shows header
-    expect(find.text('Duyệt Phòng Mới'), findsOneWidget);
-
-    // Tap on 'Sơ đồ phòng' tab
-    await tester.tap(find.text('Sơ đồ phòng'));
+    // Tap on 'Vận hành phòng' tab
+    await tester.tap(find.text('Vận hành phòng'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
+    expect(find.textContaining('Vận Hành Phòng'), findsWidgets);
 
-    // Verify Room Matrix screen shows header
-    expect(find.text('Sơ Đồ Buồng Phòng'), findsOneWidget);
-
-    // Tap on 'Thu ngân' tab
-    await tester.tap(find.text('Thu ngân'));
+    // Tap on 'Nhân sự & DV' tab
+    await tester.tap(find.text('Nhân sự & DV'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
-
-    // Verify Cashier screen shows header
-    expect(find.text('Thu Ngân'), findsOneWidget);
+    expect(find.textContaining('Nhân Sự & Dịch Vụ'), findsWidgets);
   });
 
-
-  testWidgets('AdminTabScaffold displays badge when pending rooms exist', (WidgetTester tester) async {
+  testWidgets('AdminTabScaffold displays badge when pending rooms exist on Vận hành phòng', (WidgetTester tester) async {
     if (sl.isRegistered<RoomRepository>()) {
       await sl.unregister<RoomRepository>();
     }
@@ -139,7 +133,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    // Verify pending badge count '2' shows on 'Duyệt phòng' tab
+    // Verify pending badge count '2' shows on 'Vận hành phòng' tab
     expect(find.text('2'), findsWidgets);
   });
 }

@@ -41,6 +41,8 @@ class ApiEndpoints {
   static String rejectRoom(String id) => '/rooms/$id/reject';
   /// POST — ADMIN, RECEPTIONIST (rà soát & đồng bộ trạng thái phòng theo lịch đặt)
   static const String roomsSyncStatus = '/rooms/sync-status';
+  /// GET — Public (SSE stream realtime trạng thái phòng)
+  static const String roomsStream = '/rooms/stream';
   /// GET — Public
   /// POST — ADMIN
   static const String roomTypes = '/room-types';
@@ -69,26 +71,41 @@ class ApiEndpoints {
   static String confirmBooking(String id) => '/bookings/$id/confirm';
   /// PATCH / POST — ADMIN, RECEPTIONIST (từ chối đơn đặt phòng)
   static String rejectBooking(String id) => '/bookings/$id/reject';
+  /// POST — ADMIN, RECEPTIONIST (Đổi phòng cho khách lưu trú S2)
+  static String changeRoom(String bookingId) => '/bookings/$bookingId/change-room';
+  /// POST — CUSTOMER (Khách đặt dịch vụ tại phòng C1)
+  static String serviceRequests(String bookingId) => '/bookings/$bookingId/service-requests';
+  /// PATCH — ADMIN, RECEPTIONIST (Duyệt / từ chối yêu cầu dịch vụ)
+  static String updateServiceRequest(String bookingId, String orderId) =>
+      '/bookings/$bookingId/services/$orderId';
 
   // --- Invoices (§3.6) -------------------------------------------------------
-  /// GET — ADMIN, RECEPTIONIST, CASHIER
-  /// POST — ADMIN, CASHIER (lễ tân bị 403, hóa đơn lễ tân sinh từ check-out)
+  /// GET — ADMIN, RECEPTIONIST
+  /// POST — ADMIN, RECEPTIONIST (mở tạo thủ công cho Lễ tân - Thu ngân)
   static const String invoices = '/invoices';
   /// GET — Tất cả role (hóa đơn thuộc đơn của tài khoản đang đăng nhập)
   static const String invoicesMy = '/invoices/my';
-  /// GET — ADMIN, RECEPTIONIST, CASHIER
+  /// GET — ADMIN, RECEPTIONIST
   static const String invoiceSummary = '/invoices/summary';
-  /// GET — ADMIN, RECEPTIONIST, CASHIER (CUSTOMER xem được nếu thuộc đơn của mình)
+  /// GET — ADMIN, RECEPTIONIST (CUSTOMER xem được nếu thuộc đơn của mình)
   static String invoiceDetail(String id) => '/invoices/$id';
-  /// POST — ADMIN, RECEPTIONIST, CASHIER
+  /// POST — ADMIN, RECEPTIONIST
   static String payInvoice(String id) => '/invoices/$id/pay';
+  /// POST — ADMIN, RECEPTIONIST (Hoàn tiền S4)
+  static String invoiceRefund(String id) => '/invoices/$id/refund';
 
   // --- Analytics (§3.7) -----------------------------------------------------
-  /// GET — ADMIN, RECEPTIONIST, CASHIER
+  /// GET — ADMIN, RECEPTIONIST
   static const String analyticsDashboard = '/analytics/dashboard';
   /// GET — ADMIN (doanh thu theo năm)
   static const String analyticsRevenue = '/analytics/revenue';
-  /// GET — ADMIN, RECEPTIONIST, CASHIER (range = 1|7|14|30)
+  /// GET — ADMIN (danh sách các năm có doanh thu)
+  static const String analyticsRevenueYears = '/analytics/revenue/years';
+  /// GET — ADMIN (xuất báo cáo doanh thu CSV A3)
+  static const String revenueExport = '/analytics/revenue/export';
+  /// GET — ADMIN (hiệu suất nhân viên A1)
+  static const String staffPerformance = '/analytics/staff-performance';
+  /// GET — ADMIN, RECEPTIONIST (range = 1|7|14|30)
   static const String analyticsRevenueDaily = '/analytics/revenue/daily';
   /// GET — ADMIN, RECEPTIONIST
   static const String analyticsOccupancyByType = '/analytics/occupancy-by-type';
@@ -101,14 +118,19 @@ class ApiEndpoints {
   static const String usersMe = '/users/me';
   /// GET — ADMIN, RECEPTIONIST
   static String userDetail(String id) => '/users/$id';
-  /// PATCH — ADMIN (sửa thông tin và đổi role)
+  /// PATCH — ADMIN (sửa thông tin, đổi role, mở/khóa thủ công isActive: true|false — update-user.dto.ts:26-29)
   static String updateUser(String id) => '/users/$id';
-  /// DELETE — ADMIN (vô hiệu hóa tài khoản isActive=false)
+  /// DELETE — ADMIN (khóa tài khoản bằng soft-delete isActive=false — users.service.ts:146-152)
   static String deleteUser(String id) => '/users/$id';
+  /// GET — ADMIN (SSE stream realtime danh sách người dùng)
+  static const String usersStream = '/users/stream';
 
-  // --- Services (§3.8) -------------------------------------------------------
-  /// GET — Public
+  // --- Services (§3.8 & A2) --------------------------------------------------
+  /// GET — Public, POST — ADMIN
   static const String services = '/services';
+  static const String hotelServices = '/services';
+  /// PATCH / DELETE — ADMIN
+  static String serviceDetail(String id) => '/services/$id';
 
   // --- Upload (§3.9) ---------------------------------------------------------
   /// POST — Tất cả role (tự cập nhật hồ sơ khi updateProfile=true)

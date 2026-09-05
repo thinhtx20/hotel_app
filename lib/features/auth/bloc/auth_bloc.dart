@@ -30,6 +30,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLoginSubmitted>(_onLoginSubmitted);
     on<AuthRegisterSubmitted>(_onRegisterSubmitted);
     on<AuthLogoutRequested>(_onLogoutRequested);
+    on<AuthSessionRevoked>(_onSessionRevoked);
   }
 
   Future<void> _onCheckRequested(
@@ -47,8 +48,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             res.data['success'] == true) {
           final rawData = res.data['data'] ?? res.data;
           final updatedUser = UserModel.fromJson(rawData);
+          if (!updatedUser.isActive) {
+            await _tokenStorage.clearAll();
+            emit(AuthFailure('Tài khoản của bạn đã bị khóa'));
+            return;
+          }
           await _tokenStorage.saveUser(updatedUser);
           emit(AuthAuthenticated(updatedUser));
+        }
+      } on DioException catch (e) {
+        if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+          await _tokenStorage.clearAll();
+          final apiErr = ApiError.fromDioException(e);
+          emit(AuthFailure(apiErr.displayMessage));
+          return;
         }
       } catch (_) {
         // Keep existing user if network fails temporarily
@@ -182,5 +195,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _tokenStorage.clearAll();
       emit(AuthUnauthenticated());
     }
+  }
+
+  Future<void> _onSessionRevoked(
+    AuthSessionRevoked event,
+    Emitter<AuthState> emit,
+  ) async {
+    _onSessionReset?.call();
+    await _tokenStorage.clearAll();
+    emit(AuthFailure(event.reason));
   }
 }

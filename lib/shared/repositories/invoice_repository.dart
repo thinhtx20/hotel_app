@@ -132,4 +132,52 @@ class InvoiceRepository {
       throw ApiError.fromDynamic(e);
     }
   }
+
+  /// Hoàn tiền hóa đơn: POST /invoices/:id/refund (S4)
+  Future<InvoiceModel> refund(
+    String invoiceId, {
+    required num amount,
+    required String reason,
+  }) async {
+    try {
+      final res = await _dioClient.dio.post(
+        ApiEndpoints.invoiceRefund(invoiceId),
+        data: {
+          'amount': amount,
+          'reason': reason,
+        },
+      );
+
+      final data = ApiResult.unwrapMap(res);
+      return InvoiceModel.fromJson(data);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Tổng kết ca trực cá nhân: GET /invoices/summary?date=...&staffId=me (S1)
+  Future<Map<String, dynamic>> getShiftSummary({
+    String? date,
+    String staffId = 'me',
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'staffId': staffId,
+        if (date != null && date.isNotEmpty) 'date': date,
+      };
+
+      final res = await _dioClient.dio.get(
+        ApiEndpoints.invoiceSummary,
+        queryParameters: queryParams,
+      );
+
+      return ApiResult.unwrapMap(res);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
 }

@@ -48,13 +48,29 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
   void initState() {
     super.initState();
     _room = widget.initialRoom;
+    _roomRepository.addListener(_onRepositoryUpdated);
     _fetchRoomDetail();
   }
 
   @override
   void dispose() {
+    _roomRepository.removeListener(_onRepositoryUpdated);
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _onRepositoryUpdated() {
+    if (!mounted) return;
+    try {
+      final updated = _roomRepository.rooms.firstWhere(
+        (r) => r.id == widget.roomId,
+      );
+      if (_room != null && _room!.status != updated.status) {
+        setState(() {
+          _room = _room!.copyWith(status: updated.status);
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _fetchRoomDetail() async {
@@ -526,6 +542,52 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                             ),
                           ),
                         ],
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
+
+                      // Ghi chú nội bộ (chỉ hiển thị cho nhân viên: Admin, Lễ tân, Thu ngân)
+                      if (context.isStaff && room.notes != null && room.notes!.trim().isNotEmpty) ...[
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF8E1),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                            border: Border.all(color: const Color(0xFFFFE082)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.lock_outline_rounded,
+                                    size: 18,
+                                    color: Color(0xFFF57F17),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Ghi chú nội bộ (Chỉ nhân viên)',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFE65100),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                room.notes!.trim(),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  height: 1.45,
+                                  color: Color(0xFF4E342E),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: AppSpacing.xl),
                       ],
 

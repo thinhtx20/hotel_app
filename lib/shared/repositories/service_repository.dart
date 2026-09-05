@@ -36,4 +36,55 @@ class ServiceRepository {
       throw ApiError.fromDynamic(e);
     }
   }
+
+  /// Tạo dịch vụ mới (A2 - Chỉ Admin): POST /services
+  Future<ServiceModel> createService(Map<String, dynamic> payload) async {
+    try {
+      final res = await _dioClient.dio.post(
+        ApiEndpoints.hotelServices,
+        data: payload,
+      );
+      final data = ApiResult.unwrapMap(res);
+      final item = ServiceModel.fromJson(data);
+      _cachedServices.add(item);
+      return item;
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Cập nhật dịch vụ (A2 - Chỉ Admin): PATCH /services/:id
+  Future<ServiceModel> updateService(String id, Map<String, dynamic> payload) async {
+    try {
+      final res = await _dioClient.dio.patch(
+        ApiEndpoints.serviceDetail(id),
+        data: payload,
+      );
+      final data = ApiResult.unwrapMap(res);
+      final item = ServiceModel.fromJson(data);
+      final idx = _cachedServices.indexWhere((s) => s.id == id);
+      if (idx != -1) {
+        _cachedServices[idx] = item;
+      }
+      return item;
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Xóa dịch vụ (A2 - Chỉ Admin): DELETE /services/:id
+  Future<void> deleteService(String id) async {
+    try {
+      await _dioClient.dio.delete(ApiEndpoints.serviceDetail(id));
+      _cachedServices.removeWhere((s) => s.id == id);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
 }

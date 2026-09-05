@@ -414,4 +414,76 @@ class BookingRepository extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Đổi phòng cho khách đang lưu trú (S2): POST /bookings/:id/change-room
+  Future<BookingModel> changeRoom(
+    String bookingId, {
+    required String newRoomId,
+    required String reason,
+    bool keepPrice = true,
+  }) async {
+    try {
+      final res = await _dioClient.dio.post(
+        ApiEndpoints.changeRoom(bookingId),
+        data: {
+          'newRoomId': newRoomId,
+          'reason': reason,
+          'keepPrice': keepPrice,
+        },
+      );
+      final data = ApiResult.unwrapMap(res);
+      // API may return { booking: {...} } or {...} directly
+      final bookingData = data.containsKey('booking') ? data['booking'] : data;
+      return BookingModel.fromJson(bookingData);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Khách hàng gửi yêu cầu dịch vụ phòng (C1): POST /bookings/:id/service-requests
+  Future<dynamic> requestService(
+    String bookingId, {
+    required List<Map<String, dynamic>> items,
+    String? notes,
+  }) async {
+    try {
+      final res = await _dioClient.dio.post(
+        ApiEndpoints.serviceRequests(bookingId),
+        data: {
+          'items': items,
+          if (notes != null && notes.isNotEmpty) 'notes': notes,
+        },
+      );
+      return ApiResult.unwrapMap(res);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Cập nhật trạng thái yêu cầu dịch vụ (CONFIRMED / REJECTED): PATCH /bookings/:id/services/:orderId
+  Future<dynamic> updateServiceRequest(
+    String bookingId,
+    String orderId, {
+    required String status,
+    String? reason,
+  }) async {
+    try {
+      final res = await _dioClient.dio.patch(
+        ApiEndpoints.updateServiceRequest(bookingId, orderId),
+        data: {
+          'status': status,
+          if (reason != null && reason.isNotEmpty) 'reason': reason,
+        },
+      );
+      return ApiResult.unwrapMap(res);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
 }

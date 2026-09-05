@@ -11,99 +11,63 @@ import 'role_enum.dart';
 /// hình nào định gọi endpoint bị chặn thì phải ẩn nút bằng getter tương ứng —
 /// backend trả `403` và FE **không được retry** (Phần 2 của ma trận).
 extension RolePermissions on UserRole {
-  /// Ba vai trò nhân viên, đối lập với [UserRole.customer].
-  bool get isStaff => this != UserRole.customer;
-
   bool get _isAdmin => this == UserRole.admin;
   bool get _isReceptionist => this == UserRole.receptionist;
-  bool get _isCashier => this == UserRole.cashier;
+  bool get isStaff => _isAdmin || _isReceptionist;
+  bool get isCustomer => this == UserRole.customer;
 
-  /// Màn hình mặc định sau khi đăng nhập — Phần 4 của ma trận.
+  // --- 1. Quyền hiện có (Đã cập nhật sau gộp) ---
+  bool get canCreateInvoice => isStaff;          // Trước: Admin || Cashier -> Nay: mở cho Lễ tân-Thu ngân
+  bool get canCheckIn => isStaff;                // Nhân viên lễ tân quầy
+  bool get canCheckOut => isStaff;               // Check-out & xuất hóa đơn
+  bool get canAddBookingServices => isStaff;      // Ghi nhận dịch vụ phát sinh
+  bool get canChangeRoomStatus => isStaff;       // Đổi trạng thái buồng phòng
+  bool get canViewOccupancy => isStaff;          // Xem tỷ lệ lấp đầy phòng
+
+  // --- 2. Quyền cho các tính năng mới P1 ---
+  bool get canRefundInvoice => isStaff;          // S4: Hoàn tiền hóa đơn
+  bool get canChangeRoom => isStaff;             // S2: Đổi phòng cho khách đang lưu trú
+  bool get canCloseShift => isStaff;             // S1: Xem sổ quỹ cá nhân / chốt ca trực
+  bool get canManageServiceCatalog => _isAdmin;  // A2: Quản trị danh mục dịch vụ (Chỉ Admin)
+  bool get canViewStaffPerformance => _isAdmin;  // A1: Xem báo cáo hiệu suất nhân sự (Chỉ Admin)
+  bool get canRequestService => isCustomer;      // C1: Khách hàng gọi dịch vụ tại phòng
+
+  // --- Rooms (§3.4) ---
+  bool get canCreateRoom => isStaff;
+  bool get canApproveRoom => isStaff;
+  bool get canEditRoom => _isAdmin;
+  bool get canManageRoomTypes => _isAdmin;
+  bool get canUploadRoomImages => isStaff;
+
+  // --- Bookings (§3.5) ---
+  bool get canViewAllBookings => isStaff;
+  bool get canApproveBooking => isStaff;
+
+  // --- Invoices (§3.6) ---
+  bool get canViewAllInvoices => isStaff;
+  bool get canPayInvoice => isStaff;
+  bool get canViewInvoiceSummary => isStaff;
+
+  // --- Analytics (§3.7) ---
+  bool get canViewDashboard => isStaff;
+  bool get canViewDailyRevenue => isStaff;
+  bool get canViewYearlyRevenue => _isAdmin;
+
+  // --- Users (§3.2) ---
+  bool get canViewUsers => isStaff;
+  bool get canManageUsers => _isAdmin;
+
+  // Đường dẫn mặc định khi đăng nhập
   String get homeRoute {
     switch (this) {
       case UserRole.admin:
         return '/admin';
       case UserRole.receptionist:
         return '/receptionist';
-      case UserRole.cashier:
-        return '/cashier';
       case UserRole.customer:
         return '/customer';
     }
   }
-
-  // --- Rooms (§3.4) -------------------------------------------------------
-
-  /// `POST /rooms` — lễ tân tạo được nhưng phòng bị ép `PENDING_APPROVAL`.
-  bool get canCreateRoom => _isAdmin || _isReceptionist;
-
-  /// `PATCH /rooms/:id/approve|reject`
-  bool get canApproveRoom => _isAdmin || _isReceptionist;
-
-  /// `PATCH /rooms/:id/status`
-  bool get canChangeRoomStatus => _isAdmin || _isReceptionist;
-
-  /// `PATCH|DELETE /rooms/:id` — chỉ ADMIN sửa được thông tin phòng.
-  bool get canEditRoom => _isAdmin;
-
-  /// `POST|PATCH|DELETE /room-types`
-  bool get canManageRoomTypes => _isAdmin;
-
-  /// `POST /upload/room`, `POST /upload/rooms` (§3.9)
-  bool get canUploadRoomImages => _isAdmin || _isReceptionist;
-
-  // --- Bookings (§3.5) ----------------------------------------------------
-
-  /// `GET /bookings` không bị ép `customerId` — khách chỉ thấy đơn của mình.
-  bool get canViewAllBookings => isStaff;
-
-  /// `POST /bookings/:id/check-in`
-  bool get canCheckIn => _isAdmin || _isReceptionist;
-
-  /// `POST /bookings/:id/check-out` — thu ngân kiêm quầy cũng trả phòng được.
-  bool get canCheckOut => isStaff;
-
-  /// `POST /bookings/:id/services` — dịch vụ do lễ tân ghi.
-  bool get canAddBookingServices => _isAdmin || _isReceptionist;
-
-  /// `PUT /bookings/:id/approve|reject` — duyệt đơn đặt phòng chờ.
-  bool get canApproveBooking => _isAdmin || _isReceptionist;
-
-  // --- Invoices (§3.6) ----------------------------------------------------
-
-  /// `GET /invoices` — danh sách hóa đơn toàn khách sạn.
-  bool get canViewAllInvoices => isStaff;
-
-  /// `POST /invoices` — lễ tân bị `403`, hóa đơn của lễ tân sinh khi check-out.
-  bool get canCreateInvoice => _isAdmin || _isCashier;
-
-  /// `POST /invoices/:id/pay` — lễ tân **được** ghi nhận thanh toán.
-  bool get canPayInvoice => isStaff;
-
-  /// `GET /invoices/summary?date=`
-  bool get canViewInvoiceSummary => isStaff;
-
-  // --- Analytics (§3.7) ---------------------------------------------------
-
-  /// `GET /analytics/dashboard` — dùng chung cho cả ba vai trò nhân viên.
-  bool get canViewDashboard => isStaff;
-
-  /// `GET /analytics/revenue/daily?range=`
-  bool get canViewDailyRevenue => isStaff;
-
-  /// `GET /analytics/occupancy-by-type` và `/analytics/occupancy/detail`.
-  bool get canViewOccupancy => _isAdmin || _isReceptionist;
-
-  /// `GET /analytics/revenue?year=` — báo cáo doanh thu năm, chỉ ADMIN.
-  bool get canViewYearlyRevenue => _isAdmin;
-
-  // --- Users (§3.2) -------------------------------------------------------
-
-  /// `GET /users`, `GET /users/:id` — lễ tân xem được, không sửa được.
-  bool get canViewUsers => _isAdmin || _isReceptionist;
-
-  /// `PATCH|DELETE /users/:id` — đổi role, vô hiệu hóa tài khoản.
-  bool get canManageUsers => _isAdmin;
 }
 
 /// Vai trò tương ứng với [state], `null` nếu chưa xác định được.

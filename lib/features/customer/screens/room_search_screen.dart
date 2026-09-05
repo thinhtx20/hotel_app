@@ -20,7 +20,8 @@ import '../../../shared/widgets/status_badge.dart';
 import '../widgets/create_booking_modal.dart';
 
 class RoomSearchScreen extends StatefulWidget {
-  const RoomSearchScreen({super.key});
+  final RoomRepository? roomRepository;
+  const RoomSearchScreen({super.key, this.roomRepository});
 
   @override
   State<RoomSearchScreen> createState() => _RoomSearchScreenState();
@@ -33,7 +34,7 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
   bool _isLoading = false;
   DateTime? _checkInDate;
   DateTime? _checkOutDate;
-  final RoomRepository _roomRepository = sl<RoomRepository>();
+  late final RoomRepository _roomRepository = widget.roomRepository ?? sl<RoomRepository>();
 
   final List<String> _filters = const [
     'Còn trống',
@@ -59,7 +60,9 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
 
   void _onRepositoryUpdated() {
     if (mounted) {
-      _performSearch(_searchController.text);
+      setState(() {
+        _results = _syncWithRepository(_results);
+      });
     }
   }
 

@@ -47,13 +47,42 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    // Verify TabBar items
+    // Verify 4 TabBar items (FE-ROLE-MATRIX §4.3)
     expect(find.text('Khám phá'), findsOneWidget);
-    expect(find.text('Tìm kiếm'), findsOneWidget);
-    expect(find.text('Đơn phòng'), findsOneWidget);
+    expect(find.text('Dịch vụ'), findsOneWidget);
+    expect(find.text('Chuyến đi'), findsOneWidget);
     expect(find.text('Tài khoản'), findsOneWidget);
+  });
 
-    // Verify Badge on 'Đơn phòng'
-    expect(find.text('2'), findsOneWidget);
+  testWidgets('Receptionist StaffTabScaffold renders 5 tabs correctly', (WidgetTester tester) async {
+    final receptionistUser = UserModel(
+      id: 'rec-1',
+      email: 'reception@hotel.com',
+      fullName: 'Lễ tân',
+      role: UserRole.receptionist,
+    );
+
+    final authBloc = FakeAuthBloc(receptionistUser);
+    final router = AppRouter.createRouter(authBloc);
+
+    await tester.pumpWidget(
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthBloc>.value(value: authBloc),
+        ],
+        child: HotelApp(router: router),
+      ),
+    );
+
+    router.go('/receptionist');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    // Verify 5 Tab items (FE-ROLE-MATRIX §4.2)
+    expect(find.text('Sơ đồ phòng'), findsOneWidget);
+    expect(find.text('Hôm nay'), findsOneWidget);
+    expect(find.text('Duyệt đơn'), findsOneWidget);
+    expect(find.text('Hóa đơn & Quỹ'), findsOneWidget);
+    expect(find.text('Hồ sơ'), findsOneWidget);
   });
 }

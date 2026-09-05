@@ -1,7 +1,6 @@
 enum UserRole {
   customer('CUSTOMER', 'Khách hàng'),
-  receptionist('RECEPTIONIST', 'Lễ tân'),
-  cashier('CASHIER', 'Thu ngân / Kế toán'),
+  receptionist('RECEPTIONIST', 'Lễ tân – Thu ngân'),
   admin('ADMIN', 'Quản trị viên / Giám đốc');
 
   final String value;
@@ -10,18 +9,21 @@ enum UserRole {
   const UserRole(this.value, this.label);
 
   static UserRole fromString(String? role) {
-    switch (role?.toUpperCase()) {
+    switch (role?.trim().toUpperCase()) {
       case 'ADMIN':
         return UserRole.admin;
       case 'RECEPTIONIST':
-        return UserRole.receptionist;
+      // PHÒNG VỆ: Phiên cũ còn cache role "CASHIER" trong secure storage.
+      // Tuyệt đối không xóa nhánh này để tránh lỗi trắng màn hình / crash app.
       case 'CASHIER':
-        return UserRole.cashier;
+        return UserRole.receptionist;
       case 'CUSTOMER':
       default:
         return UserRole.customer;
     }
   }
+
+  String toJson() => value;
 }
 
 /// Mỗi trạng thái mang 3 màu cho 3 mục đích khác nhau — xem

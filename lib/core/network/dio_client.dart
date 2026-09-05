@@ -59,6 +59,50 @@ class DioClient {
           final reqOptions = error.requestOptions;
           final isRetry = reqOptions.extra['_retry'] == true;
 
+          // Bắt theo trường error trong response 401:
+          // - SESSION_REVOKED: xóa token, báo "tài khoản vừa đăng nhập ở thiết bị khác",
+          //   về màn đăng nhập. Không gọi refresh-token để thử lại.
+          // - SESSION_DEVICE_LIMIT: xuất hiện ở chế độ block_new, báo khách đăng xuất máy kia trước.
+          if (error.response?.statusCode == 401) {
+            final resData = error.response?.data;
+            String? errorField;
+            String? messageField;
+            if (resData is Map) {
+              errorField = resData['error']?.toString();
+              messageField = resData['message']?.toString();
+            }
+
+            final isSessionRevoked =
+                errorField == 'SESSION_REVOKED' || messageField == 'SESSION_REVOKED';
+            final isDeviceLimit =
+                errorField == 'SESSION_DEVICE_LIMIT' || messageField == 'SESSION_DEVICE_LIMIT';
+
+            if (isSessionRevoked) {
+              await _tokenStorage.clearAll();
+              const reason = 'Tài khoản vừa đăng nhập ở thiết bị khác';
+              onSessionExpired?.call(reason);
+              final apiError = ApiError(
+                statusCode: 401,
+                message: reason,
+                errorType: 'SESSION_REVOKED',
+                path: reqOptions.path,
+              );
+              return handler.next(error.copyWith(error: apiError));
+            }
+
+            if (isDeviceLimit) {
+              const reason =
+                  'Tài khoản đã đăng nhập ở thiết bị khác. Vui lòng đăng xuất máy kia trước.';
+              final apiError = ApiError(
+                statusCode: 401,
+                message: reason,
+                errorType: 'SESSION_DEVICE_LIMIT',
+                path: reqOptions.path,
+              );
+              return handler.next(error.copyWith(error: apiError));
+            }
+          }
+
           // Bắt lỗi 401 để tự động Refresh Token nếu chưa retry
           if (error.response?.statusCode == 401 &&
               !isRetry &&
@@ -127,6 +171,9 @@ class DioClient {
     }
   }
 
+  /// Callback khi phiên đăng nhập hết hạn hoặc tài khoản bị khóa giữa phiên
+  static void Function(String message)? onSessionExpired;
+
   Future<bool> _handleRefreshToken() async {
     try {
       final refreshToken = await _tokenStorage.getRefreshToken();
@@ -158,9 +205,17 @@ class DioClient {
           return true;
         }
       }
-    } catch (_) {
-      // Khi refresh token cũng hết hạn, xóa token để buộc user đăng nhập lại
+    } catch (e) {
+      // Khi refresh token bị chặn (auth.service.ts:530-532) hoặc hết hạn, xóa token
       await _tokenStorage.clearAll();
+      String reason = 'Phiên đăng nhập đã hết hạn hoặc tài khoản đã bị khóa.';
+      if (e is DioException) {
+        final err = ApiError.fromDioException(e);
+        if (err.message.isNotEmpty) {
+          reason = err.displayMessage;
+        }
+      }
+      onSessionExpired?.call(reason);
     }
     return false;
   }

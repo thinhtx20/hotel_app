@@ -428,7 +428,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   const SizedBox(width: AppSpacing.sm),
                                   Expanded(
                                     child: _buildSeedChip(
-                                      label: 'Lễ tân',
+                                      label: 'Lễ tân – Thu ngân',
                                       dotColor: Colors.blue,
                                       email: 'reception@hotel.com',
                                       pass: 'Staff@123',
@@ -438,28 +438,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                               const SizedBox(height: AppSpacing.sm),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildSeedChip(
-                                      label: 'Thu ngân',
-                                      dotColor: Colors.green,
-                                      email: 'cashier@hotel.com',
-                                      pass: 'Staff@123',
-                                      palette: palette,
-                                    ),
-                                  ),
-                                  const SizedBox(width: AppSpacing.sm),
-                                  Expanded(
-                                    child: _buildSeedChip(
-                                      label: 'Khách hàng',
-                                      dotColor: palette.accent,
-                                      email: 'customer@hotel.com',
-                                      pass: 'Cust@123',
-                                      palette: palette,
-                                    ),
-                                  ),
-                                ],
+                              _buildSeedChip(
+                                label: 'Khách hàng',
+                                dotColor: palette.accent,
+                                email: 'customer@hotel.com',
+                                pass: 'Cust@123',
+                                palette: palette,
                               ),
                               const SizedBox(height: AppSpacing.xxl),
                               Wrap(

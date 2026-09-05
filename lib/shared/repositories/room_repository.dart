@@ -6,24 +6,38 @@ import '../../core/network/api_endpoints.dart';
 import '../../core/network/api_error.dart';
 import '../../core/network/api_result.dart';
 import '../../core/network/dio_client.dart';
+import '../../core/network/sse_client.dart';
+import '../../core/storage/token_storage.dart';
+import '../../di/injection_container.dart';
 import '../models/room_model.dart';
 
 class RoomRepository extends ChangeNotifier {
   final DioClient _dioClient;
+  final TokenStorage _tokenStorage;
   List<RoomModel> _rooms = [];
   List<RoomTypeModel> _roomTypes = [];
   bool _isLoading = false;
   bool _initialized = false;
   String? _errorMessage;
 
-  RoomRepository({DioClient? dioClient})
-      : _dioClient = dioClient ?? DioClient();
+  SseClient? _roomSseClient;
+  StreamSubscription? _sseSubscription;
+
+  RoomRepository({DioClient? dioClient, TokenStorage? tokenStorage})
+      : _dioClient = dioClient ?? DioClient(),
+        _tokenStorage = tokenStorage ??
+            (sl.isRegistered<TokenStorage>() ? sl<TokenStorage>() : TokenStorage());
 
   List<RoomModel> get rooms => List.unmodifiable(_rooms);
   List<RoomTypeModel> get roomTypes => List.unmodifiable(_roomTypes);
   bool get isLoading => _isLoading;
   bool get isInitialized => _initialized;
   String? get errorMessage => _errorMessage;
+
+  /// Trạng thái kết nối Realtime SSE
+  bool get isRealtimeActive => _roomSseClient?.isConnected ?? false;
+  Stream<SseConnectionState>? get realtimeConnectionState =>
+      _roomSseClient?.connectionState;
 
   List<RoomModel> get pendingRooms =>
       _rooms.where((r) => r.status == RoomStatus.pendingApproval).toList();
@@ -34,12 +48,114 @@ class RoomRepository extends ChangeNotifier {
   List<RoomModel> get rejectedRooms =>
       _rooms.where((r) => r.status == RoomStatus.rejected).toList();
 
+  /// Khởi chạy kết nối Realtime SSE để nhận biến động trạng thái phòng
+  void startRealtimeStream({String? token}) {
+    if (_roomSseClient != null) return;
+
+    _roomSseClient = SseClient(
+      path: ApiEndpoints.roomsStream,
+      dioClient: _dioClient,
+      tokenProvider: () async {
+        if (token != null && token.isNotEmpty) return token;
+        try {
+          return await _tokenStorage.getAccessToken();
+        } catch (_) {
+          return null;
+        }
+      },
+    );
+
+    _sseSubscription = _roomSseClient!.events.listen(
+      (event) {
+        _handleRoomEvent(event);
+      },
+      onError: (_) {},
+    );
+
+    _roomSseClient!.connect();
+  }
+
+  /// Ngắt kết nối Realtime SSE
+  void stopRealtimeStream() {
+    _sseSubscription?.cancel();
+    _sseSubscription = null;
+    _roomSseClient?.dispose();
+    _roomSseClient = null;
+  }
+
+  void _handleRoomEvent(SseEvent event) {
+    switch (event.event) {
+      case 'room.status_changed':
+        final data = event.data;
+        if (data is Map) {
+          final roomData = data['room'] is Map ? data['room'] as Map : data;
+          final roomId = roomData['id']?.toString();
+          final statusStr = roomData['status']?.toString();
+          if (roomId != null && statusStr != null) {
+            final newStatus = RoomStatus.fromString(statusStr);
+            _updateLocalStatus(roomId, newStatus);
+          }
+        }
+        break;
+
+      case 'room.created':
+        final data = event.data;
+        if (data is Map) {
+          final roomData = data['room'] is Map
+              ? Map<String, dynamic>.from(data['room'] as Map)
+              : Map<String, dynamic>.from(data);
+          try {
+            final room = RoomModel.fromJson(roomData);
+            if (!_rooms.any((r) => r.id == room.id)) {
+              _rooms.insert(0, room);
+              notifyListeners();
+            }
+          } catch (_) {}
+        }
+        break;
+
+      case 'room.updated':
+        final data = event.data;
+        if (data is Map) {
+          final roomData = data['room'] is Map
+              ? Map<String, dynamic>.from(data['room'] as Map)
+              : Map<String, dynamic>.from(data);
+          try {
+            final room = RoomModel.fromJson(roomData);
+            final idx = _rooms.indexWhere((r) => r.id == room.id);
+            if (idx != -1) {
+              _rooms[idx] = room;
+              notifyListeners();
+            }
+          } catch (_) {}
+        }
+        break;
+
+      case 'room.deleted':
+        final data = event.data;
+        if (data is Map) {
+          final roomData = data['room'] is Map ? data['room'] as Map : data;
+          final roomId = roomData['id']?.toString();
+          if (roomId != null) {
+            _rooms.removeWhere((r) => r.id == roomId);
+            notifyListeners();
+          }
+        }
+        break;
+
+      default:
+        // ready, ping
+        break;
+    }
+  }
+
   /// Xóa toàn bộ dữ liệu đã nạp của tài khoản trước.
   ///
   /// [fetchRooms] và [fetchRoomTypes] trả cache khi đã nạp một lần, nên nếu
   /// không dọn ở đây thì tài khoản mới vẫn thấy danh sách phòng của tài khoản
   /// cũ (khách hàng chỉ thấy phòng đã duyệt, nhân viên thấy cả phòng chờ duyệt).
   void clearSession() {
+    stopRealtimeStream();
     _rooms = [];
     _roomTypes = [];
     _isLoading = false;

@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hotel_app/core/constants/role_enum.dart';
 import 'package:hotel_app/core/constants/role_permissions.dart';
+import 'package:hotel_app/core/network/api_error.dart';
 import 'package:hotel_app/core/router/app_router.dart';
 import 'package:hotel_app/di/injection_container.dart';
 import 'package:hotel_app/features/auth/bloc/auth_bloc.dart';
@@ -54,7 +55,7 @@ void main() {
     return router.routerDelegate.currentConfiguration.uri.path;
   }
 
-  group('Guard phân quyền route', () {
+  group('Guard phân quyền route (3 vai trò sau gộp)', () {
     testWidgets('mỗi vai trò vào được màn chính của chính mình', (tester) async {
       for (final role in UserRole.values) {
         expect(
@@ -87,19 +88,38 @@ void main() {
         '/receptionist',
       );
       expect(
-        await locationAfterGo(tester, UserRole.cashier, '/my-invoices'),
-        '/cashier',
+        await locationAfterGo(tester, UserRole.admin, '/my-invoices'),
+        '/admin',
       );
     });
 
-    testWidgets('không vai trò nhân viên nào lấn sân nhau', (tester) async {
-      expect(
-        await locationAfterGo(tester, UserRole.cashier, '/admin'),
-        '/cashier',
-      );
+    testWidgets('lễ tân không lấn sang route riêng của admin', (tester) async {
       expect(
         await locationAfterGo(tester, UserRole.receptionist, '/admin/invoices'),
         '/receptionist',
+      );
+      expect(
+        await locationAfterGo(tester, UserRole.receptionist, '/admin/reports'),
+        '/receptionist',
+      );
+      expect(
+        await locationAfterGo(tester, UserRole.admin, '/receptionist'),
+        '/admin',
+      );
+    });
+
+    testWidgets('Legacy cashier URLs tự động redirect sang receptionist', (tester) async {
+      expect(
+        await locationAfterGo(tester, UserRole.receptionist, '/cashier'),
+        '/receptionist/invoices',
+      );
+      expect(
+        await locationAfterGo(tester, UserRole.receptionist, '/cashier/check-outs'),
+        '/receptionist/today',
+      );
+      expect(
+        await locationAfterGo(tester, UserRole.receptionist, '/cashier/invoices'),
+        '/receptionist/invoices',
       );
       expect(
         await locationAfterGo(tester, UserRole.admin, '/cashier/dashboard'),
@@ -108,36 +128,49 @@ void main() {
     });
 
     testWidgets(
-        'thu ngân bị chặn ở màn lấp đầy và duyệt đơn, vẫn vào được trả phòng',
+        'lễ tân và admin đều vào được các route vận hành chung',
         (tester) async {
-      // GET /analytics/occupancy/detail — [ADMIN, RECEPTIONIST]
       expect(
         await locationAfterGo(
-            tester, UserRole.cashier, '/staff/occupancy-detail'),
-        '/cashier',
+            tester, UserRole.receptionist, '/staff/occupancy-detail'),
+        '/staff/occupancy-detail',
       );
       expect(
         await locationAfterGo(
-            tester, UserRole.cashier, '/staff/pending-bookings'),
-        '/cashier',
+            tester, UserRole.receptionist, '/staff/pending-bookings'),
+        '/staff/pending-bookings',
       );
-      // POST /bookings/:id/check-out — cả ba vai trò nhân viên
       expect(
         await locationAfterGo(
-            tester, UserRole.cashier, '/staff/today-check-outs'),
+            tester, UserRole.receptionist, '/staff/today-check-outs'),
         '/staff/today-check-outs',
       );
-    });
-
-    testWidgets('lễ tân vào được duyệt phòng, thu ngân thì không',
-        (tester) async {
       expect(
-        await locationAfterGo(tester, UserRole.receptionist, '/room-approval'),
+        await locationAfterGo(
+            tester, UserRole.admin, '/room-approval'),
         '/room-approval',
       );
       expect(
-        await locationAfterGo(tester, UserRole.cashier, '/room-approval'),
-        '/cashier',
+        await locationAfterGo(
+            tester, UserRole.receptionist, '/room-approval'),
+        '/room-approval',
+      );
+    });
+
+    testWidgets(
+        'lễ tân và admin vào được /staff/users, khách thì không',
+        (tester) async {
+      expect(
+        await locationAfterGo(tester, UserRole.admin, '/staff/users'),
+        '/staff/users',
+      );
+      expect(
+        await locationAfterGo(tester, UserRole.receptionist, '/staff/users'),
+        '/staff/users',
+      );
+      expect(
+        await locationAfterGo(tester, UserRole.customer, '/staff/users'),
+        '/customer',
       );
     });
 
@@ -154,47 +187,113 @@ void main() {
     });
   });
 
-  group('Bảng quyền theo vai trò', () {
-    test('POST /invoices — lễ tân bị 403, admin và thu ngân thì không', () {
-      expect(UserRole.receptionist.canCreateInvoice, isFalse);
+  group('Bảng quyền theo vai trò (FE-ROLE-MATRIX §2.2)', () {
+    test('POST /invoices — mở cho cả nhân viên lễ tân-thu ngân và admin', () {
+      expect(UserRole.receptionist.canCreateInvoice, isTrue);
       expect(UserRole.admin.canCreateInvoice, isTrue);
-      expect(UserRole.cashier.canCreateInvoice, isTrue);
       expect(UserRole.customer.canCreateInvoice, isFalse);
     });
 
-    test('POST /invoices/:id/pay — cả ba vai trò nhân viên đều được', () {
+    test('POST /invoices/:id/pay — cả hai vai trò nhân viên đều được', () {
       expect(UserRole.receptionist.canPayInvoice, isTrue);
-      expect(UserRole.cashier.canPayInvoice, isTrue);
       expect(UserRole.admin.canPayInvoice, isTrue);
       expect(UserRole.customer.canPayInvoice, isFalse);
     });
 
-    test('check-in chỉ ADMIN + RECEPTIONIST, check-out thì cả thu ngân', () {
-      expect(UserRole.cashier.canCheckIn, isFalse);
-      expect(UserRole.cashier.canCheckOut, isTrue);
+    test('check-in và check-out — nhân viên đều được phép', () {
       expect(UserRole.receptionist.canCheckIn, isTrue);
+      expect(UserRole.receptionist.canCheckOut, isTrue);
+      expect(UserRole.admin.canCheckIn, isTrue);
+      expect(UserRole.admin.canCheckOut, isTrue);
+      expect(UserRole.customer.canCheckIn, isFalse);
       expect(UserRole.customer.canCheckOut, isFalse);
     });
 
-    test('doanh thu năm chỉ ADMIN, tổng quan thì cả ba vai trò nhân viên', () {
+    test('doanh thu năm và dashboard phân theo vai trò', () {
       expect(UserRole.admin.canViewYearlyRevenue, isTrue);
       expect(UserRole.receptionist.canViewYearlyRevenue, isFalse);
-      expect(UserRole.cashier.canViewYearlyRevenue, isFalse);
+      expect(UserRole.customer.canViewYearlyRevenue, isFalse);
 
-      expect(UserRole.cashier.canViewDashboard, isTrue);
+      expect(UserRole.admin.canViewDashboard, isTrue);
       expect(UserRole.customer.canViewDashboard, isFalse);
     });
 
     test('sửa phòng chỉ ADMIN, đổi trạng thái thì thêm lễ tân', () {
+      expect(UserRole.admin.canEditRoom, isTrue);
       expect(UserRole.receptionist.canEditRoom, isFalse);
       expect(UserRole.receptionist.canChangeRoomStatus, isTrue);
-      expect(UserRole.cashier.canChangeRoomStatus, isFalse);
     });
 
     test('sửa tài khoản chỉ ADMIN, lễ tân chỉ xem', () {
+      expect(UserRole.admin.canManageUsers, isTrue);
       expect(UserRole.receptionist.canViewUsers, isTrue);
       expect(UserRole.receptionist.canManageUsers, isFalse);
-      expect(UserRole.cashier.canViewUsers, isFalse);
+    });
+
+    test('ghi dịch vụ mở cho nhân viên', () {
+      expect(UserRole.admin.canAddBookingServices, isTrue);
+      expect(UserRole.receptionist.canAddBookingServices, isTrue);
+      expect(UserRole.customer.canAddBookingServices, isFalse);
+    });
+
+    test('quản lý hạng phòng chỉ dành riêng cho ADMIN', () {
+      expect(UserRole.admin.canManageRoomTypes, isTrue);
+      expect(UserRole.receptionist.canManageRoomTypes, isFalse);
+      expect(UserRole.customer.canManageRoomTypes, isFalse);
+    });
+
+    test('xem công suất occupancy mở cho nhân viên', () {
+      expect(UserRole.admin.canViewOccupancy, isTrue);
+      expect(UserRole.receptionist.canViewOccupancy, isTrue);
+      expect(UserRole.customer.canViewOccupancy, isFalse);
+    });
+
+    test('quyền tính năng mới P1 (S1, S2, S4, A1, A2, C1)', () {
+      expect(UserRole.receptionist.canRefundInvoice, isTrue);
+      expect(UserRole.admin.canRefundInvoice, isTrue);
+      expect(UserRole.customer.canRefundInvoice, isFalse);
+
+      expect(UserRole.receptionist.canChangeRoom, isTrue);
+      expect(UserRole.admin.canChangeRoom, isTrue);
+      expect(UserRole.customer.canChangeRoom, isFalse);
+
+      expect(UserRole.receptionist.canCloseShift, isTrue);
+      expect(UserRole.admin.canCloseShift, isTrue);
+      expect(UserRole.customer.canCloseShift, isFalse);
+
+      expect(UserRole.admin.canManageServiceCatalog, isTrue);
+      expect(UserRole.receptionist.canManageServiceCatalog, isFalse);
+
+      expect(UserRole.admin.canViewStaffPerformance, isTrue);
+      expect(UserRole.receptionist.canViewStaffPerformance, isFalse);
+
+      expect(UserRole.customer.canRequestService, isTrue);
+      expect(UserRole.receptionist.canRequestService, isFalse);
+    });
+  });
+
+  group('ApiError xử lý 403 thân thiện theo FE-ROLE-MATRIX §2', () {
+    test('che giấu thông tin vai trò nội bộ từ backend', () {
+      final err = ApiError(
+        statusCode: 403,
+        message: 'Quyền truy cập bị từ chối: Yêu cầu vai trò [ADMIN, RECEPTIONIST]',
+      );
+      expect(err.displayMessage, 'Bạn không có quyền thực hiện thao tác này.');
+    });
+
+    test('giữ nguyên thông báo kiểm tra chủ sở hữu đơn đặt phòng / hóa đơn', () {
+      final errBooking = ApiError(
+        statusCode: 403,
+        message: 'Bạn chỉ có thể xem và thao tác trên đơn đặt phòng của chính mình',
+      );
+      expect(errBooking.displayMessage,
+          'Bạn chỉ có thể xem và thao tác trên đơn đặt phòng của chính mình');
+
+      final errInvoice = ApiError(
+        statusCode: 403,
+        message: 'Bạn chỉ có thể xem hóa đơn của chính mình',
+      );
+      expect(errInvoice.displayMessage, 'Bạn chỉ có thể xem hóa đơn của chính mình');
     });
   });
 }

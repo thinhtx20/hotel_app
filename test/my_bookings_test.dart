@@ -89,8 +89,8 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       // Verify Header
-      expect(find.text('Đơn Đặt Phòng'), findsOneWidget);
-      expect(find.text('Lịch sử & trạng thái phòng của bạn'), findsOneWidget);
+      expect(find.text('Chuyến Đi Của Tôi'), findsOneWidget);
+      expect(find.text('Lịch sử đặt phòng & hóa đơn của bạn'), findsOneWidget);
 
       // Verify Tabs
       expect(find.text('Tất cả'), findsOneWidget);

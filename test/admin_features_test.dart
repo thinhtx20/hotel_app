@@ -23,7 +23,7 @@ class MockAdminFeaturesDioClient implements DioClient {
             requestedPaths.add(options.path);
 
             // GET /users
-            if (options.path == ApiEndpoints.users) {
+            if (options.path == ApiEndpoints.users && options.method == 'GET') {
               return handler.resolve(
                 Response(
                   requestOptions: options,
@@ -47,7 +47,52 @@ class MockAdminFeaturesDioClient implements DioClient {
                         'isActive': true,
                         'phone': '0902345678',
                       },
+                      {
+                        'id': 'user_3',
+                        'fullName': 'Lê Văn Khóa',
+                        'email': 'locked@hotel.com',
+                        'role': 'CUSTOMER',
+                        'isActive': false,
+                        'phone': '0903456789',
+                      },
                     ],
+                  },
+                ),
+              );
+            }
+
+            // PATCH /users/:id
+            if (options.path.startsWith('/users/') && options.method == 'PATCH') {
+              final id = options.path.split('/').last;
+              final data = options.data is Map ? Map<String, dynamic>.from(options.data as Map) : <String, dynamic>{};
+              return handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'success': true,
+                    'data': {
+                      'id': id,
+                      'fullName': 'Trần Thị Lễ Tân',
+                      'email': 'reception@hotel.com',
+                      'role': 'RECEPTIONIST',
+                      'isActive': data['isActive'] ?? true,
+                      'phone': '0902345678',
+                    },
+                  },
+                ),
+              );
+            }
+
+            // DELETE /users/:id
+            if (options.path.startsWith('/users/') && options.method == 'DELETE') {
+              return handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'success': true,
+                    'message': 'User deactivated successfully',
                   },
                 ),
               );
@@ -141,10 +186,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Kiểm tra 2 người dùng hiển thị
+      // Kiểm tra danh sách người dùng hiển thị
       expect(find.text('Nguyễn Văn Quản Trị'), findsOneWidget);
       expect(find.text('Trần Thị Lễ Tân'), findsOneWidget);
-      expect(find.text('admin@hotel.com'), findsOneWidget);
+      expect(find.text('Lê Văn Khóa'), findsOneWidget);
 
       // Tìm kiếm theo tên
       await tester.enterText(find.byType(TextField).first, 'Quản Trị');
@@ -152,6 +197,87 @@ void main() {
 
       expect(find.text('Nguyễn Văn Quản Trị'), findsOneWidget);
       expect(find.text('Trần Thị Lễ Tân'), findsNothing);
+    });
+
+    testWidgets('Lọc người dùng theo bộ lọc trạng thái Hoạt động và Đã khóa', (tester) async {
+      final mockDio = MockAdminFeaturesDioClient();
+      final userRepo = UserRepository(dioClient: mockDio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UserManagementScreen(userRepository: userRepo),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Bấm vào chip 'Đã khóa'
+      final lockedChip = find.textContaining('Đã khóa');
+      expect(lockedChip, findsWidgets);
+      await tester.tap(lockedChip.first);
+      await tester.pumpAndSettle();
+
+      // Chỉ hiển thị người dùng có isActive = false
+      expect(find.text('Lê Văn Khóa'), findsOneWidget);
+      expect(find.text('Trần Thị Lễ Tân'), findsNothing);
+
+      // Bấm vào chip 'Hoạt động'
+      final activeChip = find.textContaining('Hoạt động');
+      await tester.tap(activeChip.first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nguyễn Văn Quản Trị'), findsOneWidget);
+      expect(find.text('Trần Thị Lễ Tân'), findsOneWidget);
+      expect(find.text('Lê Văn Khóa'), findsNothing);
+    });
+
+    testWidgets('Mở dialog xác nhận khi bấm Khóa tài khoản và kích hoạt API', (tester) async {
+      final mockDio = MockAdminFeaturesDioClient();
+      final userRepo = UserRepository(dioClient: mockDio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UserManagementScreen(userRepository: userRepo),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Tìm nút khóa tài khoản
+      final lockButtons = find.byIcon(Icons.lock_outline_rounded);
+      expect(lockButtons, findsWidgets);
+
+      // Bấm nút khóa tài khoản đầu tiên
+      await tester.tap(lockButtons.first);
+      await tester.pumpAndSettle();
+
+      // Dialog xác nhận xuất hiện
+      expect(find.text('Khóa tài khoản?'), findsOneWidget);
+      expect(find.text('Xác nhận khóa'), findsOneWidget);
+
+      // Bấm Xác nhận khóa
+      await tester.tap(find.text('Xác nhận khóa'));
+      await tester.pumpAndSettle();
+
+      // Kiểm tra path PATCH /users/:id đã được gọi
+      expect(mockDio.requestedPaths.any((p) => p.startsWith('/users/')), isTrue);
+    });
+
+    test('Unit test UserRepository setActiveStatus, lockUser, unlockUser, deactivate', () async {
+      final mockDio = MockAdminFeaturesDioClient();
+      final repo = UserRepository(dioClient: mockDio);
+
+      // Khóa thủ công PATCH /users/:id body { isActive: false }
+      final locked = await repo.setActiveStatus('user_2', false);
+      expect(locked.isActive, isFalse);
+
+      // Mở khóa thủ công PATCH /users/:id body { isActive: true }
+      final unlocked = await repo.unlockUser('user_2');
+      expect(unlocked.isActive, isTrue);
+
+      // Soft delete DELETE /users/:id
+      await repo.softDeleteUser('user_2');
+      expect(mockDio.requestedPaths.contains('/users/user_2'), isTrue);
     });
   });
 

@@ -10,12 +10,13 @@ import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
 import '../../../shared/models/booking_model.dart';
-import '../../../shared/models/invoice_model.dart';
 import '../../../shared/repositories/booking_repository.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../receptionist/widgets/add_service_sheet.dart';
+import '../../receptionist/widgets/check_out_sheet.dart';
 
 /// Màn hình Chi tiết Lượt trả phòng hôm nay (Today Check-Outs Screen)
 /// Phục vụ khi nhấn vào thẻ "Lượt trả phòng" trên Admin Dashboard
@@ -33,7 +34,6 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
   int _selectedTabIndex = 0; // 0: Tất cả, 1: Chờ trả phòng, 2: Đã trả phòng
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  final Set<String> _processingIds = {};
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -58,11 +58,13 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchCheckOuts() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _fetchCheckOuts({bool isSilent = false}) async {
+    if (!isSilent && _bookings.isEmpty) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final list = await _bookingRepository.fetchTodayCheckOuts();
@@ -75,9 +77,14 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
       if (!mounted) return;
       final apiErr = ApiError.fromDynamic(e);
       setState(() {
-        _errorMessage = apiErr.displayMessage;
+        if (_bookings.isEmpty) {
+          _errorMessage = apiErr.displayMessage;
+        }
         _isLoading = false;
       });
+      if (isSilent || _bookings.isNotEmpty) {
+        AppNotification.showError(context, e, title: 'Làm mới danh sách thất bại');
+      }
     }
   }
 
@@ -98,235 +105,24 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
     }).toList();
   }
 
-  /// Mở sheet thanh toán & trả phòng
+  /// Mở sheet thanh toán & trả phòng.
+  ///
+  /// [CheckOutSheet] tự gọi API, hiện vòng quay chờ và hộp thoại hóa đơn; ở đây
+  /// chỉ cần thay đơn đã trả phòng vào danh sách.
   Future<void> _openCheckOutSheet(BookingModel booking) async {
-    final palette = context.palette;
-    String paymentMethod = 'CASH';
-    final discountController = TextEditingController();
-    final taxController = TextEditingController(text: '10');
-
-    final confirmed = await showModalBottomSheet<bool>(
+    final result = await CheckOutSheet.show(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: palette.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) => Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.lg,
-            right: AppSpacing.lg,
-            top: AppSpacing.lg,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.xl,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(AppSpacing.xs),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(AppRadius.sm),
-                        ),
-                        child: const Icon(Icons.logout_rounded, color: Color(0xFF3B82F6), size: 22),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        'Thủ tục Trả phòng & Xuất Hóa đơn',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: palette.ink),
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(ctx).pop(false),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                'Phòng ${booking.roomNumber ?? '---'} • ${booking.customerName ?? 'Khách hàng'} • ${booking.bookingCode ?? booking.id}',
-                style: TextStyle(fontSize: 13, color: palette.inkMuted),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              // Chọn phương thức thanh toán
-              Text('Phương thức thanh toán:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: palette.ink)),
-              const SizedBox(height: AppSpacing.xs),
-              DropdownButtonFormField<String>(
-                initialValue: paymentMethod,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'CASH', child: Text('Tiền mặt (CASH)')),
-                  DropdownMenuItem(value: 'BANK_TRANSFER', child: Text('Chuyển khoản (BANK_TRANSFER)')),
-                  DropdownMenuItem(value: 'CREDIT_CARD', child: Text('Thẻ tín dụng (CREDIT_CARD)')),
-                ],
-                onChanged: (val) {
-                  if (val != null) setSheetState(() => paymentMethod = val);
-                },
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Giảm giá (VNĐ):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: palette.ink)),
-                        const SizedBox(height: 4),
-                        TextField(
-                          controller: discountController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: '0',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Thuế VAT (%):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: palette.ink)),
-                        const SizedBox(height: 4),
-                        TextField(
-                          controller: taxController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: '10',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(ctx).pop(true),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
-                  ),
-                  child: const Text(
-                    'Xác nhận Trả phòng & Xuất Hóa đơn',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      booking: booking,
+      bookingRepository: _bookingRepository,
     );
+    if (result == null || !mounted) return;
 
-    if (confirmed != true) return;
-
-    final discount = num.tryParse(discountController.text.trim()) ?? 0;
-    final taxPercent = num.tryParse(taxController.text.trim()) ?? 10;
-    final taxRate = taxPercent / 100.0;
-
-    setState(() => _processingIds.add(booking.id));
-
-    try {
-      final (updatedBooking, invoice) = await _bookingRepository.checkOut(
-        booking.id,
-        paymentMethod: paymentMethod,
-        discount: discount > 0 ? discount : null,
-        taxRate: taxRate,
-      );
-
-      if (!mounted) return;
-      setState(() {
-        _processingIds.remove(booking.id);
-        final idx = _bookings.indexWhere((b) => b.id == booking.id);
-        if (idx != -1) {
-          _bookings[idx] = updatedBooking;
-        }
-      });
-
-      _showInvoiceSuccessDialog(invoice);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _processingIds.remove(booking.id));
-      final apiErr = ApiError.fromDynamic(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi: ${apiErr.displayMessage}'),
-          backgroundColor: palette.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
-
-  void _showInvoiceSuccessDialog(InvoiceModel invoice) {
-    final palette = context.palette;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: palette.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
-        title: Row(
-          children: [
-            Icon(Icons.receipt_long_rounded, color: palette.success, size: 24),
-            const SizedBox(width: AppSpacing.sm),
-            Text(
-              'Hóa đơn đã xuất thành công',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: palette.ink),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Mã hóa đơn: ${invoice.displayCode}', style: const TextStyle(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            Text('Tiền phòng: ${Formatters.formatCurrency(invoice.roomAmount)}'),
-            if (invoice.servicesAmount > 0)
-              Text('Tiền dịch vụ: ${Formatters.formatCurrency(invoice.servicesAmount)}'),
-            if (invoice.discount > 0)
-              Text('Chiết khấu: -${Formatters.formatCurrency(invoice.discount)}'),
-            Text('Thuế: ${Formatters.formatCurrency(invoice.tax)}'),
-            const Divider(),
-            Text(
-              'Tổng cộng: ${Formatters.formatCurrency(invoice.finalAmount)}',
-              style: TextStyle(fontWeight: FontWeight.w700, color: palette.accent, fontSize: 16),
-            ),
-            Text('Trạng thái: ${invoice.paymentStatus}'),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: palette.accent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
-            ),
-            child: const Text('Đóng', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
+    setState(() {
+      final idx = _bookings.indexWhere((b) => b.id == booking.id);
+      if (idx != -1) {
+        _bookings[idx] = result.$1;
+      }
+    });
   }
 
   @override
@@ -536,7 +332,6 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
     final palette = context.palette;
     final textTheme = Theme.of(context).textTheme;
     final isCheckedOut = booking.status == 'CHECKED_OUT';
-    final isProcessing = _processingIds.contains(booking.id);
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -697,36 +492,37 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
               if (!isCheckedOut && context.currentRole.canCheckOut)
                 Row(
                   children: [
-                    OutlinedButton.icon(
-                      onPressed: isProcessing
-                          ? null
-                          : () {
-                              AddServiceSheet.show(
-                                context: context,
-                                bookingId: booking.id,
-                                roomNumber: booking.roomNumber,
-                                onServiceAdded: () => _fetchCheckOuts(),
-                              );
-                            },
-                      icon: const Icon(Icons.room_service_outlined, size: 14),
-                      label: const Text('Dịch vụ', style: TextStyle(fontSize: 12)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: palette.accent,
-                        side: BorderSide(color: palette.accent.withValues(alpha: 0.5)),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.button),
+                    // POST /bookings/:id/services chỉ mở cho ADMIN và RECEPTIONIST (§3.5, §4.3, §5)
+                    if (context.currentRole.canAddBookingServices) ...[
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          AddServiceSheet.show(
+                            context: context,
+                            bookingId: booking.id,
+                            roomNumber: booking.roomNumber,
+                            onServiceAdded: () => _fetchCheckOuts(),
+                          );
+                        },
+                        icon: const Icon(Icons.room_service_outlined, size: 14),
+                        label: const Text('Dịch vụ', style: TextStyle(fontSize: 12)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: palette.accent,
+                          side: BorderSide(color: palette.accent.withValues(alpha: 0.5)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.button),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
+                      const SizedBox(width: AppSpacing.xs),
+                    ],
                     PressableScale(
-                      onTap: isProcessing ? null : () => _openCheckOutSheet(booking),
+                      onTap: () => _openCheckOutSheet(booking),
                       child: ElevatedButton(
-                        onPressed: isProcessing ? null : () => _openCheckOutSheet(booking),
+                        onPressed: () => _openCheckOutSheet(booking),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF3B82F6),
                           padding: const EdgeInsets.symmetric(
@@ -738,23 +534,14 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
                                 BorderRadius.circular(AppRadius.button),
                           ),
                         ),
-                        child: isProcessing
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text(
-                                'Trả phòng & Xuất HĐ',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
+                        child: const Text(
+                          'Trả phòng & Xuất HĐ',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ],

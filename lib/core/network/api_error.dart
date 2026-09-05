@@ -66,6 +66,17 @@ class ApiError implements Exception {
           finalMessage = _getDefaultStatusMessage(statusCode);
         }
 
+        // Xử lý mã lỗi đơn phiên đăng nhập (Single Device Session)
+        if (errorType == 'SESSION_REVOKED' || finalMessage == 'SESSION_REVOKED') {
+          finalMessage = 'Tài khoản vừa đăng nhập ở thiết bị khác.';
+        } else if (errorType == 'SESSION_DEVICE_LIMIT' || finalMessage == 'SESSION_DEVICE_LIMIT') {
+          finalMessage = 'Tài khoản đã đăng nhập ở thiết bị khác. Vui lòng đăng xuất máy kia trước.';
+        } else if (statusCode == 403 &&
+            finalMessage.contains('Quyền truy cập bị từ chối: Yêu cầu vai trò')) {
+          // FE-ROLE-MATRIX.md §2: Ẩn nguyên văn danh sách role nội bộ khi gặp lỗi 403
+          finalMessage = 'Bạn không có quyền thực hiện thao tác này.';
+        }
+
         return ApiError(
           statusCode: statusCode,
           message: finalMessage,
@@ -75,9 +86,13 @@ class ApiError implements Exception {
           isNetworkError: false,
         );
       } else if (data is String && data.trim().isNotEmpty) {
+        String msg = data;
+        if (statusCode == 403 && msg.contains('Quyền truy cập bị từ chối: Yêu cầu vai trò')) {
+          msg = 'Bạn không có quyền thực hiện thao tác này.';
+        }
         return ApiError(
           statusCode: statusCode,
-          message: data,
+          message: msg,
           isNetworkError: false,
         );
       }
@@ -147,7 +162,19 @@ class ApiError implements Exception {
   }
 
   /// Chuỗi thông điệp chi tiết để hiển thị lên giao diện
-  String get displayMessage => message;
+  String get displayMessage {
+    if (errorType == 'SESSION_REVOKED' || message == 'SESSION_REVOKED') {
+      return 'Tài khoản vừa đăng nhập ở thiết bị khác.';
+    }
+    if (errorType == 'SESSION_DEVICE_LIMIT' || message == 'SESSION_DEVICE_LIMIT') {
+      return 'Tài khoản đã đăng nhập ở thiết bị khác. Vui lòng đăng xuất máy kia trước.';
+    }
+    if (statusCode == 403 &&
+        message.contains('Quyền truy cập bị từ chối: Yêu cầu vai trò')) {
+      return 'Bạn không có quyền thực hiện thao tác này.';
+    }
+    return message;
+  }
 
   /// Kiểm tra có danh sách lỗi con hay không
   bool get hasDetailedErrors => errors.isNotEmpty;

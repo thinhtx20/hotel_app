@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/role_enum.dart';
 import '../../../core/constants/role_permissions.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
@@ -12,6 +14,7 @@ import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/logout_confirmation_dialog.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/skeletons/invoice_row_skeleton.dart';
+import '../../receptionist/screens/shift_close_screen.dart';
 import '../widgets/invoice_card.dart';
 import '../widgets/invoice_detail_sheet.dart';
 import '../widgets/invoice_filter_bar.dart';
@@ -25,12 +28,22 @@ class CashierInvoicesScreen extends StatefulWidget {
 }
 
 class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
+  static const int _pageSize = 20;
   int _selectedTabIndex = 0; // 0: Chưa thanh toán, 1: Thanh toán 1 phần, 2: Đã hoàn tất, 3: Tất cả
   List<InvoiceModel> _invoices = [];
   num _todayRevenue = 0;
   bool _isLoading = true;
+  int _displayedCount = _pageSize;
+  bool _isLoadingMore = false;
+  late final ScrollController _scrollController;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+
+  @visibleForTesting
+  int get displayedCount => _displayedCount;
+
+  @visibleForTesting
+  void loadMoreForTesting() => _loadMore();
 
   final List<String> _tabs = [
     'Chưa thanh toán',
@@ -42,17 +55,46 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
     _fetchInvoices();
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchInvoices() async {
-    setState(() => _isLoading = true);
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    if (maxScroll - currentScroll <= 300) {
+      _loadMore();
+    }
+  }
+
+  void _loadMore() {
+    final filtered = _getFilteredInvoices();
+    if (_isLoadingMore || _displayedCount >= filtered.length) return;
+    setState(() {
+      _isLoadingMore = true;
+    });
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (!mounted) return;
+      setState(() {
+        _displayedCount = (_displayedCount + _pageSize).clamp(0, filtered.length);
+        _isLoadingMore = false;
+      });
+    });
+  }
+
+  Future<void> _fetchInvoices({bool isSilent = false}) async {
+    if (!isSilent && _invoices.isEmpty) {
+      setState(() => _isLoading = true);
+    }
     try {
       final invoiceRepo = sl<InvoiceRepository>();
       final invoices = await invoiceRepo.fetchAll();
@@ -81,6 +123,8 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
       if (mounted) {
         setState(() {
           _invoices = invoices;
+          _displayedCount = _pageSize;
+          _isLoadingMore = false;
           _todayRevenue = summaryTodayRevenue > 0
               ? summaryTodayRevenue
               : localTodayPaid;
@@ -186,6 +230,15 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
       invoice: invoice,
       onPrintReceipt: () => _showReceiptSheet(invoice),
       onCollectPayment: () => _showPaymentModal(invoice),
+      onRefund: (updated) {
+        if (!mounted) return;
+        setState(() {
+          final idx = _invoices.indexWhere((i) => i.id == updated.id);
+          if (idx != -1) {
+            _invoices[idx] = updated;
+          }
+        });
+      },
     );
   }
 
@@ -667,6 +720,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                         setState(() {
                           _invoices.insert(0, created);
                           _selectedTabIndex = 0;
+                          _displayedCount = _pageSize;
                         });
                         AppNotification.showSuccess(
                           context,
@@ -729,10 +783,32 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
     }
   }
 
+  void _handleBack(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    try {
+      if (context.canPop()) {
+        context.pop();
+        return;
+      }
+      final role = context.currentRole;
+      if (role == UserRole.admin) {
+        context.go('/admin/dashboard');
+      } else {
+        context.go('/receptionist/rooms');
+      }
+    } catch (_) {
+      Navigator.of(context).maybePop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
     final filtered = _getFilteredInvoices();
+    final displayed = filtered.take(_displayedCount).toList();
     final totalPaid = _invoices.fold<num>(
       0,
       (sum, inv) => sum + inv.paidAmount,
@@ -780,13 +856,13 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
       body: RefreshIndicator(
         color: palette.accent,
         onRefresh: _fetchInvoices,
-        child: SingleChildScrollView(
+        child: CustomScrollView(
+          controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. Dải Navy đầu màn (165px+)
-              Container(
+          slivers: [
+            // 1. Dải Navy đầu màn (165px+)
+            SliverToBoxAdapter(
+              child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   gradient: AppGradients.navy,
@@ -805,30 +881,59 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Thu Ngân',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.3,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                _buildGlassCircleBtn(
+                                  icon: Icons.arrow_back_ios_new_rounded,
+                                  onTap: () => _handleBack(context),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${_getCurrentShift()} • ${Formatters.formatDate(DateTime.now())}',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.60),
-                                  fontSize: 12,
+                                const SizedBox(width: AppSpacing.sm + 2),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Hóa Đơn & Thu Quỹ',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: -0.3,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${_getCurrentShift()} • ${Formatters.formatDate(DateTime.now())}',
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.60),
+                                          fontSize: 12,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: AppSpacing.sm),
                           Row(
                             children: [
+                              if (context.currentRole.canCloseShift) ...[
+                                _buildGlassCircleBtn(
+                                  icon: Icons.account_balance_wallet_outlined,
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const ShiftCloseScreen(),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                              ],
                               _buildGlassCircleBtn(
                                 icon: Icons.refresh,
                                 onTap: _fetchInvoices,
@@ -949,65 +1054,196 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.md),
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: AppSpacing.md),
+            ),
 
-              // Search & Filter Bar
-              InvoiceFilterBar(
+            // Search & Filter Bar
+            SliverToBoxAdapter(
+              child: InvoiceFilterBar(
                 searchController: _searchController,
                 searchQuery: _searchQuery,
-                onSearchChanged: (val) => setState(() => _searchQuery = val),
+                onSearchChanged: (val) {
+                  setState(() {
+                    _searchQuery = val;
+                    _displayedCount = _pageSize;
+                    _isLoadingMore = false;
+                  });
+                },
                 onSearchClear: () {
                   _searchController.clear();
-                  setState(() => _searchQuery = '');
+                  setState(() {
+                    _searchQuery = '';
+                    _displayedCount = _pageSize;
+                    _isLoadingMore = false;
+                  });
                 },
                 tabs: _tabs,
                 selectedTabIndex: _selectedTabIndex,
-                onTabSelected: (idx) => setState(() => _selectedTabIndex = idx),
+                onTabSelected: (idx) {
+                  setState(() {
+                    _selectedTabIndex = idx;
+                    _displayedCount = _pageSize;
+                    _isLoadingMore = false;
+                  });
+                },
                 getTabCount: _getTabCount,
               ),
-              const SizedBox(height: AppSpacing.lg),
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: AppSpacing.lg),
+            ),
 
-              // 3. Invoice Cards / Skeletons / Empty State
-              Padding(
+            // 3. Invoice Cards / Skeletons / Empty State
+            if (_isLoading && _invoices.isEmpty)
+              SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
-                child: _isLoading && _invoices.isEmpty
-                    ? Column(
-                        children: List.generate(
-                          4,
-                          (index) => const Padding(
-                            padding: EdgeInsets.only(bottom: AppSpacing.md),
-                            child: InvoiceRowSkeleton(),
-                          ),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => const Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.md),
+                      child: InvoiceRowSkeleton(),
+                    ),
+                    childCount: 4,
+                  ),
+                ),
+              )
+            else if (filtered.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  child: AppEmptyState(
+                    icon: Icons.receipt_long_outlined,
+                    title: emptyTitle,
+                    description: emptySubtitle,
+                    actionText: 'Tải lại danh sách',
+                    onAction: _fetchInvoices,
+                  ),
+                ),
+              )
+            else ...[
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final inv = displayed[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: InvoiceCard(
+                          invoice: inv,
+                          onTap: () => _showInvoiceDetailSheet(inv),
+                          onCollectPayment: () => _showPaymentModal(inv),
+                          onViewReceipt: () => _showReceiptSheet(inv),
                         ),
-                      )
-                    : filtered.isEmpty
-                        ? AppEmptyState(
-                            icon: Icons.receipt_long_outlined,
-                            title: emptyTitle,
-                            description: emptySubtitle,
-                            actionText: 'Tải lại danh sách',
-                            onAction: _fetchInvoices,
-                          )
-                        : Column(
-                            children: filtered.map((inv) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                                child: InvoiceCard(
-                                  invoice: inv,
-                                  onTap: () => _showInvoiceDetailSheet(inv),
-                                  onCollectPayment: () => _showPaymentModal(inv),
-                                  onViewReceipt: () => _showReceiptSheet(inv),
-                                ),
-                              );
-                            }).toList(),
-                          ),
+                      );
+                    },
+                    childCount: displayed.length,
+                  ),
+                ),
               ),
-              const SizedBox(height: 60),
+
+              // Footer: Load more / pagination indicator
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+                  child: _buildPaginationFooter(palette, filtered.length),
+                ),
+              ),
             ],
-          ),
+
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 80),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  Widget _buildPaginationFooter(AppPalette palette, int totalCount) {
+    if (_isLoadingMore) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: palette.accent,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Đang tải thêm... (Đã hiện ${_displayedCount.clamp(0, totalCount)}/$totalCount)',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: palette.inkMuted,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_displayedCount < totalCount) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Center(
+          child: OutlinedButton.icon(
+            onPressed: _loadMore,
+            icon: const Icon(Icons.expand_more_rounded, size: 18),
+            label: Text(
+              'Xem thêm 20 hóa đơn (Đã hiện ${_displayedCount.clamp(0, totalCount)}/$totalCount)',
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: palette.accent,
+              side: BorderSide(color: palette.accent.withValues(alpha: 0.3)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (totalCount > _pageSize) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.check_circle_outline_rounded,
+                size: 15,
+                color: palette.inkMuted,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Đã hiển thị tất cả $totalCount hóa đơn',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: palette.inkMuted,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildMiniBar(double height) {
