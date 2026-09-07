@@ -15,7 +15,6 @@ import '../../../shared/models/invoice_model.dart';
 import '../../../shared/repositories/invoice_repository.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_error_display.dart';
-import '../../../shared/widgets/logout_confirmation_dialog.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/skeletons/invoice_row_skeleton.dart';
 import '../../../shared/widgets/sticky_header.dart';
@@ -165,9 +164,6 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
         return 0;
     }
   }
-
-  List<InvoiceModel> _getFilteredInvoices() =>
-      _invoiceBloc.state.filteredInvoices;
 
   String _getCurrentShift() {
     final hour = DateTime.now().hour;
@@ -642,8 +638,9 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                           ),
                         ],
                         onChanged: (val) {
-                          if (val != null)
+                          if (val != null) {
                             setModalState(() => selectedRoom = val);
+                          }
                         },
                       ),
                       const SizedBox(height: 14),
@@ -1767,28 +1764,28 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                                           ),
                                         ),
                                       ),
-                                      items:
-                                          [
-                                                now.year - 2,
-                                                now.year - 1,
-                                                now.year,
-                                                now.year + 1,
-                                              ]
-                                              .map(
-                                                (y) => DropdownMenuItem(
-                                                  value: y,
-                                                  child: Text(
-                                                    'Năm $y',
-                                                    style: const TextStyle(
-                                                      fontSize: 13,
-                                                    ),
-                                                  ),
+                                      items: [
+                                        now.year - 2,
+                                        now.year - 1,
+                                        now.year,
+                                        now.year + 1,
+                                      ]
+                                          .map(
+                                            (y) => DropdownMenuItem(
+                                              value: y,
+                                              child: Text(
+                                                'Năm $y',
+                                                style: const TextStyle(
+                                                  fontSize: 13,
                                                 ),
-                                              )
-                                              .toList(),
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
                                       onChanged: (v) {
-                                        if (v != null)
+                                        if (v != null) {
                                           setModalState(() => tempYear = v);
+                                        }
                                       },
                                     ),
                                   ),
@@ -1857,10 +1854,11 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                                             ),
                                           )
                                           .toList(),
-                                  onChanged: (v) {
-                                    if (v != null)
-                                      setModalState(() => tempYear = v);
-                                  },
+                                   onChanged: (v) {
+                                     if (v != null) {
+                                       setModalState(() => tempYear = v);
+                                     }
+                                   },
                                 ),
                               ),
                             ],

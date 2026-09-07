@@ -195,7 +195,7 @@ class RoomRepository extends ChangeNotifier {
     try {
       final queryParams = <String, dynamic>{
         if (status != null) 'status': status.code,
-        if (floor != null) 'floor': floor,
+        'floor': ?floor,
         if (roomTypeId != null && roomTypeId.isNotEmpty) 'roomTypeId': roomTypeId,
         if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
         'page': page,
@@ -276,7 +276,7 @@ class RoomRepository extends ChangeNotifier {
     try {
       final queryParams = <String, dynamic>{
         if (status != null) 'status': status.code,
-        if (floor != null) 'floor': floor,
+        'floor': ?floor,
         if (roomTypeId != null && roomTypeId.isNotEmpty) 'roomTypeId': roomTypeId,
       };
 

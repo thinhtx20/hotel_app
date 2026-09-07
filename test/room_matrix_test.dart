@@ -110,6 +110,26 @@ class MockMatrixDioClient implements DioClient {
               );
             }
 
+            if (options.path == ApiEndpoints.services) {
+              return handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'success': true,
+                    'data': [
+                      {
+                        'id': 'srv_water',
+                        'name': 'Nước suối',
+                        'unitPrice': 15000,
+                        'category': 'FOOD_BEVERAGE',
+                      },
+                    ],
+                  },
+                ),
+              );
+            }
+
             // Đơn gắn với từng phòng — nguồn của nút Check-in / Check-out
             // trong sheet chi tiết phòng.
             if (options.path == ApiEndpoints.bookings) {
@@ -228,9 +248,9 @@ void main() {
 
       // Verify title & stats
       expect(find.text('Sơ Đồ Buồng Phòng'), findsOneWidget);
-      expect(find.text('TRỐNG'), findsOneWidget);
-      expect(find.text('CÓ KHÁCH'), findsOneWidget);
-      expect(find.text('DỌN DẸP'), findsOneWidget);
+      expect(find.text('Trống'), findsOneWidget);
+      expect(find.text('Đang ở'), findsOneWidget);
+      expect(find.text('Chờ dọn'), findsOneWidget);
 
       // Verify rooms rendered
       expect(find.text('101'), findsOneWidget);
@@ -368,6 +388,90 @@ void main() {
       expect(find.text('Hóa đơn đã xuất thành công'), findsOneWidget);
     });
 
+    testWidgets('Chip KPI ca trực lọc sơ đồ phòng theo trạng thái và bỏ lọc được',
+        (tester) async {
+      final mockDioClient = MockMatrixDioClient();
+
+      await tester.pumpWidget(
+        MaterialApp(home: RoomMatrixScreen(dioClient: mockDioClient)),
+      );
+      await tester.pumpAndSettle();
+
+      // Chưa lọc: cả 3 phòng đều hiện
+      expect(find.text('101'), findsOneWidget);
+      expect(find.text('102'), findsOneWidget);
+      expect(find.text('201'), findsOneWidget);
+
+      // Chạm chip "Đang ở" -> chỉ còn phòng 102 (OCCUPIED)
+      await tester.tap(find.text('Đang ở'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('102'), findsOneWidget);
+      expect(find.text('101'), findsNothing);
+      expect(find.text('201'), findsNothing);
+      expect(find.textContaining('Đang lọc: Phòng đang có khách'), findsOneWidget);
+      expect(find.text('TẦNG 2'), findsNothing);
+
+      // Bỏ lọc bằng nút trên thanh nhắc -> danh sách trở lại đầy đủ
+      await tester.tap(find.text('Bỏ lọc'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('101'), findsOneWidget);
+      expect(find.text('201'), findsOneWidget);
+      expect(find.textContaining('Đang lọc:'), findsNothing);
+
+      // Chạm chip "Trống" rồi chạm lại -> bật/tắt bộ lọc
+      await tester.tap(find.text('Trống'));
+      await tester.pumpAndSettle();
+      expect(find.text('102'), findsNothing);
+
+      await tester.tap(find.text('Trống'));
+      await tester.pumpAndSettle();
+      expect(find.text('102'), findsOneWidget);
+    });
+
+    testWidgets('Bộ lọc không có phòng nào khớp thì hiện lối thoát xem tất cả',
+        (tester) async {
+      final mockDioClient = MockMatrixDioClient();
+
+      await tester.pumpWidget(
+        MaterialApp(home: RoomMatrixScreen(dioClient: mockDioClient)),
+      );
+      await tester.pumpAndSettle();
+
+      // Không phòng nào đang CLEANING trong dữ liệu mock
+      await tester.tap(find.text('Chờ dọn'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Không có phòng nào ở trạng thái này'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Xem tất cả phòng'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Xem tất cả phòng'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('101'), findsOneWidget);
+      expect(find.text('102'), findsOneWidget);
+      expect(find.text('201'), findsOneWidget);
+    });
+
+    testWidgets('Ô thống kê lọc cùng bộ lọc với chip KPI',
+        (tester) async {
+      final mockDioClient = MockMatrixDioClient();
+
+      await tester.pumpWidget(
+        MaterialApp(home: RoomMatrixScreen(dioClient: mockDioClient)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Đang ở'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('102'), findsOneWidget);
+      expect(find.text('101'), findsNothing);
+      expect(find.textContaining('Đang lọc: Phòng đang có khách'), findsOneWidget);
+    });
+
     testWidgets('Phòng chưa có đơn thì báo không có thủ tục cần làm',
         (tester) async {
       final mockDioClient = MockMatrixDioClient();
@@ -386,6 +490,45 @@ void main() {
       );
       expect(find.text('Nhận phòng (Check-in)'), findsNothing);
       expect(find.text('Trả phòng & Xuất hóa đơn'), findsNothing);
+    });
+
+    testWidgets(
+        'Bấm Ghi nhận Dịch vụ mở AddServiceSheet đè lên, khi đóng AddServiceSheet thì sheet chi tiết phòng vẫn còn',
+        (tester) async {
+      final mockDioClient = MockMatrixDioClient();
+
+      await tester.pumpWidget(
+        MaterialApp(home: RoomMatrixScreen(dioClient: mockDioClient)),
+      );
+      await tester.pumpAndSettle();
+
+      // Mở sheet chi tiết phòng 102 (đang có khách lưu trú)
+      await tester.tap(find.text('102'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Phòng 102'), findsOneWidget);
+      expect(find.text('Khách đang lưu trú'), findsOneWidget);
+      expect(find.text('Ghi nhận Dịch vụ / Minibar'), findsOneWidget);
+
+      // Bấm "Ghi nhận Dịch vụ / Minibar"
+      await tester.tap(find.text('Ghi nhận Dịch vụ / Minibar'));
+      await tester.pumpAndSettle();
+
+      // AddServiceSheet mở đè lên (hiển thị tiêu đề AddServiceSheet)
+      expect(find.text('Thêm Dịch Vụ Phát Sinh'), findsOneWidget);
+      expect(find.textContaining('đơn đặt (Phòng 102)'), findsOneWidget);
+
+      // Đóng AddServiceSheet (pop modal trên cùng)
+      Navigator.of(tester.element(find.text('Thêm Dịch Vụ Phát Sinh'))).pop();
+      await tester.pumpAndSettle();
+
+      // AddServiceSheet đã đóng
+      expect(find.text('Thêm Dịch Vụ Phát Sinh'), findsNothing);
+
+      // Sheet chi tiết phòng 102 vẫn còn nguyên vẹn!
+      expect(find.text('Phòng 102'), findsOneWidget);
+      expect(find.text('Khách đang lưu trú'), findsOneWidget);
+      expect(find.text('Ghi nhận Dịch vụ / Minibar'), findsOneWidget);
     });
   });
 }

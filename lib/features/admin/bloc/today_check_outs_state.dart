@@ -1,3 +1,4 @@
+import '../../../core/utils/vietnamese_search_helper.dart';
 import 'package:equatable/equatable.dart';
 import '../../../shared/models/booking_model.dart';
 
@@ -33,12 +34,13 @@ class TodayCheckOutsState extends Equatable {
       if (selectedTabIndex == 2 && b.status != 'CHECKED_OUT') return false;
 
       if (searchQuery.isNotEmpty) {
-        final q = searchQuery.toLowerCase();
-        final matchName = (b.customerName ?? '').toLowerCase().contains(q);
-        final matchPhone = (b.customerPhone ?? '').toLowerCase().contains(q);
-        final matchRoom = (b.roomNumber ?? '').toLowerCase().contains(q);
-        final matchCode = (b.bookingCode ?? '').toLowerCase().contains(q);
-        if (!matchName && !matchPhone && !matchRoom && !matchCode) return false;
+        final matches = VietnameseSearchHelper.matchesAny([
+          b.customerName,
+          b.customerPhone,
+          b.roomNumber,
+          b.bookingCode,
+        ], searchQuery);
+        if (!matches) return false;
       }
       return true;
     }).toList();

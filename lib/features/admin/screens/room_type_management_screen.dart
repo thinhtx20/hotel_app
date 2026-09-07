@@ -1,6 +1,6 @@
+import '../../../core/utils/vietnamese_search_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
@@ -86,11 +86,11 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
   List<RoomTypeModel> get _filteredTypes {
     final list = _roomRepo.roomTypes;
     if (_searchQuery.trim().isEmpty) return list;
-    final q = _searchQuery.toLowerCase().trim();
     return list.where((t) {
-      final name = t.name.toLowerCase();
-      final code = t.code.toLowerCase();
-      return name.contains(q) || code.contains(q);
+      return VietnameseSearchHelper.matchesAny(
+        [t.name, t.code, t.description],
+        _searchQuery,
+      );
     }).toList();
   }
 
@@ -410,22 +410,6 @@ class _RoomTypeManagementScreenState extends State<RoomTypeManagementScreen> {
           setState(() => _deletingIds.remove(type.id));
         }
       }
-    }
-  }
-
-  void _handleBack(BuildContext context) {
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-      return;
-    }
-    try {
-      if (context.canPop()) {
-        context.pop();
-        return;
-      }
-      context.go('/admin/dashboard');
-    } catch (_) {
-      context.go('/admin/dashboard');
     }
   }
 

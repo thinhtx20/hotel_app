@@ -86,7 +86,8 @@ void main() {
       UserModel(
         id: 'u-1',
         email: 'admin@hotel.com',
-        fullName: 'Admin A',
+        fullName: 'Nguyễn Văn Bình',
+        phone: '0912345678',
         role: UserRole.admin,
         isActive: true,
       ),
@@ -146,6 +147,35 @@ void main() {
             s.filteredUsers.length == 1 &&
             s.filteredUsers.first.id == 'u-2')),
       );
+    });
+
+    test('UserSearchChanged filters without accent or case sensitivity', () async {
+      userBloc.add(const UserFetchRequested());
+      await userBloc.stream.firstWhere((s) => s.status == UserStatus.success);
+
+      // Tìm không dấu chữ thường
+      userBloc.add(const UserSearchChanged('nguyen'));
+      var state = await userBloc.stream.firstWhere((s) => s.searchQuery == 'nguyen');
+      expect(state.filteredUsers.length, 1);
+      expect(state.filteredUsers.first.fullName, 'Nguyễn Văn Bình');
+
+      // Tìm có dấu chữ hoa
+      userBloc.add(const UserSearchChanged('NGUYỄN'));
+      state = await userBloc.stream.firstWhere((s) => s.searchQuery == 'NGUYỄN');
+      expect(state.filteredUsers.length, 1);
+      expect(state.filteredUsers.first.fullName, 'Nguyễn Văn Bình');
+
+      // Tìm theo cụm từ không dấu đảo thứ tự
+      userBloc.add(const UserSearchChanged('binh nguyen'));
+      state = await userBloc.stream.firstWhere((s) => s.searchQuery == 'binh nguyen');
+      expect(state.filteredUsers.length, 1);
+      expect(state.filteredUsers.first.fullName, 'Nguyễn Văn Bình');
+
+      // Tìm theo SĐT
+      userBloc.add(const UserSearchChanged('0912'));
+      state = await userBloc.stream.firstWhere((s) => s.searchQuery == '0912');
+      expect(state.filteredUsers.length, 1);
+      expect(state.filteredUsers.first.fullName, 'Nguyễn Văn Bình');
     });
 
     test('UserStatusFilterChanged filters active or inactive users', () async {

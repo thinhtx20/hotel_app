@@ -284,7 +284,7 @@ class BookingRepository extends ChangeNotifier {
   Future<List<BookingModel>> fetchTodayCheckIns() async {
     final now = DateTime.now();
     return fetchAllBookings(
-      status: 'CONFIRMED',
+      statuses: const ['CONFIRMED', 'CHECKED_IN'],
       checkInFrom: now,
       checkInTo: now,
     );
@@ -295,7 +295,7 @@ class BookingRepository extends ChangeNotifier {
   Future<List<BookingModel>> fetchTodayCheckOuts() async {
     final now = DateTime.now();
     return fetchAllBookings(
-      status: 'CHECKED_IN',
+      statuses: const ['CHECKED_IN', 'CHECKED_OUT'],
       checkOutTo: now,
     );
   }
@@ -342,6 +342,59 @@ class BookingRepository extends ChangeNotifier {
     } catch (e) {
       throw ApiError.fromDynamic(e);
     }
+  }
+
+  /// Nhận phòng trực tiếp cho khách vãng lai (Walk-in Check-in):
+  /// 1. Tạo đơn đặt phòng ở trạng thái CONFIRMED (POST /bookings)
+  /// 2. Thực hiện check-in ngay lập tức (POST /bookings/:id/check-in)
+  Future<BookingModel> walkInCheckIn({
+    required String roomId,
+    required DateTime checkInDate,
+    required DateTime checkOutDate,
+    int guestCount = 1,
+    num depositAmount = 0,
+    String? customerId,
+    String? customerName,
+    String? customerPhone,
+    String? customerIdentity,
+    String? paymentMethod,
+    String? notes,
+  }) async {
+    final noteParts = <String>[];
+    if (customerName != null && customerName.trim().isNotEmpty) {
+      noteParts.add('Khách: ${customerName.trim()}');
+    }
+    if (customerPhone != null && customerPhone.trim().isNotEmpty) {
+      noteParts.add('SĐT: ${customerPhone.trim()}');
+    }
+    if (customerIdentity != null && customerIdentity.trim().isNotEmpty) {
+      noteParts.add('CCCD/Passport: ${customerIdentity.trim()}');
+    }
+    if (depositAmount > 0 && paymentMethod != null) {
+      noteParts.add('Cọc: ${depositAmount.toInt()}đ ($paymentMethod)');
+    }
+    if (notes != null && notes.trim().isNotEmpty) {
+      noteParts.add('Lưu ý: ${notes.trim()}');
+    }
+
+    final combinedNotes = noteParts.isNotEmpty
+        ? '[Walk-in] ${noteParts.join(" • ")}'
+        : '[Walk-in / Trực tiếp tại quầy]';
+
+    final payload = <String, dynamic>{
+      'roomId': roomId,
+      'checkInDate': checkInDate.toIso8601String(),
+      'checkOutDate': checkOutDate.toIso8601String(),
+      'guestCount': guestCount,
+      'depositAmount': depositAmount,
+      'status': 'CONFIRMED',
+      if (customerId != null && customerId.isNotEmpty) 'customerId': customerId,
+      'specialRequests': combinedNotes,
+    };
+
+    final createdBooking = await create(payload);
+    final checkedInBooking = await checkIn(createdBooking.id);
+    return checkedInBooking;
   }
 
   /// Bảng kê & số còn phải thu trước khi trả phòng:
@@ -453,6 +506,24 @@ class BookingRepository extends ChangeNotifier {
       throw ApiError.fromDioException(e);
     } catch (e) {
       throw ApiError.fromDynamic(e);
+    }
+  }
+
+  /// Ghi nhận nhiều dịch vụ phát sinh cùng lúc: POST /bookings/:id/services tuần tự
+  Future<void> addMultipleServices(
+    String id,
+    List<({String serviceName, num unitPrice, int quantity})> items, {
+    void Function(int current, int total, String serviceName)? onProgress,
+  }) async {
+    for (var i = 0; i < items.length; i++) {
+      final item = items[i];
+      onProgress?.call(i + 1, items.length, item.serviceName);
+      await addService(
+        id,
+        serviceName: item.serviceName,
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+      );
     }
   }
 

@@ -1,3 +1,4 @@
+import '../../../core/utils/vietnamese_search_helper.dart';
 import 'package:equatable/equatable.dart';
 import '../../../shared/models/invoice_model.dart';
 
@@ -76,12 +77,11 @@ class InvoiceState extends Equatable {
     }
 
     if (searchQuery.trim().isNotEmpty) {
-      final q = searchQuery.trim().toLowerCase();
       list = list.where((inv) {
-        final code = inv.displayCode.toLowerCase();
-        final guest = (inv.customerName ?? '').toLowerCase();
-        final room = (inv.roomNumber ?? '').toLowerCase();
-        return code.contains(q) || guest.contains(q) || room.contains(q);
+        return VietnameseSearchHelper.matchesAny(
+          [inv.displayCode, inv.customerName, inv.roomNumber],
+          searchQuery,
+        );
       }).toList();
     }
 

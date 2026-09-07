@@ -44,6 +44,11 @@ class Formatters {
   static String formatDate(DateTime dateTime) {
     return DateFormat('dd/MM/yyyy').format(dateTime.toLocal());
   }
+
+  /// Ví dụ: DateTime -> "14:00"
+  static String formatTime(DateTime dateTime) {
+    return DateFormat('HH:mm').format(dateTime.toLocal());
+  }
 }
 
 /// Formatter tự động định dạng số tiền theo hàng nghìn (VD: 1.500.000) khi người dùng nhập liệu

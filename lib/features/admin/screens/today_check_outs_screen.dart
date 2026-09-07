@@ -144,6 +144,13 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
                   expandedHeight: 140,
                   pinned: true,
                   backgroundColor: AppColors.primary,
+                  leading: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                    ),
+                    onPressed: () => _handleBack(context),
+                  ),
                   flexibleSpace: FlexibleSpaceBar(
                     titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
                     title: Column(

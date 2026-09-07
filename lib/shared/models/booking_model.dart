@@ -188,6 +188,44 @@ class BookingModel {
     return id.length > 8 ? id.substring(0, 8).toUpperCase() : id.toUpperCase();
   }
 
+  /// Đơn đặt phòng tại quầy (khách vãng lai)
+  bool get isWalkIn => specialRequests?.contains('[Walk-in]') ?? false;
+
+  /// Tên khách hàng hiển thị, ưu tiên bóc tách từ specialRequests nếu là đơn walk-in,
+  /// sau đó mới tới customerName hoặc mặc định 'Khách vãng lai'
+  String get displayCustomerName {
+    if (isWalkIn && specialRequests != null) {
+      final match = RegExp(r'Khách:\s*([^•\n\]]+)').firstMatch(specialRequests!);
+      if (match != null) {
+        final extracted = match.group(1)?.trim();
+        if (extracted != null && extracted.isNotEmpty) {
+          return extracted;
+        }
+      }
+    }
+    if (customerName != null && customerName!.trim().isNotEmpty) {
+      return customerName!;
+    }
+    return 'Khách vãng lai';
+  }
+
+  /// Số điện thoại khách hàng, ưu tiên bóc tách từ specialRequests nếu là đơn walk-in
+  String? get displayCustomerPhone {
+    if (isWalkIn && specialRequests != null) {
+      final match = RegExp(r'SĐT:\s*([^•\n\]]+)').firstMatch(specialRequests!);
+      if (match != null) {
+        final extracted = match.group(1)?.trim();
+        if (extracted != null && extracted.isNotEmpty) {
+          return extracted;
+        }
+      }
+    }
+    if (customerPhone != null && customerPhone!.trim().isNotEmpty) {
+      return customerPhone;
+    }
+    return null;
+  }
+
   BookingModel copyWith({
     String? id,
     String? bookingCode,

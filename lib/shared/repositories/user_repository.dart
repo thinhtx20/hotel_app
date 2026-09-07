@@ -79,8 +79,8 @@ class UserRepository {
       final queryParams = <String, dynamic>{
         if (role != null && role.isNotEmpty) 'role': role,
         if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
-        if (page != null) 'page': page,
-        if (limit != null) 'limit': limit,
+        'page': ?page,
+        'limit': ?limit,
       };
 
       final res = await _dioClient.dio.get(

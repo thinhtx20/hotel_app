@@ -1,3 +1,4 @@
+import '../../../core/utils/vietnamese_search_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -129,10 +130,8 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
           checkOutDate: _checkOutDate!,
         );
         if (query.trim().isNotEmpty) {
-          final q = query.trim().toLowerCase();
           list = list.where((r) =>
-            r.roomNumber.toLowerCase().contains(q) ||
-            (r.roomTypeName?.toLowerCase().contains(q) ?? false)
+            VietnameseSearchHelper.matchesAny([r.roomNumber, r.roomTypeName], query)
           ).toList();
         }
       } else {

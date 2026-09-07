@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/role_enum.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/formatters.dart';
@@ -26,6 +27,9 @@ class RoomStayActions extends StatefulWidget {
   final ValueChanged<BookingModel> onCheckIn;
   final ValueChanged<BookingModel> onCheckOut;
 
+  /// Cho phép lễ tân mở modal nhận phòng trực tiếp cho khách vãng lai
+  final VoidCallback? onWalkInCheckIn;
+
   const RoomStayActions({
     super.key,
     required this.room,
@@ -34,13 +38,14 @@ class RoomStayActions extends StatefulWidget {
     required this.canCheckOut,
     required this.onCheckIn,
     required this.onCheckOut,
+    this.onWalkInCheckIn,
   });
 
   @override
-  State<RoomStayActions> createState() => _RoomStayActionsState();
+  State<RoomStayActions> createState() => RoomStayActionsState();
 }
 
-class _RoomStayActionsState extends State<RoomStayActions> {
+class RoomStayActionsState extends State<RoomStayActions> {
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -50,11 +55,15 @@ class _RoomStayActionsState extends State<RoomStayActions> {
   /// Đơn đã xác nhận, gần ngày nhận phòng nhất — nguồn của nút Check-in.
   BookingModel? _upcomingArrival;
 
+  BookingModel? get currentStay => _currentStay;
+
   @override
   void initState() {
     super.initState();
     _loadBookings();
   }
+
+  Future<void> reload() => _loadBookings();
 
   Future<void> _loadBookings() async {
     setState(() {
@@ -163,6 +172,13 @@ class _RoomStayActionsState extends State<RoomStayActions> {
     final arrival = widget.canCheckIn ? _upcomingArrival : null;
 
     if (stay == null && arrival == null) {
+      if (widget.canCheckIn &&
+          widget.onWalkInCheckIn != null &&
+          (widget.room.status == RoomStatus.available ||
+              widget.room.status == RoomStatus.cleaning)) {
+        return _buildWalkInCard(palette);
+      }
+
       return _buildNoticeBox(
         palette: palette,
         color: palette.inkMuted,
@@ -283,8 +299,8 @@ class _RoomStayActionsState extends State<RoomStayActions> {
           ),
           const SizedBox(height: 6),
           Text(
-            '${booking.customerName ?? 'Khách vãng lai'}'
-            '${booking.customerPhone != null ? ' • ${booking.customerPhone}' : ''}',
+            '${booking.displayCustomerName}'
+            '${booking.displayCustomerPhone != null ? ' • ${booking.displayCustomerPhone}' : ''}',
             style: TextStyle(
               fontSize: 13.5,
               fontWeight: FontWeight.w600,
@@ -316,6 +332,92 @@ class _RoomStayActionsState extends State<RoomStayActions> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.button),
                 ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWalkInCard(AppPalette palette) {
+    final isAvailable = widget.room.status == RoomStatus.available;
+    final statusColor = isAvailable ? palette.statusAvailable : palette.statusCleaning;
+    final statusInk = isAvailable ? palette.statusAvailableInk : palette.statusCleaningInk;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: statusColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: statusColor.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isAvailable
+                      ? Icons.meeting_room_outlined
+                      : Icons.cleaning_services_outlined,
+                  size: 16,
+                  color: statusInk,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isAvailable
+                          ? 'Phòng đang trống & sẵn sàng'
+                          : 'Phòng đang trong trạng thái dọn dẹp',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: statusInk,
+                      ),
+                    ),
+                    Text(
+                      'Phòng này chưa có đơn nào cần làm thủ tục nhận / trả phòng.',
+                      style: TextStyle(fontSize: 12, color: palette.inkMuted),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: widget.onWalkInCheckIn,
+              icon: const Icon(Icons.person_add_alt_1_rounded, size: 17, color: Colors.white),
+              label: const Text(
+                'Nhận phòng khách vãng lai (Walk-in)',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: palette.statusOccupied,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.button),
+                ),
+                elevation: 1,
               ),
             ),
           ),

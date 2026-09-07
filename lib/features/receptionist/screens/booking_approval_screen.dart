@@ -1,3 +1,4 @@
+import '../../../core/utils/vietnamese_search_helper.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/skeletons/skeleton_primitives.dart';
+import '../widgets/walk_in_check_in_modal.dart';
 
 class BookingApprovalScreen extends StatefulWidget {
   const BookingApprovalScreen({super.key});
@@ -149,18 +151,14 @@ class _BookingApprovalScreenState extends State<BookingApprovalScreen>
     }
 
     if (_searchQuery.isNotEmpty) {
-      final q = _searchQuery.toLowerCase();
       list = list.where((b) {
-        final code = (b.bookingCode ?? '').toLowerCase();
-        final name = (b.customerName ?? '').toLowerCase();
-        final phone = (b.customerPhone ?? '').toLowerCase();
-        final roomNum = (b.roomNumber ?? '').toLowerCase();
-        final roomType = (b.roomTypeName ?? '').toLowerCase();
-        return code.contains(q) ||
-            name.contains(q) ||
-            phone.contains(q) ||
-            roomNum.contains(q) ||
-            roomType.contains(q);
+        return VietnameseSearchHelper.matchesAny([
+          b.bookingCode,
+          b.customerName,
+          b.customerPhone,
+          b.roomNumber,
+          b.roomTypeName,
+        ], _searchQuery);
       }).toList();
     }
 
@@ -721,6 +719,24 @@ class _BookingApprovalScreenState extends State<BookingApprovalScreen>
 
     return Scaffold(
       backgroundColor: palette.canvas,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await WalkInCheckInModal.show(
+            context: context,
+            onSuccess: () => _fetchBookings(isSilent: true),
+          );
+          if (result != null && mounted) {
+            _fetchBookings(isSilent: true);
+          }
+        },
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.person_add_alt_1_rounded),
+        label: const Text(
+          'Đặt phòng tại quầy (Walk-in)',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [

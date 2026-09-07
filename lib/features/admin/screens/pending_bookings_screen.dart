@@ -1,3 +1,4 @@
+import '../../../core/utils/vietnamese_search_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -93,18 +94,14 @@ class _PendingBookingsScreenState extends State<PendingBookingsScreen> {
     }
 
     if (_searchQuery.isNotEmpty) {
-      final q = _searchQuery.toLowerCase();
       list = list.where((b) {
-        final code = (b.bookingCode ?? '').toLowerCase();
-        final name = (b.customerName ?? '').toLowerCase();
-        final phone = (b.customerPhone ?? '').toLowerCase();
-        final roomType = (b.roomTypeName ?? '').toLowerCase();
-        final roomNum = (b.roomNumber ?? '').toLowerCase();
-        return code.contains(q) ||
-            name.contains(q) ||
-            phone.contains(q) ||
-            roomType.contains(q) ||
-            roomNum.contains(q);
+        return VietnameseSearchHelper.matchesAny([
+          b.bookingCode,
+          b.customerName,
+          b.customerPhone,
+          b.roomTypeName,
+          b.roomNumber,
+        ], _searchQuery);
       }).toList();
     }
 

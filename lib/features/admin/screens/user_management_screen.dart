@@ -8,7 +8,6 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/role_enum.dart';
 import '../../../core/constants/role_permissions.dart';
-import '../../../core/network/api_error.dart';
 import '../../../core/network/sse_client.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../di/injection_container.dart';

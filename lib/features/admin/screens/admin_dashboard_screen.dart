@@ -14,7 +14,6 @@ import '../../../core/utils/formatters.dart';
 import '../../../di/injection_container.dart';
 import '../../../shared/repositories/analytics_repository.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/logout_confirmation_dialog.dart';
 import '../../../shared/widgets/motion/animated_counter.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/skeletons/skeleton_primitives.dart';

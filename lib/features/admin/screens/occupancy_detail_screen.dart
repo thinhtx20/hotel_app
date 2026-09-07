@@ -1,3 +1,4 @@
+import '../../../core/utils/vietnamese_search_helper.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -186,12 +187,11 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
         return false;
       }
       if (_searchQuery.isNotEmpty) {
-        final query = _searchQuery.toLowerCase();
-        final matchNum = room.roomNumber.toLowerCase().contains(query);
-        final matchType = (room.roomTypeName ?? '').toLowerCase().contains(
-          query,
-        );
-        if (!matchNum && !matchType) return false;
+        final matches = VietnameseSearchHelper.matchesAny([
+          room.roomNumber,
+          room.roomTypeName,
+        ], _searchQuery);
+        if (!matches) return false;
       }
       return true;
     }).toList();

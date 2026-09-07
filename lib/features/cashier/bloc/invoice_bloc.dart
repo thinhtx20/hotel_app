@@ -1,16 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/network/api_error.dart';
-import '../../../shared/models/invoice_model.dart';
 import '../../../shared/repositories/invoice_repository.dart';
 import 'invoice_event.dart';
 import 'invoice_state.dart';
 
 class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
-  final InvoiceRepository _invoiceRepository;
+  final InvoiceRepository invoiceRepository;
+  InvoiceRepository get _invoiceRepository => invoiceRepository;
 
-  InvoiceBloc({required InvoiceRepository invoiceRepository})
-      : _invoiceRepository = invoiceRepository,
-        super(InvoiceState()) {
+  InvoiceBloc({required this.invoiceRepository})
+      : super(InvoiceState()) {
     on<InvoiceFetchRequested>(_onFetchRequested);
     on<InvoiceRefreshRequested>(_onRefreshRequested);
     on<InvoiceTabFilterChanged>(_onTabFilterChanged);

@@ -7,11 +7,11 @@ import 'today_check_outs_state.dart';
 
 class TodayCheckOutsBloc
     extends Bloc<TodayCheckOutsEvent, TodayCheckOutsState> {
-  final BookingRepository _bookingRepository;
+  final BookingRepository bookingRepository;
+  BookingRepository get _bookingRepository => bookingRepository;
 
-  TodayCheckOutsBloc({required BookingRepository bookingRepository})
-      : _bookingRepository = bookingRepository,
-        super(const TodayCheckOutsState()) {
+  TodayCheckOutsBloc({required this.bookingRepository})
+      : super(const TodayCheckOutsState()) {
     on<TodayCheckOutsFetchRequested>(_onFetchRequested);
     on<TodayCheckOutsRefreshRequested>(_onRefreshRequested);
     on<TodayCheckOutsTabChanged>(_onTabChanged);

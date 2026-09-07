@@ -1,17 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/network/api_error.dart';
-import '../../../core/network/sse_client.dart';
 import '../../../shared/models/user_model.dart';
 import '../../../shared/repositories/user_repository.dart';
 import 'user_event.dart';
 import 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
-  final UserRepository _userRepository;
+  final UserRepository userRepository;
+  UserRepository get _userRepository => userRepository;
 
-  UserBloc({required UserRepository userRepository})
-      : _userRepository = userRepository,
-        super(const UserState()) {
+  UserBloc({required this.userRepository})
+      : super(const UserState()) {
     on<UserFetchRequested>(_onFetchRequested);
     on<UserRefreshRequested>(_onRefreshRequested);
     on<UserRoleFilterChanged>(_onRoleFilterChanged);

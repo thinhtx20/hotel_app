@@ -1,3 +1,4 @@
+import '../../../core/utils/vietnamese_search_helper.dart';
 import 'package:equatable/equatable.dart';
 import '../../../core/constants/role_enum.dart';
 import '../../../shared/models/user_model.dart';
@@ -38,12 +39,11 @@ class UserState extends Equatable {
       list = list.where((u) => u.isActive == selectedStatusFilter).toList();
     }
     if (searchQuery.trim().isNotEmpty) {
-      final q = searchQuery.trim().toLowerCase();
       list = list.where((u) {
-        final name = u.fullName.toLowerCase();
-        final email = u.email.toLowerCase();
-        final phone = (u.phone ?? '').toLowerCase();
-        return name.contains(q) || email.contains(q) || phone.contains(q);
+        return VietnameseSearchHelper.matchesAny(
+          [u.fullName, u.email, u.phone],
+          searchQuery,
+        );
       }).toList();
     }
     return list;
