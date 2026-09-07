@@ -138,6 +138,8 @@ class ApiEndpoints {
   static String updateUser(String id) => '/users/$id';
   /// DELETE — ADMIN (khóa tài khoản bằng soft-delete isActive=false — users.service.ts:146-152)
   static String deleteUser(String id) => '/users/$id';
+  /// PATCH / POST — ADMIN (đổi / đặt lại mật khẩu cho tài khoản người dùng)
+  static String changeUserPassword(String id) => '/users/$id/password';
   /// GET — ADMIN (SSE stream realtime danh sách người dùng)
   static const String usersStream = '/users/stream';
 
@@ -161,4 +163,20 @@ class ApiEndpoints {
   static const String uploadImages = '/upload/images';
   /// DELETE — Tất cả role (xóa ảnh theo query param `path`)
   static const String uploadDelete = '/upload';
+
+  // --- Shifts (Quản lý Ca trực & Bàn giao tiền két) -------------------------
+  /// POST — ADMIN, RECEPTIONIST (Mở ca trực quầy)
+  static const String shiftsOpen = '/shifts/open';
+  /// GET — ADMIN, RECEPTIONIST (Ca trực hiện tại của user đăng nhập)
+  static const String shiftsCurrent = '/shifts/current';
+  /// GET — ADMIN, RECEPTIONIST (Danh sách ca trực đang OPEN tại quầy)
+  static const String shiftsActive = '/shifts/active';
+  /// POST — ADMIN, RECEPTIONIST (Chốt ca trực của chính mình)
+  static const String shiftsClose = '/shifts/close';
+  /// POST — ADMIN (Admin cưỡng chế chốt ca hộ cho nhân viên)
+  static String adminCloseShift(String id) => '/shifts/$id/close';
+  /// GET — ADMIN, RECEPTIONIST (Lịch sử ca trực & sổ giao ca, hỗ trợ phân trang & lọc)
+  static const String shifts = '/shifts';
+  /// GET — ADMIN, RECEPTIONIST (Chi tiết ca trực & các giao dịch trong ca)
+  static String shiftDetail(String id) => '/shifts/$id';
 }

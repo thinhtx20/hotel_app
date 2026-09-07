@@ -41,6 +41,15 @@ class _MockUserRepository extends UserRepository {
     return current;
   }
 
+  String? lastChangedPasswordUserId;
+  String? lastChangedPasswordValue;
+
+  @override
+  Future<void> changePassword(String id, String newPassword) async {
+    lastChangedPasswordUserId = id;
+    lastChangedPasswordValue = newPassword;
+  }
+
   @override
   Future<UserModel> setActiveStatus(String id, bool isActive) async {
     return updateUser(id, {'isActive': isActive});
@@ -216,6 +225,23 @@ void main() {
 
       final state = await userBloc.stream.firstWhere((s) => s.actionMessage == 'Đã mở khóa tài khoản');
       expect(state.users.firstWhere((u) => u.id == 'u-3').isActive, isTrue);
+    });
+
+    test('UserPasswordChangeRequested successfully changes password', () async {
+      userBloc.add(const UserFetchRequested());
+      await userBloc.stream.firstWhere((s) => s.status == UserStatus.success);
+
+      userBloc.add(const UserPasswordChangeRequested(
+        userId: 'u-2',
+        newPassword: 'NewPassword@123',
+      ));
+
+      final state = await userBloc.stream.firstWhere(
+        (s) => s.actionMessage != null && s.actionMessage!.contains('Đã đổi mật khẩu cho tài khoản'),
+      );
+      expect(mockRepo.lastChangedPasswordUserId, 'u-2');
+      expect(mockRepo.lastChangedPasswordValue, 'NewPassword@123');
+      expect(state.processingIds.contains('u-2'), isFalse);
     });
 
     test('UserCreateRequested adds user to the top of the list', () async {

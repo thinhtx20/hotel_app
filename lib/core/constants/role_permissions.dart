@@ -28,6 +28,8 @@ extension RolePermissions on UserRole {
   bool get canRefundInvoice => isStaff;          // S4: Hoàn tiền hóa đơn
   bool get canChangeRoom => isStaff;             // S2: Đổi phòng cho khách đang lưu trú
   bool get canCloseShift => isStaff;             // S1: Xem sổ quỹ cá nhân / chốt ca trực
+  bool get canManageAllShifts => _isAdmin;       // Quản lý toàn diện ca trực & két tiền quầy (Admin)
+  bool get canViewActiveShifts => isStaff;       // Xem danh sách quầy đang mở ca
   bool get canManageServiceCatalog => _isAdmin;  // A2: Quản trị danh mục dịch vụ (Chỉ Admin)
   bool get canViewStaffPerformance => _isAdmin;  // A1: Xem báo cáo hiệu suất nhân sự (Chỉ Admin)
   bool get canRequestService => isCustomer;      // C1: Khách hàng gọi dịch vụ tại phòng

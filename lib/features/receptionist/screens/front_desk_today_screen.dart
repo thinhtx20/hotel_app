@@ -33,6 +33,7 @@ class _FrontDeskTodayScreenState extends State<FrontDeskTodayScreen> {
       backgroundColor: palette.canvas,
       floatingActionButton: _selectedSegment == 0
           ? FloatingActionButton.extended(
+              heroTag: null,
               onPressed: () => WalkInCheckInModal.show(context: context),
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,

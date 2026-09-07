@@ -970,6 +970,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
       backgroundColor: palette.canvas,
       floatingActionButton: canCreateInvoice
           ? FloatingActionButton(
+              heroTag: null,
               onPressed: _showCreateInvoiceModal,
               backgroundColor: AppColors.primary,
               elevation: 6,

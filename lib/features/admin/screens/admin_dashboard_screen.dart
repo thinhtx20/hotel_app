@@ -20,6 +20,9 @@ import '../../../shared/widgets/skeletons/skeleton_primitives.dart';
 import 'occupancy_detail_screen.dart';
 import 'today_check_ins_screen.dart';
 import 'today_check_outs_screen.dart';
+import 'shift_detail_screen.dart';
+import '../../../shared/models/work_shift_model.dart';
+import '../../../shared/repositories/shift_repository.dart';
 import '../../receptionist/screens/booking_approval_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -43,6 +46,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   bool _isRevenueLoading = true;
   bool _revenueLoadFailed = false;
 
+  List<WorkShiftModel> _activeShifts = [];
+  bool _isActiveShiftsLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +58,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
     _fetchDashboardData();
     _fetchRevenueSeries(_revenueDays);
+    _fetchActiveShifts();
   }
 
   @override
@@ -64,7 +71,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     await Future.wait([
       _fetchDashboardData(),
       _fetchRevenueSeries(_revenueDays),
+      _fetchActiveShifts(),
     ]);
+  }
+
+  Future<void> _fetchActiveShifts() async {
+    if (!mounted) return;
+    setState(() => _isActiveShiftsLoading = true);
+    try {
+      final list = await sl<ShiftRepository>().getActiveShifts();
+      if (mounted) {
+        setState(() {
+          _activeShifts = list;
+          _isActiveShiftsLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isActiveShiftsLoading = false);
+      }
+    }
   }
 
   /// Lấy chuỗi doanh thu theo số ngày gần nhất hoặc năm nay
@@ -339,6 +365,43 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                 ),
                                 Row(
                                   children: [
+                                    if (context.currentRole == UserRole.admin) ...[
+                                      Stack(
+                                        clipBehavior: Clip.none,
+                                        children: [
+                                          _buildGlassCircleBtn(
+                                            icon: Icons.point_of_sale_rounded,
+                                            onTap: () => context.push('/admin/shifts'),
+                                          ),
+                                          if (_activeShifts.isNotEmpty)
+                                            Positioned(
+                                              top: -2,
+                                              right: -2,
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 5,
+                                                  vertical: 1,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFF10B981),
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  border: Border.all(color: Colors.white, width: 1.5),
+                                                ),
+                                                child: Text(
+                                                  '${_activeShifts.length}',
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 9,
+                                                    fontWeight: FontWeight.bold,
+                                                    height: 1.0,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(width: AppSpacing.sm),
+                                    ],
                                     if (context.currentRole ==
                                         UserRole.receptionist) ...[
                                       _buildGlassCircleBtn(
@@ -636,6 +699,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   ],
                 ),
               ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // 4.1 Ca Trực & Két Quầy Thu Ngân Realtime
+              _buildWorkShiftSection(palette, textTheme),
               const SizedBox(height: AppSpacing.xl),
 
               // 5. Thẻ Biểu đồ Doanh thu (lọc 1 / 7 / 14 / 30 ngày)
@@ -1156,6 +1223,320 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildWorkShiftSection(AppPalette palette, TextTheme textTheme) {
+    final totalExpectedCash = _activeShifts.fold<double>(
+      0.0,
+      (sum, s) => sum + s.currentExpectedCash,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'CA TRỰC & KÉT TIỀN QUẦY',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: palette.inkMuted,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              PressableScale(
+                onTap: () => context.push('/admin/shifts'),
+                child: Row(
+                  children: [
+                    Text(
+                      'Sổ giao ca',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: palette.accent,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 11,
+                      color: palette.accent,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          if (_isActiveShiftsLoading)
+            const SkeletonBox(
+              width: double.infinity,
+              height: 90,
+              borderRadius: AppRadius.card,
+            )
+          else if (_activeShifts.isEmpty)
+            AppCard(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              onTap: () => context.push('/admin/shifts'),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: palette.surfaceMuted,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.storefront_outlined,
+                      color: palette.inkMuted,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Chưa có quầy nào đang trực',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: palette.ink,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Tất cả quầy đã chốt ca hoặc chưa mở ca mới',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: palette.inkMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: palette.inkMuted,
+                    size: 20,
+                  ),
+                ],
+              ),
+            )
+          else
+            AppCard(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top summary
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF10B981),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${_activeShifts.length} quầy đang trực realtime',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: palette.ink,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Tổng tiền trong két',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: palette.inkMuted,
+                            ),
+                          ),
+                          Text(
+                            Formatters.formatCurrency(totalExpectedCash),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: palette.accent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 18),
+
+                  // Danh sách từng quầy
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _activeShifts.length,
+                    separatorBuilder: (_, _) => const Divider(height: 16),
+                    itemBuilder: (context, index) {
+                      final shift = _activeShifts[index];
+                      final type = shift.shiftType;
+                      return InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ShiftDetailScreen(
+                                shiftId: shift.id,
+                                initialShift: shift,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: type.color.withValues(alpha: 0.15),
+                              backgroundImage: shift.staffAvatar != null &&
+                                      shift.staffAvatar!.isNotEmpty
+                                  ? NetworkImage(shift.staffAvatar!)
+                                  : null,
+                              child: shift.staffAvatar == null ||
+                                      shift.staffAvatar!.isEmpty
+                                  ? Icon(Icons.person,
+                                      size: 18, color: type.color)
+                                  : null,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        shift.staffName,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 1,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              type.color.withValues(alpha: 0.12),
+                                          borderRadius:
+                                              BorderRadius.circular(AppRadius.xs),
+                                        ),
+                                        child: Text(
+                                          type.label.split('(').first.trim(),
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w700,
+                                            color: type.color,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${shift.deskName} • Vào ca: ${Formatters.formatTime(shift.startTime)}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: palette.inkMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  Formatters.formatCurrency(
+                                      shift.currentExpectedCash),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: palette.ink,
+                                  ),
+                                ),
+                                Text(
+                                  'Thu: ${Formatters.formatCurrency(shift.effectiveRevenue)}',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.blue.shade700,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              size: 16,
+                              color: palette.inkMuted,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 12),
+                  PressableScale(
+                    onTap: () => context.push('/admin/shifts'),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: palette.surfaceMuted,
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.tune_rounded,
+                              size: 14, color: palette.inkMuted),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Quản lý sổ giao ca & Chốt ca quầy',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: palette.ink,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

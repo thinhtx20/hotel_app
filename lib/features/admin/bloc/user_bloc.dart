@@ -22,6 +22,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<UserRoleUpdateRequested>(_onRoleUpdateRequested);
     on<UserStatusToggleRequested>(_onStatusToggleRequested);
     on<UserCreateRequested>(_onCreateRequested);
+    on<UserPasswordChangeRequested>(_onPasswordChangeRequested);
   }
 
   Future<void> _onFetchRequested(
@@ -289,4 +290,29 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       ));
     }
   }
+  Future<void> _onPasswordChangeRequested(
+    UserPasswordChangeRequested event,
+    Emitter<UserState> emit,
+  ) async {
+    final nextProcessing = Set<String>.from(state.processingIds)..add(event.userId);
+    emit(state.copyWith(processingIds: nextProcessing));
+
+    try {
+      await _userRepository.changePassword(event.userId, event.newPassword);
+      final finishedProcessing = Set<String>.from(state.processingIds)..remove(event.userId);
+      final user = state.users.where((u) => u.id == event.userId).firstOrNull;
+      final name = user != null && user.fullName.isNotEmpty ? user.fullName : (user?.email ?? 'tài khoản');
+      emit(state.copyWith(
+        processingIds: finishedProcessing,
+        actionMessage: 'Đã đổi mật khẩu cho tài khoản $name',
+      ));
+    } catch (e) {
+      final finishedProcessing = Set<String>.from(state.processingIds)..remove(event.userId);
+      emit(state.copyWith(
+        processingIds: finishedProcessing,
+        errorMessage: e is ApiError ? e.message : 'Không thể đổi mật khẩu tài khoản',
+      ));
+    }
+  }
+
 }

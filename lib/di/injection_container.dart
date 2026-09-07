@@ -10,6 +10,7 @@ import '../shared/repositories/booking_repository.dart';
 import '../shared/repositories/invoice_repository.dart';
 import '../shared/repositories/room_repository.dart';
 import '../shared/repositories/service_repository.dart';
+import '../shared/repositories/shift_repository.dart';
 import '../shared/repositories/upload_repository.dart';
 import '../shared/repositories/user_repository.dart';
 
@@ -38,6 +39,9 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton<ServiceRepository>(
     () => ServiceRepository(dioClient: sl<DioClient>()),
+  );
+  sl.registerLazySingleton<ShiftRepository>(
+    () => ShiftRepository(dioClient: sl<DioClient>()),
   );
   sl.registerLazySingleton<UploadRepository>(
     () => UploadRepository(dioClient: sl<DioClient>()),

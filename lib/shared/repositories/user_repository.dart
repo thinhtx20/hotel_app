@@ -238,6 +238,23 @@ class UserRepository {
     return setActiveStatus(id, true);
   }
 
+  /// Admin đổi / đặt lại mật khẩu cho tài khoản khác: PATCH /users/:id/password
+  Future<void> changePassword(String id, String newPassword) async {
+    try {
+      final res = await _dioClient.dio.patch(
+        ApiEndpoints.changeUserPassword(id),
+        data: {'newPassword': newPassword, 'password': newPassword},
+      );
+      if (res.data != null && res.data is Map) {
+        ApiResult.unwrapMap(res);
+      }
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
   /// Khóa tài khoản (soft-delete): DELETE /users/:id -> isActive = false
   /// Tham chiếu: users.service.ts:146-152
   Future<void> deactivate(String id) async {

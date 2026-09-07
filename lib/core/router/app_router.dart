@@ -5,12 +5,14 @@ import '../constants/role_enum.dart';
 import '../constants/role_permissions.dart';
 import '../session/session_scope.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
+import '../../features/admin/screens/admin_shift_management_screen.dart';
 import '../../features/admin/screens/occupancy_detail_screen.dart';
 import '../../features/admin/screens/reports_screen.dart';
 import '../../features/admin/screens/room_approval_screen.dart';
 import '../../features/admin/screens/room_operations_screen.dart';
 import '../../features/admin/screens/room_type_management_screen.dart';
 import '../../features/admin/screens/service_catalog_screen.dart';
+import '../../features/admin/screens/shift_detail_screen.dart';
 import '../../features/admin/screens/staff_and_services_screen.dart';
 import '../../features/admin/screens/today_check_ins_screen.dart';
 import '../../features/admin/screens/today_check_outs_screen.dart';
@@ -148,6 +150,8 @@ const Map<String, Set<UserRole>> _sharedRouteAccess = {
   '/admin/services': {UserRole.admin},
   '/admin/room-types': {UserRole.admin},
   '/admin/users': {UserRole.admin},
+  '/admin/shifts': {UserRole.admin},
+  '/admin/shifts/:id': _staffRoles,
   '/receptionist/today': _staffRoles,
   '/receptionist/approval': _staffRoles,
   '/receptionist/invoices': _staffRoles,
@@ -685,6 +689,22 @@ class AppRouter {
           pageBuilder: (context, state) => AppPage.slide(
             key: state.pageKey,
             child: const PaymentRequestsScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/admin/shifts',
+          pageBuilder: (context, state) => AppPage.slide(
+            key: state.pageKey,
+            child: const AdminShiftManagementScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/admin/shifts/:id',
+          pageBuilder: (context, state) => AppPage.slide(
+            key: state.pageKey,
+            child: ShiftDetailScreen(
+              shiftId: state.pathParameters['id']!,
+            ),
           ),
         ),
       ],

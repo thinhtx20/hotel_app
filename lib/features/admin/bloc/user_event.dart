@@ -115,3 +115,15 @@ class UserCreateRequested extends UserEvent {
   @override
   List<Object?> get props => [email, password, fullName, role, phone];
 }
+class UserPasswordChangeRequested extends UserEvent {
+  final String userId;
+  final String newPassword;
+
+  const UserPasswordChangeRequested({
+    required this.userId,
+    required this.newPassword,
+  });
+
+  @override
+  List<Object?> get props => [userId, newPassword];
+}

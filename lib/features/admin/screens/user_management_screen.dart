@@ -52,6 +52,32 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   StreamSubscription? _userSseSubscription;
   StreamSubscription? _connectionSub;
 
+  int? _cachedTotalUsers;
+  final Map<UserRole, int> _cachedRoleCounts = {};
+
+  void _updateCountCache(UserState state) {
+    if (state.selectedRoleFilter == null && state.users.isNotEmpty) {
+      _cachedTotalUsers = state.users.length;
+      for (final r in UserRole.values) {
+        _cachedRoleCounts[r] = state.users.where((u) => u.role == r).length;
+      }
+    } else if (state.selectedRoleFilter != null) {
+      _cachedRoleCounts[state.selectedRoleFilter!] = state.users.length;
+    }
+  }
+
+  String _getRoleShortLabel(UserRole? role) {
+    if (role == null) return 'Tất cả';
+    switch (role) {
+      case UserRole.customer:
+        return 'Khách hàng';
+      case UserRole.receptionist:
+        return 'Lễ tân';
+      case UserRole.admin:
+        return 'Quản trị viên';
+    }
+  }
+
   UserModel? get _currentUser {
     try {
       final state = context.read<AuthBloc>().state;
@@ -228,6 +254,220 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
     if (confirmed == true && selectedRole != user.role) {
       _userBloc.add(UserRoleUpdateRequested(userId: user.id, role: selectedRole));
+    }
+  }
+
+  Future<void> _changeUserPassword(UserModel user) async {
+    final newPassCtrl = TextEditingController();
+    final confirmPassCtrl = TextEditingController();
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+    String? validationError;
+
+    final confirmed = await showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final palette = context.palette;
+          return AlertDialog(
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD97706).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(AppRadius.button),
+                  ),
+                  child: const Icon(
+                    Icons.key_rounded,
+                    color: Color(0xFFD97706),
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Đổi mật khẩu',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: palette.surfaceMuted,
+                      borderRadius: BorderRadius.circular(AppRadius.field),
+                      border: Border.all(color: palette.border),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundColor: _getRoleColor(user.role).withValues(alpha: 0.15),
+                          child: Text(
+                            user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'U',
+                            style: TextStyle(
+                              color: _getRoleColor(user.role),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                user.fullName.isNotEmpty ? user.fullName : 'Chưa đặt tên',
+                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                user.email,
+                                style: TextStyle(color: palette.inkMuted, fontSize: 12),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  TextField(
+                    controller: newPassCtrl,
+                    obscureText: obscureNew,
+                    decoration: InputDecoration(
+                      labelText: 'Mật khẩu mới *',
+                      hintText: 'Tối thiểu 6 ký tự',
+                      prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          size: 20,
+                        ),
+                        onPressed: () => setDialogState(() => obscureNew = !obscureNew),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    controller: confirmPassCtrl,
+                    obscureText: obscureConfirm,
+                    decoration: InputDecoration(
+                      labelText: 'Xác nhận mật khẩu mới *',
+                      hintText: 'Nhập lại mật khẩu mới',
+                      prefixIcon: const Icon(Icons.lock_reset_rounded, size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          size: 20,
+                        ),
+                        onPressed: () => setDialogState(() => obscureConfirm = !obscureConfirm),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      icon: const Icon(Icons.auto_fix_high_rounded, size: 16),
+                      label: const Text('Mặc định (Hotel@123)', style: TextStyle(fontSize: 12)),
+                      onPressed: () {
+                        const randomPass = 'Hotel@123';
+                        newPassCtrl.text = randomPass;
+                        confirmPassCtrl.text = randomPass;
+                        setDialogState(() {
+                          obscureNew = false;
+                          obscureConfirm = false;
+                          validationError = null;
+                        });
+                      },
+                    ),
+                  ),
+                  if (validationError != null) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: palette.error.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppRadius.field),
+                        border: Border.all(color: palette.error.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline_rounded, color: palette.error, size: 16),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              validationError!,
+                              style: TextStyle(color: palette.error, fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final newPass = newPassCtrl.text.trim();
+                  final confirmPass = confirmPassCtrl.text.trim();
+                  if (newPass.isEmpty) {
+                    setDialogState(() => validationError = 'Vui lòng nhập mật khẩu mới');
+                    return;
+                  }
+                  if (newPass.length < 6) {
+                    setDialogState(() => validationError = 'Mật khẩu phải có ít nhất 6 ký tự');
+                    return;
+                  }
+                  if (newPass != confirmPass) {
+                    setDialogState(() => validationError = 'Mật khẩu xác nhận không khớp');
+                    return;
+                  }
+                  Navigator.pop(ctx, newPass);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD97706),
+                ),
+                child: const Text(
+                  'Lưu mật khẩu',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    newPassCtrl.dispose();
+    confirmPassCtrl.dispose();
+
+    if (confirmed != null && confirmed.isNotEmpty) {
+      _userBloc.add(UserPasswordChangeRequested(
+        userId: user.id,
+        newPassword: confirmed,
+      ));
     }
   }
 
@@ -563,7 +803,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         },
         builder: (context, state) {
           final palette = context.palette;
+          _updateCountCache(state);
           final filtered = state.filteredUsers;
+          final totalCount = _cachedTotalUsers ?? state.users.length;
 
           return Scaffold(
             backgroundColor: palette.canvas,
@@ -676,53 +918,73 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       ),
                       if (context.currentRole.canManageUsers) ...[
                         const SizedBox(height: AppSpacing.sm),
+                        // Hàng 1: Bộ lọc Vai trò (Role Filter)
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
                           child: Row(
                             children: [
-                              _buildRoleFilterChip(
-                                label: 'Tất cả vai trò (${state.users.length})',
-                                role: null,
-                                selectedRole: state.selectedRoleFilter,
+                              _buildRolePill(
+                                label: 'Tất cả',
+                                count: totalCount,
+                                isSelected: state.selectedRoleFilter == null,
+                                onTap: () => _userBloc.add(const UserRoleFilterChanged(null)),
+                                palette: palette,
                               ),
                               const SizedBox(width: AppSpacing.xs),
                               ...UserRole.values.map((r) {
-                                final count = state.users.where((u) => u.role == r).length;
+                                final count = state.selectedRoleFilter == r
+                                    ? state.users.length
+                                    : (_cachedRoleCounts[r] ?? state.users.where((u) => u.role == r).length);
                                 return Padding(
                                   padding: const EdgeInsets.only(right: AppSpacing.xs),
-                                  child: _buildRoleFilterChip(
-                                    label: '${r.label} ($count)',
-                                    role: r,
-                                    selectedRole: state.selectedRoleFilter,
+                                  child: _buildRolePill(
+                                    label: _getRoleShortLabel(r),
+                                    count: count,
+                                    isSelected: state.selectedRoleFilter == r,
+                                    onTap: () => _userBloc.add(UserRoleFilterChanged(r)),
+                                    palette: palette,
                                   ),
                                 );
                               }),
                             ],
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.xs),
+                        const SizedBox(height: AppSpacing.xs + 2),
+                        // Hàng 2: Bộ lọc Trạng thái (Status Filter)
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
                           child: Row(
                             children: [
-                              _buildStatusFilterChip(
-                                label: 'Tất cả trạng thái (${state.users.length})',
-                                status: null,
-                                selectedStatus: state.selectedStatusFilter,
+                              _buildStatusPill(
+                                label: 'Tất cả',
+                                count: state.users.length,
+                                isSelected: state.selectedStatusFilter == null,
+                                onTap: () => _userBloc.add(const UserStatusFilterChanged(null)),
+                                palette: palette,
                               ),
                               const SizedBox(width: AppSpacing.xs),
-                              _buildStatusFilterChip(
-                                label: 'Hoạt động (${state.users.where((u) => u.isActive).length})',
-                                status: true,
-                                selectedStatus: state.selectedStatusFilter,
-                                color: palette.success,
+                              _buildStatusPill(
+                                label: 'Hoạt động',
+                                count: state.users.where((u) => u.isActive).length,
+                                isSelected: state.selectedStatusFilter == true,
+                                onTap: () => _userBloc.add(const UserStatusFilterChanged(true)),
+                                palette: palette,
+                                dotColor: palette.success,
+                                activeBgColor: palette.successSurface,
+                                activeTextColor: palette.successInk,
                               ),
                               const SizedBox(width: AppSpacing.xs),
-                              _buildStatusFilterChip(
-                                label: 'Đã khóa (${state.users.where((u) => !u.isActive).length})',
-                                status: false,
-                                selectedStatus: state.selectedStatusFilter,
-                                color: palette.error,
+                              _buildStatusPill(
+                                label: 'Đã khóa',
+                                count: state.users.where((u) => !u.isActive).length,
+                                isSelected: state.selectedStatusFilter == false,
+                                onTap: () => _userBloc.add(const UserStatusFilterChanged(false)),
+                                palette: palette,
+                                dotColor: palette.error,
+                                activeBgColor: palette.errorSurface,
+                                activeTextColor: palette.errorInk,
                               ),
                             ],
                           ),
@@ -787,63 +1049,152 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  Widget _buildRoleFilterChip({
+  Widget _buildRolePill({
     required String label,
-    required UserRole? role,
-    required UserRole? selectedRole,
+    required int count,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required AppPalette palette,
   }) {
-    final palette = context.palette;
-    final isSelected = selectedRole == role;
-
-    return FilterChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) {
-        _userBloc.add(UserRoleFilterChanged(role));
-      },
-      backgroundColor: palette.surfaceMuted,
-      selectedColor: palette.accent.withValues(alpha: 0.15),
-      labelStyle: TextStyle(
-        fontSize: 12,
-        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-        color: isSelected ? palette.accent : palette.ink,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected ? palette.accent : palette.surfaceMuted,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            border: Border.all(
+              color: isSelected ? palette.accent : palette.border,
+              width: isSelected ? 1.2 : 1.0,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: palette.accent.withValues(alpha: 0.25),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? palette.onAccent : palette.ink,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? palette.onAccent.withValues(alpha: 0.22)
+                      : palette.surface,
+                  borderRadius: BorderRadius.circular(10),
+                  border: isSelected
+                      ? null
+                      : Border.all(color: palette.border.withValues(alpha: 0.6), width: 0.8),
+                ),
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected ? palette.onAccent : palette.inkMuted,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      side: BorderSide(
-        color: isSelected ? palette.accent : palette.border,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.pill)),
     );
   }
 
-  Widget _buildStatusFilterChip({
+  Widget _buildStatusPill({
     required String label,
-    required bool? status,
-    required bool? selectedStatus,
-    Color? color,
+    required int count,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required AppPalette palette,
+    Color? dotColor,
+    Color? activeBgColor,
+    Color? activeTextColor,
   }) {
-    final palette = context.palette;
-    final isSelected = selectedStatus == status;
-    final effectiveColor = color ?? palette.accent;
+    final effectiveActiveBg = activeBgColor ?? palette.accent.withValues(alpha: 0.12);
+    final effectiveActiveText = activeTextColor ?? palette.accent;
 
-    return FilterChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) {
-        _userBloc.add(UserStatusFilterChanged(status));
-      },
-      backgroundColor: palette.surfaceMuted,
-      selectedColor: effectiveColor.withValues(alpha: 0.15),
-      labelStyle: TextStyle(
-        fontSize: 12,
-        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-        color: isSelected ? effectiveColor : palette.ink,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: isSelected ? effectiveActiveBg : palette.surface,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            border: Border.all(
+              color: isSelected
+                  ? effectiveActiveText.withValues(alpha: 0.45)
+                  : palette.border,
+              width: isSelected ? 1.2 : 1.0,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (dotColor != null) ...[
+                Container(
+                  width: 6.5,
+                  height: 6.5,
+                  decoration: BoxDecoration(
+                    color: dotColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 5),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? effectiveActiveText : palette.inkMuted,
+                ),
+              ),
+              const SizedBox(width: 5),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? effectiveActiveText.withValues(alpha: 0.12)
+                      : palette.surfaceMuted,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected ? effectiveActiveText : palette.inkFaint,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      side: BorderSide(
-        color: isSelected ? effectiveColor : palette.border,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.pill)),
     );
   }
 
@@ -1017,6 +1368,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                               color: palette.accent,
                               tooltip: 'Phân quyền vai trò',
                               onPressed: () => _changeUserRole(user),
+                            ),
+                          if (!isSelf)
+                            IconButton(
+                              icon: const Icon(Icons.key_rounded, size: 20),
+                              color: const Color(0xFFD97706),
+                              tooltip: 'Đổi mật khẩu tài khoản',
+                              onPressed: () => _changeUserPassword(user),
                             ),
                           IconButton(
                             icon: Icon(
