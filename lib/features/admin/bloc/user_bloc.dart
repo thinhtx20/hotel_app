@@ -9,10 +9,18 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   final UserRepository userRepository;
   UserRepository get _userRepository => userRepository;
 
+  /// Số thứ tự của request danh sách mới nhất.
+  ///
+  /// Các handler tải danh sách chạy song song, nên response của lần lọc trước
+  /// có thể về sau response mới và ghi đè lên đúng dữ liệu vừa tải. Mỗi lần gọi
+  /// API nhận một số thứ tự; khi trả về mà số đã cũ thì bỏ qua.
+  int _fetchRequestId = 0;
+
   UserBloc({required this.userRepository})
       : super(const UserState()) {
     on<UserFetchRequested>(_onFetchRequested);
-    on<UserRefreshRequested>(_onRefreshRequested);
+    on<UserScopeInitialized>(_onScopeInitialized);
+    on<UserResetRequested>(_onResetRequested);
     on<UserRoleFilterChanged>(_onRoleFilterChanged);
     on<UserStatusFilterChanged>(_onStatusFilterChanged);
     on<UserSearchChanged>(_onSearchChanged);
@@ -25,43 +33,100 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<UserPasswordChangeRequested>(_onPasswordChangeRequested);
   }
 
-  Future<void> _onFetchRequested(
-    UserFetchRequested event,
-    Emitter<UserState> emit,
-  ) async {
-    if (!event.isSilent && state.users.isEmpty) {
+  /// Gọi `GET /users` cho đúng [role] và ghi kết quả vào state.
+  ///
+  /// Bỏ qua response của request đã cũ (xem [_fetchRequestId]) để dữ liệu trên
+  /// màn luôn khớp với lần gọi gần nhất.
+  Future<void> _fetchUsers(
+    Emitter<UserState> emit, {
+    required String? role,
+    required bool isSilent,
+  }) async {
+    final requestId = ++_fetchRequestId;
+
+    if (!isSilent) {
       emit(state.copyWith(
         status: UserStatus.loading,
-        errorMessage: null,
+        clearErrorMessage: true,
       ));
     }
 
     try {
-      final role = event.role ?? state.selectedRoleFilter?.value;
       final list = await _userRepository.fetchAll(role: role);
+      if (requestId != _fetchRequestId || emit.isDone) return;
 
       emit(state.copyWith(
         status: UserStatus.success,
         users: list,
-        errorMessage: null,
+        clearErrorMessage: true,
       ));
     } catch (e) {
+      if (requestId != _fetchRequestId || emit.isDone) return;
+
       final msg = e is ApiError ? e.message : 'Không thể tải danh sách người dùng';
       emit(state.copyWith(
         status: UserStatus.failure,
         errorMessage: msg,
+        clearActionMessage: true,
       ));
     }
   }
 
-  Future<void> _onRefreshRequested(
-    UserRefreshRequested event,
+  Future<void> _onFetchRequested(
+    UserFetchRequested event,
     Emitter<UserState> emit,
   ) async {
-    add(UserFetchRequested(
-      role: state.selectedRoleFilter?.value,
-      isSilent: true,
+    await _fetchUsers(
+      emit,
+      role: event.role ?? state.selectedRoleFilter?.value,
+      isSilent: event.isSilent,
+    );
+  }
+
+  /// Mở màn hình (hoặc đổi tài khoản đang đăng nhập): dựng lại state từ đầu
+  /// theo phạm vi của màn rồi mới tải danh sách, không giữ lại gì của phiên
+  /// trước.
+  Future<void> _onScopeInitialized(
+    UserScopeInitialized event,
+    Emitter<UserState> emit,
+  ) async {
+    emit(state.copyWith(
+      users: const [],
+      defaultRoleFilter: event.defaultRole,
+      clearDefaultRoleFilter: event.defaultRole == null,
+      selectedRoleFilter: event.defaultRole,
+      clearRoleFilter: event.defaultRole == null,
+      clearStatusFilter: true,
+      searchQuery: '',
+      processingIds: const {},
+      clearErrorMessage: true,
+      clearActionMessage: true,
     ));
+
+    await _fetchUsers(emit, role: event.defaultRole?.value, isSilent: false);
+  }
+
+  /// Đặt lại màn: bỏ mọi bộ lọc rồi gọi API danh sách gốc của màn.
+  ///
+  /// Cố ý dùng [UserState.defaultRoleFilter] chứ không dùng
+  /// [UserState.selectedRoleFilter] — lấy bộ lọc đang chọn đồng nghĩa với gọi
+  /// lại đúng request của lần lọc trước, tức là không đặt lại gì cả.
+  Future<void> _onResetRequested(
+    UserResetRequested event,
+    Emitter<UserState> emit,
+  ) async {
+    final defaultRole = state.defaultRoleFilter;
+
+    emit(state.copyWith(
+      selectedRoleFilter: defaultRole,
+      clearRoleFilter: defaultRole == null,
+      clearStatusFilter: true,
+      searchQuery: '',
+      clearErrorMessage: true,
+      clearActionMessage: true,
+    ));
+
+    await _fetchUsers(emit, role: defaultRole?.value, isSilent: false);
   }
 
   Future<void> _onRoleFilterChanged(
@@ -71,22 +136,9 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(state.copyWith(
       selectedRoleFilter: event.role,
       clearRoleFilter: event.role == null,
-      status: UserStatus.loading,
     ));
-    try {
-      final list = await _userRepository.fetchAll(role: event.role?.value);
-      emit(state.copyWith(
-        status: UserStatus.success,
-        users: list,
-        errorMessage: null,
-      ));
-    } catch (e) {
-      final msg = e is ApiError ? e.message : 'Không thể tải danh sách người dùng';
-      emit(state.copyWith(
-        status: UserStatus.failure,
-        errorMessage: msg,
-      ));
-    }
+
+    await _fetchUsers(emit, role: event.role?.value, isSilent: false);
   }
 
   void _onStatusFilterChanged(
@@ -179,7 +231,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     Emitter<UserState> emit,
   ) async {
     final nextProcessing = Set<String>.from(state.processingIds)..add(event.userId);
-    emit(state.copyWith(processingIds: nextProcessing));
+    emit(state.copyWith(
+      processingIds: nextProcessing,
+      clearErrorMessage: true,
+      clearActionMessage: true,
+    ));
 
     try {
       await _userRepository.deactivate(event.userId);
@@ -191,12 +247,14 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         users: list,
         processingIds: finishedProcessing,
         actionMessage: 'Đã vô hiệu hóa tài khoản (Soft-delete)',
+        clearErrorMessage: true,
       ));
     } catch (e) {
       final finishedProcessing = Set<String>.from(state.processingIds)..remove(event.userId);
       emit(state.copyWith(
         processingIds: finishedProcessing,
         errorMessage: e is ApiError ? e.message : 'Không thể khóa tài khoản',
+        clearActionMessage: true,
       ));
     }
   }
@@ -206,7 +264,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     Emitter<UserState> emit,
   ) async {
     final nextProcessing = Set<String>.from(state.processingIds)..add(event.userId);
-    emit(state.copyWith(processingIds: nextProcessing));
+    emit(state.copyWith(
+      processingIds: nextProcessing,
+      clearErrorMessage: true,
+      clearActionMessage: true,
+    ));
 
     try {
       final updated = await _userRepository.updateUser(
@@ -221,12 +283,14 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         users: list,
         processingIds: finishedProcessing,
         actionMessage: 'Đã cập nhật vai trò',
+        clearErrorMessage: true,
       ));
     } catch (e) {
       final finishedProcessing = Set<String>.from(state.processingIds)..remove(event.userId);
       emit(state.copyWith(
         processingIds: finishedProcessing,
         errorMessage: e is ApiError ? e.message : 'Không thể cập nhật quyền',
+        clearActionMessage: true,
       ));
     }
   }
@@ -236,7 +300,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     Emitter<UserState> emit,
   ) async {
     final nextProcessing = Set<String>.from(state.processingIds)..add(event.userId);
-    emit(state.copyWith(processingIds: nextProcessing));
+    emit(state.copyWith(
+      processingIds: nextProcessing,
+      clearErrorMessage: true,
+      clearActionMessage: true,
+    ));
 
     try {
       UserModel updated;
@@ -255,12 +323,14 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         users: list,
         processingIds: finishedProcessing,
         actionMessage: event.isActive ? 'Đã mở khóa tài khoản' : 'Đã khóa tài khoản',
+        clearErrorMessage: true,
       ));
     } catch (e) {
       final finishedProcessing = Set<String>.from(state.processingIds)..remove(event.userId);
       emit(state.copyWith(
         processingIds: finishedProcessing,
         errorMessage: e is ApiError ? e.message : 'Thao tác trạng thái thất bại',
+        clearActionMessage: true,
       ));
     }
   }
@@ -269,6 +339,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     UserCreateRequested event,
     Emitter<UserState> emit,
   ) async {
+    emit(state.copyWith(clearErrorMessage: true, clearActionMessage: true));
+
     try {
       final newUser = await _userRepository.createUser(
         email: event.email,
@@ -282,11 +354,13 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         emit(state.copyWith(
           users: list,
           actionMessage: 'Đã tạo thành công tài khoản cho ${newUser.fullName}',
+          clearErrorMessage: true,
         ));
       }
     } catch (e) {
       emit(state.copyWith(
         errorMessage: e is ApiError ? e.message : 'Lỗi tạo tài khoản: ${e.toString()}',
+        clearActionMessage: true,
       ));
     }
   }
@@ -295,7 +369,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     Emitter<UserState> emit,
   ) async {
     final nextProcessing = Set<String>.from(state.processingIds)..add(event.userId);
-    emit(state.copyWith(processingIds: nextProcessing));
+    emit(state.copyWith(
+      processingIds: nextProcessing,
+      clearErrorMessage: true,
+      clearActionMessage: true,
+    ));
 
     try {
       await _userRepository.changePassword(event.userId, event.newPassword);
@@ -305,12 +383,14 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       emit(state.copyWith(
         processingIds: finishedProcessing,
         actionMessage: 'Đã đổi mật khẩu cho tài khoản $name',
+        clearErrorMessage: true,
       ));
     } catch (e) {
       final finishedProcessing = Set<String>.from(state.processingIds)..remove(event.userId);
       emit(state.copyWith(
         processingIds: finishedProcessing,
         errorMessage: e is ApiError ? e.message : 'Không thể đổi mật khẩu tài khoản',
+        clearActionMessage: true,
       ));
     }
   }

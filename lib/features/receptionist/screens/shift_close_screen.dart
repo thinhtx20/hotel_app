@@ -7,6 +7,9 @@ import '../../../di/injection_container.dart';
 import '../../../features/auth/bloc/auth_bloc.dart';
 import '../../../features/auth/bloc/auth_state.dart';
 import '../../../shared/repositories/invoice_repository.dart';
+import '../../../shared/repositories/shift_repository.dart';
+import '../widgets/open_shift_sheet.dart';
+import '../widgets/close_shift_sheet.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
@@ -269,6 +272,68 @@ class _ShiftCloseScreenState extends State<ShiftCloseScreen> {
                         ],
                       ),
                       const SizedBox(height: AppSpacing.xxl),
+
+                                            // Nút Chốt Ca & Bàn Giao Két
+                      PressableScale(
+                        onTap: () async {
+                          final shiftRepo = sl.isRegistered<ShiftRepository>()
+                              ? sl<ShiftRepository>()
+                              : ShiftRepository();
+                          final currentShift = await shiftRepo.getCurrentShift();
+                          if (!context.mounted) return;
+                          if (currentShift != null) {
+                            await CloseShiftSheet.show(
+                              context: context,
+                              currentShift: currentShift,
+                              shiftRepository: shiftRepo,
+                              onShiftClosed: (_) {
+                                _fetchShiftSummary();
+                              },
+                            );
+                          } else {
+                            await OpenShiftSheet.show(
+                              context: context,
+                              shiftRepository: shiftRepo,
+                              onShiftOpened: (_) {
+                                _fetchShiftSummary();
+                              },
+                            );
+                          }
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
+                            ),
+                            borderRadius: BorderRadius.circular(AppRadius.button),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.lock_clock_outlined, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text(
+                                'Kiểm Đếm Két & Chốt Ca',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
 
                       // Nút In biên bản chốt ca
                       PressableScale(

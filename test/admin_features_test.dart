@@ -12,6 +12,12 @@ import 'package:hotel_app/shared/repositories/user_repository.dart';
 
 class MockAdminFeaturesDioClient implements DioClient {
   final List<String> requestedPaths = [];
+
+  /// Giá trị `role` của từng lần gọi `GET /users`, theo thứ tự — dùng để soi
+  /// xem thao tác đặt lại có thật sự gọi lại API danh sách gốc hay chỉ lặp lại
+  /// request của lần lọc trước.
+  final List<String?> userListRoleParams = [];
+
   @override
   late final Dio dio;
 
@@ -24,38 +30,45 @@ class MockAdminFeaturesDioClient implements DioClient {
 
             // GET /users
             if (options.path == ApiEndpoints.users && options.method == 'GET') {
+              final role = options.queryParameters['role'] as String?;
+              userListRoleParams.add(role);
+
+              const allUsers = [
+                {
+                  'id': 'user_1',
+                  'fullName': 'Nguyễn Văn Quản Trị',
+                  'email': 'admin@hotel.com',
+                  'role': 'ADMIN',
+                  'isActive': true,
+                  'phone': '0901234567',
+                },
+                {
+                  'id': 'user_2',
+                  'fullName': 'Trần Thị Lễ Tân',
+                  'email': 'reception@hotel.com',
+                  'role': 'RECEPTIONIST',
+                  'isActive': true,
+                  'phone': '0902345678',
+                },
+                {
+                  'id': 'user_3',
+                  'fullName': 'Lê Văn Khóa',
+                  'email': 'locked@hotel.com',
+                  'role': 'CUSTOMER',
+                  'isActive': false,
+                  'phone': '0903456789',
+                },
+              ];
+
               return handler.resolve(
                 Response(
                   requestOptions: options,
                   statusCode: 200,
                   data: {
                     'success': true,
-                    'data': [
-                      {
-                        'id': 'user_1',
-                        'fullName': 'Nguyễn Văn Quản Trị',
-                        'email': 'admin@hotel.com',
-                        'role': 'ADMIN',
-                        'isActive': true,
-                        'phone': '0901234567',
-                      },
-                      {
-                        'id': 'user_2',
-                        'fullName': 'Trần Thị Lễ Tân',
-                        'email': 'reception@hotel.com',
-                        'role': 'RECEPTIONIST',
-                        'isActive': true,
-                        'phone': '0902345678',
-                      },
-                      {
-                        'id': 'user_3',
-                        'fullName': 'Lê Văn Khóa',
-                        'email': 'locked@hotel.com',
-                        'role': 'CUSTOMER',
-                        'isActive': false,
-                        'phone': '0903456789',
-                      },
-                    ],
+                    'data': role == null
+                        ? allUsers
+                        : allUsers.where((u) => u['role'] == role).toList(),
                   },
                 ),
               );
@@ -229,6 +242,39 @@ void main() {
       expect(find.text('Nguyễn Văn Quản Trị'), findsOneWidget);
       expect(find.text('Trần Thị Lễ Tân'), findsOneWidget);
       expect(find.text('Lê Văn Khóa'), findsNothing);
+    });
+
+    testWidgets('Nút tải lại đặt lại bộ lọc và gọi lại API danh sách gốc', (tester) async {
+      final mockDio = MockAdminFeaturesDioClient();
+      final userRepo = UserRepository(dioClient: mockDio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UserManagementScreen(userRepository: userRepo),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(mockDio.userListRoleParams, [null]);
+
+      // Lọc theo vai trò Khách hàng + gõ từ khóa tìm kiếm.
+      await tester.tap(find.text('Khách hàng').first);
+      await tester.pumpAndSettle();
+      expect(mockDio.userListRoleParams.last, 'CUSTOMER');
+      expect(find.text('Nguyễn Văn Quản Trị'), findsNothing);
+
+      await tester.enterText(find.byType(TextField).first, 'Khóa');
+      await tester.pumpAndSettle();
+
+      // Bấm nút tải lại: phải gọi lại GET /users KHÔNG kèm role của lần lọc
+      // trước, và màn về đúng trạng thái gốc.
+      await tester.tap(find.byIcon(Icons.refresh_rounded));
+      await tester.pumpAndSettle();
+
+      expect(mockDio.userListRoleParams.last, isNull);
+      expect(find.text('Nguyễn Văn Quản Trị'), findsOneWidget);
+      expect(find.text('Trần Thị Lễ Tân'), findsOneWidget);
+      // Ô tìm kiếm đã được dọn sạch.
+      expect(find.text('Khóa'), findsNothing);
     });
 
     testWidgets('Mở dialog xác nhận khi bấm Khóa tài khoản và kích hoạt API', (tester) async {

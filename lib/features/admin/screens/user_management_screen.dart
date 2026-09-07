@@ -45,7 +45,15 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   late final UserBloc _userBloc;
   bool _shouldDisposeBloc = false;
 
-  bool _initializedRole = false;
+  /// Vai trò mặc định đã áp cho bloc. Khác `null` sau lần khởi tạo đầu tiên;
+  /// so lại mỗi lần dependency đổi để bắt được trường hợp đổi tài khoản khi màn
+  /// vẫn đang mở.
+  UserRole? _appliedDefaultRole;
+  bool _scopeInitialized = false;
+
+  /// Thông báo gần nhất đã hiện thành snackbar — tránh bật lại đúng thông báo
+  /// đó ở mọi lần state thay đổi sau (gõ tìm kiếm, đổi bộ lọc…).
+  String? _lastShownMessage;
 
   final TextEditingController _searchController = TextEditingController();
   SseClient? _userSseClient;
@@ -55,7 +63,15 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   int? _cachedTotalUsers;
   final Map<UserRole, int> _cachedRoleCounts = {};
 
+  /// Bộ lọc vai trò gốc của màn: Admin xem tất cả, Lễ tân chỉ xem khách hàng
+  /// (§3.2, §4.2).
+  UserRole? get _defaultRoleFilter =>
+      context.currentRole.canManageUsers ? null : UserRole.customer;
+
   void _updateCountCache(UserState state) {
+    // Trong lúc tải, `state.users` vẫn là danh sách của bộ lọc cũ — ghi vào
+    // cache lúc này sẽ gắn số đếm cũ cho pill mới.
+    if (!state.isSuccess) return;
     if (state.selectedRoleFilter == null && state.users.isNotEmpty) {
       _cachedTotalUsers = state.users.length;
       for (final r in UserRole.values) {
@@ -90,29 +106,76 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   void initState() {
     super.initState();
     if (widget.userBloc != null) {
+      // Bloc do bên ngoài truyền vào thì bên ngoài chịu trách nhiệm đóng.
       _userBloc = widget.userBloc!;
-    } else if (widget.userRepository != null) {
-      _userBloc = UserBloc(userRepository: _userRepo);
-      _shouldDisposeBloc = true;
-    } else if (sl.isRegistered<UserBloc>()) {
+    } else if (sl.isRegistered<UserBloc>() && widget.userRepository == null) {
+      // `sl` đăng ký UserBloc dạng factory: mỗi màn nhận một bloc riêng nên
+      // phải tự đóng, nếu không bloc cũ vẫn sống kèm dữ liệu của lần mở trước.
       _userBloc = sl<UserBloc>();
+      _shouldDisposeBloc = true;
     } else {
       _userBloc = UserBloc(userRepository: _userRepo);
       _shouldDisposeBloc = true;
     }
-    _userBloc.add(const UserFetchRequested());
+    // Danh sách được tải trong didChangeDependencies — nơi đọc được vai trò
+    // đang đăng nhập để biết phạm vi dữ liệu của màn.
     _connectRealtimeStream();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_initializedRole) {
-      _initializedRole = true;
-      if (!context.currentRole.canManageUsers) {
-        // Lễ tân chỉ xem danh sách khách hàng (§3.2, §4.2)
-        _userBloc.add(const UserRoleFilterChanged(UserRole.customer));
+    // `currentRole` lắng nghe AuthBloc nên hàm này chạy lại khi đổi tài khoản:
+    // lúc đó phải dựng lại màn theo phạm vi của tài khoản mới thay vì giữ dữ
+    // liệu và bộ lọc của tài khoản cũ.
+    final defaultRole = _defaultRoleFilter;
+    if (!_scopeInitialized || defaultRole != _appliedDefaultRole) {
+      _scopeInitialized = true;
+      _appliedDefaultRole = defaultRole;
+      _clearLocalScreenState();
+      _userBloc.add(UserScopeInitialized(defaultRole: defaultRole));
+    }
+  }
+
+  /// Dọn phần trạng thái nằm ngoài bloc (ô tìm kiếm, số đếm đã cache).
+  void _clearLocalScreenState() {
+    _searchController.clear();
+    _cachedTotalUsers = null;
+    _cachedRoleCounts.clear();
+  }
+
+  /// Đặt lại toàn bộ màn về trạng thái gốc rồi tải lại danh sách mặc định.
+  void _resetScreen() {
+    _clearLocalScreenState();
+    _userBloc.add(const UserResetRequested());
+  }
+
+  /// Kéo-để-làm-mới: đặt lại màn và giữ vòng xoay đến khi request xong.
+  ///
+  /// Phải lắng nghe trước khi bắn sự kiện, vì bước đặt lại bộ lọc phát ra một
+  /// state chưa loading — chờ sau đó sẽ bắt nhầm chính state này và tắt vòng
+  /// xoay ngay lập tức.
+  Future<void> _handlePullToRefresh() async {
+    final completer = Completer<void>();
+    var sawLoading = false;
+
+    final sub = _userBloc.stream.listen((state) {
+      if (state.isLoading) {
+        sawLoading = true;
+      } else if (sawLoading && !completer.isCompleted) {
+        completer.complete();
       }
+    });
+
+    _resetScreen();
+
+    try {
+      await completer.future.timeout(
+        const Duration(seconds: 20),
+        onTimeout: () {},
+      );
+    } finally {
+      await sub.cancel();
     }
   }
 
@@ -263,11 +326,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     bool obscureNew = true;
     bool obscureConfirm = true;
     String? validationError;
+    ModalRoute<String>? dialogRoute;
 
     final confirmed = await showDialog<String>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
+          dialogRoute ??= ModalRoute.of<String>(ctx);
           final palette = context.palette;
           return AlertDialog(
             title: Row(
@@ -460,8 +525,21 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       ),
     );
 
-    newPassCtrl.dispose();
-    confirmPassCtrl.dispose();
+    // showDialog hoàn tất ngay khi Navigator.pop, nhưng dialog vẫn được layout
+    // suốt animation đóng. Hủy controller ngay lúc này sẽ ném
+    // "A TextEditingController was used after being disposed", nên chỉ hủy sau
+    // khi route đã rời khỏi overlay.
+    void disposeControllers() {
+      newPassCtrl.dispose();
+      confirmPassCtrl.dispose();
+    }
+
+    final route = dialogRoute;
+    if (route == null) {
+      disposeControllers();
+    } else {
+      route.completed.whenComplete(disposeControllers);
+    }
 
     if (confirmed != null && confirmed.isNotEmpty) {
       _userBloc.add(UserPasswordChangeRequested(
@@ -787,6 +865,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       value: _userBloc,
       child: BlocConsumer<UserBloc, UserState>(
         listener: (context, state) {
+          // Bloc xóa thông báo mỗi khi bắt đầu một thao tác mới, nên `null` ở
+          // đây nghĩa là "chưa có gì để báo" — mở khóa cho lần hiện kế tiếp.
+          final message = state.errorMessage ?? state.actionMessage;
+          if (message == null) {
+            _lastShownMessage = null;
+            return;
+          }
+          if (message == _lastShownMessage) return;
+          _lastShownMessage = message;
+
           if (state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -794,7 +882,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 backgroundColor: context.palette.error,
               ),
             );
-          } else if (state.actionMessage != null) {
+          } else {
             AppNotification.showSuccess(
               context,
               state.actionMessage!,
@@ -880,7 +968,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   ),
                 IconButton(
                   icon: Icon(Icons.refresh_rounded, color: palette.ink),
-                  onPressed: () => _userBloc.add(const UserFetchRequested()),
+                  tooltip: 'Tải lại & bỏ mọi bộ lọc',
+                  onPressed: () => _resetScreen(),
                 ),
               ],
             ),
@@ -993,21 +1082,30 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     ],
                   ),
                 ),
-                Divider(height: 1, color: palette.divider),
+                // Lần tải đầu chiếm cả màn bằng vòng xoay; các lần tải lại sau
+                // giữ nguyên danh sách và chỉ báo bằng thanh mảnh này.
+                state.isLoading && state.users.isNotEmpty
+                    ? SizedBox(
+                        height: 2,
+                        child: LinearProgressIndicator(
+                          minHeight: 2,
+                          color: palette.accent,
+                          backgroundColor: palette.divider,
+                        ),
+                      )
+                    : Divider(height: 1, color: palette.divider),
                 Expanded(
                   child: RefreshIndicator(
                     color: palette.accent,
-                    onRefresh: () async {
-                      _userBloc.add(const UserRefreshRequested());
-                    },
-                    child: state.isLoading
+                    onRefresh: _handlePullToRefresh,
+                    child: state.isLoading && state.users.isEmpty
                         ? const Center(child: CircularProgressIndicator())
                         : state.errorMessage != null && state.users.isEmpty
                             ? Padding(
                                 padding: const EdgeInsets.all(AppSpacing.xxxl),
                                 child: AppErrorView(
                                   error: state.errorMessage!,
-                                  onRetry: () => _userBloc.add(const UserFetchRequested()),
+                                  onRetry: () => _resetScreen(),
                                 ),
                               )
                             : filtered.isEmpty
@@ -1017,18 +1115,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                       description: state.searchQuery.isNotEmpty
                                           ? 'Không có kết quả nào khớp với từ khóa "${state.searchQuery}".'
                                           : 'Hiện chưa có tài khoản nào phù hợp bộ lọc.',
-                                      actionText: (state.searchQuery.isNotEmpty || state.selectedStatusFilter != null)
-                                          ? 'Xóa bộ lọc tìm kiếm'
+                                      // Cùng một hành động cho cả hai nhãn: bỏ
+                                      // hết bộ lọc (kể cả lọc vai trò) rồi tải
+                                      // lại danh sách gốc của màn.
+                                      actionText: state.hasActiveFilters
+                                          ? 'Xóa bộ lọc & tải lại'
                                           : 'Tải lại',
-                                      onAction: () {
-                                        if (state.searchQuery.isNotEmpty || state.selectedStatusFilter != null) {
-                                          _searchController.clear();
-                                          _userBloc.add(const UserSearchChanged(''));
-                                          _userBloc.add(const UserStatusFilterChanged(null));
-                                        } else {
-                                          _userBloc.add(const UserFetchRequested());
-                                        }
-                                      },
+                                      onAction: () => _resetScreen(),
                                     ),
                                   )
                                 : ListView.separated(
@@ -1337,50 +1430,57 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: roleColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
-                        border: Border.all(color: roleColor.withValues(alpha: 0.3)),
-                      ),
-                      child: Text(
-                        user.role.label,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: roleColor,
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: roleColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                          border: Border.all(color: roleColor.withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          user.role.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: roleColor,
+                          ),
                         ),
                       ),
                     ),
                     if (isProcessing)
-                      const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                       )
                     else if (context.currentRole.canManageUsers)
                       Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           if (!isSelf)
-                            IconButton(
-                              icon: const Icon(Icons.manage_accounts_outlined, size: 20),
+                            _buildCardAction(
+                              icon: Icons.manage_accounts_outlined,
                               color: palette.accent,
                               tooltip: 'Phân quyền vai trò',
                               onPressed: () => _changeUserRole(user),
                             ),
                           if (!isSelf)
-                            IconButton(
-                              icon: const Icon(Icons.key_rounded, size: 20),
+                            _buildCardAction(
+                              icon: Icons.key_rounded,
                               color: const Color(0xFFD97706),
                               tooltip: 'Đổi mật khẩu tài khoản',
                               onPressed: () => _changeUserPassword(user),
                             ),
-                          IconButton(
-                            icon: Icon(
-                              user.isActive ? Icons.lock_outline_rounded : Icons.lock_open_rounded,
-                              size: 20,
-                            ),
+                          _buildCardAction(
+                            icon: user.isActive
+                                ? Icons.lock_outline_rounded
+                                : Icons.lock_open_rounded,
                             color: isSelf
                                 ? palette.inkFaint
                                 : (user.isActive ? palette.error : palette.success),
@@ -1390,8 +1490,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             onPressed: () => _toggleUserActiveStatus(user),
                           ),
                           if (!isSelf)
-                            IconButton(
-                              icon: Icon(Icons.delete_outline_rounded, size: 20, color: palette.inkMuted),
+                            _buildCardAction(
+                              icon: Icons.delete_outline_rounded,
+                              color: palette.inkMuted,
                               tooltip: 'Xóa tài khoản (Soft-delete)',
                               onPressed: () => _softDeleteUser(user),
                             ),
@@ -1404,6 +1505,25 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Nút hành động gọn trên thẻ người dùng: thu nhỏ vùng chạm mặc định (48px)
+  /// để 4 nút vẫn nằm vừa một hàng cùng badge vai trò trên màn hình hẹp.
+  Widget _buildCardAction({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onPressed,
+  }) {
+    return IconButton(
+      icon: Icon(icon, size: 20),
+      color: color,
+      tooltip: tooltip,
+      onPressed: onPressed,
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints.tightFor(width: 36, height: 36),
     );
   }
 }

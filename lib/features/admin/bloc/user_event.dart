@@ -19,8 +19,28 @@ class UserFetchRequested extends UserEvent {
   List<Object?> get props => [role, isSilent];
 }
 
-class UserRefreshRequested extends UserEvent {
-  const UserRefreshRequested();
+/// Khai báo phạm vi dữ liệu của màn hình đang mở rồi tải danh sách lần đầu.
+///
+/// [defaultRole] là bộ lọc vai trò gốc của màn: Admin xem tất cả (`null`), Lễ
+/// tân chỉ được xem khách hàng (`UserRole.customer`). Gộp "đặt bộ lọc" và "tải
+/// danh sách" vào một sự kiện để màn hình không bắn hai request song song —
+/// trước đây request không lọc về sau sẽ ghi đè kết quả đã lọc.
+class UserScopeInitialized extends UserEvent {
+  final UserRole? defaultRole;
+
+  const UserScopeInitialized({this.defaultRole});
+
+  @override
+  List<Object?> get props => [defaultRole];
+}
+
+/// Đặt lại toàn bộ dữ liệu của màn: bỏ từ khóa tìm kiếm, bỏ lọc trạng thái,
+/// đưa lọc vai trò về mặc định của màn rồi gọi lại API danh sách gốc.
+///
+/// Khác [UserFetchRequested] ở chỗ **không** phát lại request của lần lọc
+/// trước — đó chính là lỗi "reset nhưng vẫn ra dữ liệu cũ".
+class UserResetRequested extends UserEvent {
+  const UserResetRequested();
 }
 
 class UserRoleFilterChanged extends UserEvent {

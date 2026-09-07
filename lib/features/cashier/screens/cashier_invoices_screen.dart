@@ -19,7 +19,9 @@ import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/skeletons/invoice_row_skeleton.dart';
 import '../../../shared/widgets/sticky_header.dart';
 import '../../receptionist/screens/payment_requests_screen.dart';
-import '../../receptionist/screens/shift_close_screen.dart';
+import '../../../shared/repositories/shift_repository.dart';
+import '../../receptionist/widgets/open_shift_sheet.dart';
+import '../../receptionist/widgets/close_shift_sheet.dart';
 import '../widgets/invoice_card.dart';
 import '../widgets/invoice_detail_sheet.dart';
 import '../widgets/invoice_filter_bar.dart';
@@ -162,6 +164,39 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
         return invoices.length;
       default:
         return 0;
+    }
+  }
+
+  Future<void> _handleShiftAction() async {
+    try {
+      final shiftRepo = sl.isRegistered<ShiftRepository>()
+          ? sl<ShiftRepository>()
+          : ShiftRepository();
+      final currentShift = await shiftRepo.getCurrentShift();
+      if (!mounted) return;
+
+      if (currentShift == null) {
+        await OpenShiftSheet.show(
+          context: context,
+          shiftRepository: shiftRepo,
+          onShiftOpened: (_) {
+            if (mounted) setState(() {});
+          },
+        );
+      } else {
+        await CloseShiftSheet.show(
+          context: context,
+          currentShift: currentShift,
+          shiftRepository: shiftRepo,
+          onShiftClosed: (_) {
+            if (mounted) setState(() {});
+          },
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        AppNotification.showError(context, e, title: 'Thao tác ca trực thất bại');
+      }
     }
   }
 
@@ -1083,11 +1118,7 @@ class _CashierInvoicesScreenState extends State<CashierInvoicesScreen> {
                               if (context.currentRole.canCloseShift) ...[
                                 _buildGlassCircleBtn(
                                   icon: Icons.account_balance_wallet_outlined,
-                                  onTap: () => Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => const ShiftCloseScreen(),
-                                    ),
-                                  ),
+                                  onTap: _handleShiftAction,
                                 ),
                                 const SizedBox(width: AppSpacing.sm),
                               ],

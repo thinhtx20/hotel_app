@@ -9,6 +9,7 @@ import 'di/injection_container.dart' as di;
 import 'features/auth/bloc/auth_bloc.dart';
 import 'features/auth/bloc/auth_event.dart';
 import 'shared/widgets/app_error_display.dart';
+import 'shared/widgets/keyboard_dismisser.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +61,10 @@ class HotelApp extends StatelessWidget {
           themeMode: themeMode,
           scaffoldMessengerKey: AppNotification.messengerKey,
           routerConfig: router,
+          // Chạm ra ngoài ô nhập liệu (hoặc cuộn danh sách) là ẩn bàn phím —
+          // áp dụng cho mọi màn hình, dialog và bottom sheet của app.
+          builder: (context, child) =>
+              KeyboardDismisser(child: child ?? const SizedBox.shrink()),
         );
       },
     );

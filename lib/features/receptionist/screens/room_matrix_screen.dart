@@ -20,6 +20,7 @@ import '../widgets/check_in_confirm_dialog.dart';
 import '../widgets/check_out_sheet.dart';
 import '../widgets/room_stay_actions.dart';
 import '../widgets/walk_in_check_in_modal.dart';
+import '../widgets/receptionist_shift_banner.dart';
 import '../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_error_display.dart';
@@ -66,6 +67,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
   bool _isLoading = true;
   String _lastUpdatedTime = '09:42';
   final Set<String> _updatingRoomIds = {};
+  final GlobalKey<ReceptionistShiftBannerState> _shiftBannerKey = GlobalKey<ReceptionistShiftBannerState>();
 
   /// Chip KPI ca trực đang được chọn để lọc sơ đồ phòng (null = xem tất cả).
   ShiftKpiFilter? _activeFilter;
@@ -103,6 +105,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
 
     try {
       await _roomRepo.fetchRooms(forceRefresh: true);
+      _shiftBannerKey.currentState?.reload(isSilent: true);
       int todayIns = 0;
       try {
         final bList = await _bookingRepo.fetchBookings(

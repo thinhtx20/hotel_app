@@ -9,6 +9,11 @@ import 'package:hotel_app/shared/repositories/user_repository.dart';
 class _MockUserRepository extends UserRepository {
   List<UserModel> users;
   String? lastFetchedRole;
+  final List<String?> fetchedRoles = [];
+
+  /// Độ trễ giả lập cho từng lời gọi — dùng để dựng cảnh response của lần lọc
+  /// trước về sau response mới.
+  Duration Function(String? role)? fetchDelayFor;
 
   _MockUserRepository(this.users);
 
@@ -20,6 +25,11 @@ class _MockUserRepository extends UserRepository {
     int? limit,
   }) async {
     lastFetchedRole = role;
+    fetchedRoles.add(role);
+
+    final delay = fetchDelayFor?.call(role);
+    if (delay != null) await Future.delayed(delay);
+
     if (role != null && role.isNotEmpty) {
       return users.where((u) => u.role.value == role).toList();
     }
@@ -242,6 +252,96 @@ void main() {
       expect(mockRepo.lastChangedPasswordUserId, 'u-2');
       expect(mockRepo.lastChangedPasswordValue, 'NewPassword@123');
       expect(state.processingIds.contains('u-2'), isFalse);
+    });
+
+    test('UserScopeInitialized của Lễ tân chỉ gọi API một lần với role=CUSTOMER',
+        () async {
+      userBloc.add(const UserScopeInitialized(defaultRole: UserRole.customer));
+
+      final state = await userBloc.stream
+          .firstWhere((s) => s.status == UserStatus.success);
+
+      expect(mockRepo.fetchedRoles, ['CUSTOMER']);
+      expect(state.defaultRoleFilter, UserRole.customer);
+      expect(state.selectedRoleFilter, UserRole.customer);
+      expect(state.users.every((u) => u.role == UserRole.customer), isTrue);
+    });
+
+    test('UserResetRequested gọi lại API gốc chứ không lặp lại request đã lọc',
+        () async {
+      userBloc.add(const UserScopeInitialized());
+      await userBloc.stream.firstWhere((s) => s.status == UserStatus.success);
+
+      userBloc.add(const UserRoleFilterChanged(UserRole.customer));
+      await userBloc.stream.firstWhere((s) =>
+          s.status == UserStatus.success &&
+          s.selectedRoleFilter == UserRole.customer);
+      userBloc.add(const UserSearchChanged('Customer'));
+      userBloc.add(const UserStatusFilterChanged(false));
+      await userBloc.stream.firstWhere((s) => s.selectedStatusFilter == false);
+      expect(mockRepo.lastFetchedRole, 'CUSTOMER');
+
+      userBloc.add(const UserResetRequested());
+
+      final state = await userBloc.stream.firstWhere(
+        (s) => s.status == UserStatus.success && s.users.length == 3,
+      );
+      expect(mockRepo.lastFetchedRole, isNull);
+      expect(state.selectedRoleFilter, isNull);
+      expect(state.selectedStatusFilter, isNull);
+      expect(state.searchQuery, isEmpty);
+      expect(state.hasActiveFilters, isFalse);
+    });
+
+    test('UserResetRequested của Lễ tân giữ nguyên phạm vi khách hàng', () async {
+      userBloc.add(const UserScopeInitialized(defaultRole: UserRole.customer));
+      await userBloc.stream.firstWhere((s) => s.status == UserStatus.success);
+
+      userBloc.add(const UserSearchChanged('abc'));
+      await userBloc.stream.firstWhere((s) => s.searchQuery == 'abc');
+
+      userBloc.add(const UserResetRequested());
+      final state = await userBloc.stream.firstWhere(
+        (s) => s.status == UserStatus.success && s.searchQuery.isEmpty,
+      );
+
+      expect(mockRepo.lastFetchedRole, 'CUSTOMER');
+      expect(state.selectedRoleFilter, UserRole.customer);
+    });
+
+    test('response của lần lọc trước về trễ không ghi đè dữ liệu mới', () async {
+      // Request "tất cả" chậm, request đã lọc nhanh → response cũ về sau.
+      mockRepo.fetchDelayFor = (role) => role == null
+          ? const Duration(milliseconds: 150)
+          : const Duration(milliseconds: 10);
+
+      userBloc.add(const UserScopeInitialized());
+      await Future.delayed(const Duration(milliseconds: 5));
+      userBloc.add(const UserRoleFilterChanged(UserRole.customer));
+
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      expect(mockRepo.fetchedRoles, [null, 'CUSTOMER']);
+      expect(userBloc.state.selectedRoleFilter, UserRole.customer);
+      expect(userBloc.state.users.length, 1);
+      expect(userBloc.state.users.single.role, UserRole.customer);
+    });
+
+    test('thông báo lỗi cũ bị xóa khi bắt đầu thao tác mới', () async {
+      userBloc.add(const UserScopeInitialized());
+      await userBloc.stream.firstWhere((s) => s.status == UserStatus.success);
+
+      userBloc.add(const UserRoleUpdateRequested(
+        userId: 'khong-ton-tai',
+        role: UserRole.admin,
+      ));
+      await userBloc.stream.firstWhere((s) => s.errorMessage != null);
+
+      userBloc.add(const UserResetRequested());
+      final state = await userBloc.stream.firstWhere(
+        (s) => s.status == UserStatus.success && s.users.length == 3,
+      );
+      expect(state.errorMessage, isNull);
     });
 
     test('UserCreateRequested adds user to the top of the list', () async {
