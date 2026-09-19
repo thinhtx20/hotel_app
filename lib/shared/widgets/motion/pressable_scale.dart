@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 class PressableScale extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final double scale;
   final Duration duration;
   final HitTestBehavior behavior;
@@ -14,6 +15,7 @@ class PressableScale extends StatefulWidget {
     super.key,
     required this.child,
     this.onTap,
+    this.onLongPress,
     this.scale = 0.97,
     this.duration = const Duration(milliseconds: 120),
     this.behavior = HitTestBehavior.opaque,
@@ -55,6 +57,12 @@ class _PressableScaleState extends State<PressableScale> {
       onTapUp: _handleTapUp,
       onTapCancel: _handleTapCancel,
       onTap: widget.onTap != null ? _handleTap : null,
+      onLongPress: widget.onLongPress != null
+          ? () {
+              HapticFeedback.mediumImpact();
+              widget.onLongPress?.call();
+            }
+          : null,
       child: AnimatedScale(
         scale: _isPressed ? widget.scale : 1.0,
         duration: widget.duration,

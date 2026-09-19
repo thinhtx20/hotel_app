@@ -8,6 +8,7 @@ import 'motion/pressable_scale.dart';
 class AppCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
   final Color? color;
@@ -20,6 +21,7 @@ class AppCard extends StatelessWidget {
     super.key,
     required this.child,
     this.onTap,
+    this.onLongPress,
     this.padding = const EdgeInsets.all(AppSpacing.lg),
     this.margin,
     this.color,
@@ -50,9 +52,10 @@ class AppCard extends StatelessWidget {
       child: child,
     );
 
-    if (onTap != null) {
+    if (onTap != null || onLongPress != null) {
       return PressableScale(
         onTap: onTap,
+        onLongPress: onLongPress,
         scale: 0.98,
         child: cardContent,
       );

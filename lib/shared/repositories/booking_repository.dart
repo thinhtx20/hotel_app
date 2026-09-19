@@ -417,16 +417,21 @@ class BookingRepository extends ChangeNotifier {
   /// Trả phòng & xuất hóa đơn: POST /bookings/:id/check-out
   /// Server trả về cả Booking và Invoice.
   ///
-  /// [amountCollected] là số thu ngân **thực nhận** tại quầy. Bỏ trống nghĩa là
-  /// không thu thêm: khách vẫn được trả phòng (phòng sang `CLEANING`), hóa đơn
-  /// ở `PARTIAL`/`UNPAID` và tự xuất hiện trong `GET /invoices/my` với
-  /// `remainingAmount > 0`, `canRequestPayment: true` để khách trả sau qua app.
+  /// [amountCollected] là số thu ngân **thực nhận** tại quầy.
+  /// [recalculateRoomAmount] cho phép tính lại tiền phòng theo số đêm thực tế (mặc định true khi trả phòng trước hạn).
+  /// [refundAmount] số tiền hoàn trả cho khách nếu đã thu dư lúc trả phòng trước hạn.
   Future<(BookingModel, InvoiceModel)> checkOut(
     String id, {
     String paymentMethod = 'CASH',
     num? discount,
     num? taxRate,
     num? amountCollected,
+    bool? recalculateRoomAmount,
+    num? customRoomAmount,
+    num? refundAmount,
+    String? refundMethod,
+    String? refundReason,
+    String? note,
   }) async {
     try {
       final payload = {
@@ -434,6 +439,12 @@ class BookingRepository extends ChangeNotifier {
         'discount': ?discount,
         'taxRate': ?taxRate,
         'amountCollected': ?amountCollected,
+        'recalculateRoomAmount': ?recalculateRoomAmount,
+        'customRoomAmount': ?customRoomAmount,
+        'refundAmount': ?refundAmount,
+        'refundMethod': ?refundMethod,
+        'refundReason': ?refundReason,
+        'note': ?note,
       };
 
       final res = await _dioClient.dio.post(
@@ -458,6 +469,16 @@ class BookingRepository extends ChangeNotifier {
     } catch (e) {
       throw ApiError.fromDynamic(e);
     }
+  }
+
+  /// Lấy tất cả các lượt đang lưu trú (status = CHECKED_IN) để hỗ trợ thủ tục
+  /// trả phòng trước hạn hoặc quản lý buồng phòng:
+  /// GET /bookings?status=CHECKED_IN
+  Future<List<BookingModel>> fetchActiveStays({String? search}) async {
+    return fetchAllBookings(
+      statuses: const ['CHECKED_IN'],
+      search: search,
+    );
   }
 
   /// Hủy đơn: POST /bookings/:id/cancel

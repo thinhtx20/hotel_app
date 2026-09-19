@@ -572,17 +572,16 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   backgroundColor: palette.surface,
                   onRefresh: () => _fetchBookings(isRefresh: true),
                   child: _isLoading
-                      ? Padding(
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.screen,
                           ),
-                          child: Column(
-                            children: const [
-                              BookingCardSkeleton(),
-                              SizedBox(height: AppSpacing.md),
-                              BookingCardSkeleton(),
-                            ],
-                          ),
+                          children: const [
+                            BookingCardSkeleton(),
+                            SizedBox(height: AppSpacing.md),
+                            BookingCardSkeleton(),
+                          ],
                         )
                       : _error != null && _bookings.isEmpty
                       ? AppErrorView(

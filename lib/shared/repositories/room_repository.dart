@@ -24,6 +24,14 @@ class RoomRepository extends ChangeNotifier {
   SseClient? _roomSseClient;
   StreamSubscription? _sseSubscription;
 
+  /// Broadcast stream phát ra mỗi khi có phòng đổi trạng thái qua SSE.
+  /// Các màn hình chi tiết hoặc danh sách có thể lắng nghe stream này
+  /// để cập nhật UI tức thì khi Admin/Lễ tân đổi trạng thái.
+  final _roomStatusChangedController =
+      StreamController<({String roomId, RoomStatus status, RoomModel? room})>.broadcast();
+  Stream<({String roomId, RoomStatus status, RoomModel? room})>
+      get onRoomStatusChanged => _roomStatusChangedController.stream;
+
   RoomRepository({DioClient? dioClient, TokenStorage? tokenStorage})
       : _dioClient = dioClient ?? DioClient(),
         _tokenStorage = tokenStorage ??
@@ -95,7 +103,17 @@ class RoomRepository extends ChangeNotifier {
           final statusStr = roomData['status']?.toString();
           if (roomId != null && statusStr != null) {
             final newStatus = RoomStatus.fromString(statusStr);
+            // Cập nhật trong danh sách bộ nhớ
             _updateLocalStatus(roomId, newStatus);
+            // Phát ra stream cho các màn hình chi tiết đang mở
+            RoomModel? updatedRoom;
+            final idx = _rooms.indexWhere((r) => r.id == roomId);
+            if (idx != -1) {
+              updatedRoom = _rooms[idx];
+            }
+            _roomStatusChangedController.add(
+              (roomId: roomId, status: newStatus, room: updatedRoom),
+            );
           }
         }
         break;
@@ -141,6 +159,10 @@ class RoomRepository extends ChangeNotifier {
           if (roomId != null) {
             _rooms.removeWhere((r) => r.id == roomId);
             notifyListeners();
+            // Phát ra stream để các màn hình chi tiết biết phòng đã bị xóa
+            _roomStatusChangedController.add(
+              (roomId: roomId, status: RoomStatus.rejected, room: null),
+            );
           }
         }
         break;
@@ -164,6 +186,13 @@ class RoomRepository extends ChangeNotifier {
     _initialized = false;
     _errorMessage = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _roomStatusChangedController.close();
+    stopRealtimeStream();
+    super.dispose();
   }
 
   /// Tải danh sách loại phòng từ API (có cờ forceRefresh)
@@ -261,12 +290,16 @@ class RoomRepository extends ChangeNotifier {
 
   /// Tải danh sách phòng từ API (có cờ forceRefresh)
   /// Hỗ trợ bộ lọc phía máy chủ: [status], [floor], [roomTypeId].
+  /// Tự động kích hoạt kết nối SSE realtime nếu chưa kết nối.
   Future<void> fetchRooms({
     bool forceRefresh = false,
     RoomStatus? status,
     int? floor,
     String? roomTypeId,
   }) async {
+    // Tự động bật SSE realtime khi tải phòng lần đầu
+    startRealtimeStream();
+
     final hasFilter = status != null || floor != null || roomTypeId != null;
     if (_initialized && !forceRefresh && !hasFilter && _rooms.isNotEmpty) return;
     _isLoading = true;

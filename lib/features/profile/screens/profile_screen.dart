@@ -18,7 +18,6 @@ import '../../../shared/repositories/upload_repository.dart';
 import '../../../shared/repositories/user_repository.dart';
 import '../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../core/constants/role_enum.dart';
-import '../../../core/constants/role_permissions.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/logout_confirmation_dialog.dart';
@@ -26,6 +25,7 @@ import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
 import '../../auth/bloc/auth_state.dart';
+import '../../notifications/repositories/notification_repository.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -35,7 +35,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _notificationsEnabled = true;
   String _selectedPaymentMethod = 'Ví MoMo';
   String? _customPhone;
   String _selectedLanguage = 'Tiếng Việt';
@@ -792,8 +791,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               state.message,
               title: 'Đổi tài khoản không thành công',
             );
-          } else if (state is AuthAuthenticated) {
-            context.go(state.user.role.homeRoute);
           }
         },
         builder: (context, state) {
@@ -1224,24 +1221,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         Divider(height: 1, indent: 68, color: palette.divider),
+                        ValueListenableBuilder<int>(
+                          valueListenable: sl<NotificationRepository>().unreadCountNotifier,
+                          builder: (context, unreadCount, _) {
+                            return _buildMenuItem(
+                              icon: Icons.notifications_none_rounded,
+                              iconColor: palette.statusAvailable,
+                              title: 'Trung tâm thông báo',
+                              subtitle: unreadCount > 0
+                                  ? '$unreadCount thông báo mới chưa đọc'
+                                  : 'Xem lịch sử thông báo khách sạn',
+                              trailing: unreadCount > 0
+                                  ? Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.secondary,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        '$unreadCount',
+                                        style: const TextStyle(
+                                          fontFamily: 'Outfit',
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                              onTap: () => context.push('/notifications'),
+                            );
+                          },
+                        ),
+                        Divider(height: 1, indent: 68, color: palette.divider),
                         _buildMenuItem(
-                          icon: Icons.notifications_none_rounded,
-                          iconColor: palette.statusAvailable,
-                          title: 'Thông báo',
-                          trailing: Switch(
-                            value: _notificationsEnabled,
-                            activeThumbColor: Colors.white,
-                            activeTrackColor: palette.accent,
-                            onChanged: (val) {
-                              setState(() => _notificationsEnabled = val);
-                              AppNotification.showSuccess(
-                                context,
-                                val
-                                    ? 'Đã bật thông báo ứng dụng'
-                                    : 'Đã tắt thông báo ứng dụng',
-                              );
-                            },
-                          ),
+                          icon: Icons.tune_rounded,
+                          iconColor: palette.accent,
+                          title: 'Cài đặt & kiểu thông báo',
+                          subtitle: 'Đổi kiểu hiển thị: ${sl<NotificationRepository>().preferredStyle.displayName}',
+                          onTap: () => context.push('/notification-settings'),
                         ),
                         Divider(height: 1, indent: 68, color: palette.divider),
                         _buildMenuItem(

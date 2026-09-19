@@ -13,6 +13,7 @@ import '../shared/repositories/service_repository.dart';
 import '../shared/repositories/shift_repository.dart';
 import '../shared/repositories/upload_repository.dart';
 import '../shared/repositories/user_repository.dart';
+import '../features/notifications/repositories/notification_repository.dart';
 
 final sl = GetIt.instance;
 
@@ -45,6 +46,9 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton<UploadRepository>(
     () => UploadRepository(dioClient: sl<DioClient>()),
+  );
+  sl.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepository()..init(),
   );
 
   // Features - Auth
@@ -84,6 +88,9 @@ void clearUserScopedCaches() {
   }
   if (sl.isRegistered<ServiceRepository>()) {
     sl<ServiceRepository>().clearSession();
+  }
+  if (sl.isRegistered<NotificationRepository>()) {
+    sl<NotificationRepository>().clearSession();
   }
 }
 

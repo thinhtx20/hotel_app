@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/role_permissions.dart';
+import '../../core/services/push_notification_service.dart';
 import '../auth/bloc/auth_bloc.dart';
 import '../auth/bloc/auth_state.dart';
 
@@ -64,6 +65,18 @@ class _SplashScreenState extends State<SplashScreen>
 
     try {
       if (state is AuthAuthenticated) {
+        // Kiểm tra xem người dùng có vừa bấm mở app từ thông báo khi app bị kill không (Cold Start)
+        final pending = PushNotificationService.pendingNotificationPayload;
+        if (pending != null) {
+          PushNotificationService.pendingNotificationPayload = null;
+          final target = pending['route']?.toString() ??
+              pending['actionRoute']?.toString() ??
+              state.user.role.homeRoute;
+          debugPrint('🚀 [Splash Navigation] Điều hướng trực tiếp từ Cold Start notification tới: $target');
+          context.go(target);
+          return;
+        }
+
         context.go(state.user.role.homeRoute);
       } else if (state is AuthUnauthenticated || state is AuthFailure) {
         context.go('/login');

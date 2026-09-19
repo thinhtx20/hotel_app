@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/services/push_notification_service.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../../shared/models/user_model.dart';
 import 'auth_event.dart';
@@ -55,6 +56,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           }
           await _tokenStorage.saveUser(updatedUser);
           emit(AuthAuthenticated(updatedUser));
+          PushNotificationService.syncTokenWithServer();
         }
       } on DioException catch (e) {
         if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
@@ -112,6 +114,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await _tokenStorage.saveUser(user);
 
         emit(AuthAuthenticated(user));
+        PushNotificationService.syncTokenWithServer();
       } else {
         final msg = res.data['message']?.toString() ?? 'Đăng nhập thất bại';
         _emitLoginFailure(emit, msg, previousUser);

@@ -14,6 +14,7 @@ class TodayCheckOutsBloc
       : super(const TodayCheckOutsState()) {
     on<TodayCheckOutsFetchRequested>(_onFetchRequested);
     on<TodayCheckOutsRefreshRequested>(_onRefreshRequested);
+    on<TodayCheckOutsScopeChanged>(_onScopeChanged);
     on<TodayCheckOutsTabChanged>(_onTabChanged);
     on<TodayCheckOutsSearchChanged>(_onSearchChanged);
     on<TodayCheckOutsBookingUpdated>(_onBookingUpdated);
@@ -31,7 +32,39 @@ class TodayCheckOutsBloc
     }
 
     try {
-      final list = await _bookingRepository.fetchTodayCheckOuts();
+      final list = state.scope == TodayCheckOutScope.today
+          ? await _bookingRepository.fetchTodayCheckOuts()
+          : await _bookingRepository.fetchActiveStays();
+      emit(state.copyWith(
+        status: TodayCheckOutsStatus.success,
+        bookings: list,
+        errorMessage: null,
+      ));
+    } catch (e) {
+      final apiErr = ApiError.fromDynamic(e);
+      emit(state.copyWith(
+        status: TodayCheckOutsStatus.failure,
+        errorMessage: apiErr.displayMessage,
+      ));
+    }
+  }
+
+  Future<void> _onScopeChanged(
+    TodayCheckOutsScopeChanged event,
+    Emitter<TodayCheckOutsState> emit,
+  ) async {
+    if (state.scope == event.scope) return;
+    emit(state.copyWith(
+      scope: event.scope,
+      status: TodayCheckOutsStatus.loading,
+      errorMessage: null,
+      selectedTabIndex: 0,
+    ));
+
+    try {
+      final list = event.scope == TodayCheckOutScope.today
+          ? await _bookingRepository.fetchTodayCheckOuts()
+          : await _bookingRepository.fetchActiveStays();
       emit(state.copyWith(
         status: TodayCheckOutsStatus.success,
         bookings: list,

@@ -239,6 +239,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
     try {
       await _userRepository.deactivate(event.userId);
+      if (emit.isDone) return;
       final list = state.users.map((u) {
         return u.id == event.userId ? u.copyWith(isActive: false) : u;
       }).toList();
@@ -250,6 +251,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         clearErrorMessage: true,
       ));
     } catch (e) {
+      if (emit.isDone) return;
       final finishedProcessing = Set<String>.from(state.processingIds)..remove(event.userId);
       emit(state.copyWith(
         processingIds: finishedProcessing,
@@ -275,6 +277,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         event.userId,
         {'role': event.role.value},
       );
+      if (emit.isDone) return;
       final list = state.users.map((u) {
         return u.id == event.userId ? updated : u;
       }).toList();
@@ -286,6 +289,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         clearErrorMessage: true,
       ));
     } catch (e) {
+      if (emit.isDone) return;
       final finishedProcessing = Set<String>.from(state.processingIds)..remove(event.userId);
       emit(state.copyWith(
         processingIds: finishedProcessing,
@@ -315,6 +319,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         final current = state.users.firstWhere((u) => u.id == event.userId);
         updated = current.copyWith(isActive: false);
       }
+      if (emit.isDone) return;
       final list = state.users.map((u) {
         return u.id == event.userId ? updated : u;
       }).toList();
@@ -326,6 +331,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         clearErrorMessage: true,
       ));
     } catch (e) {
+      if (emit.isDone) return;
       final finishedProcessing = Set<String>.from(state.processingIds)..remove(event.userId);
       emit(state.copyWith(
         processingIds: finishedProcessing,
@@ -349,6 +355,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         role: event.role,
         phone: event.phone,
       );
+      if (emit.isDone) return;
       if (!state.users.any((u) => u.id == newUser.id)) {
         final list = [newUser, ...state.users];
         emit(state.copyWith(
@@ -358,6 +365,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         ));
       }
     } catch (e) {
+      if (emit.isDone) return;
       emit(state.copyWith(
         errorMessage: e is ApiError ? e.message : 'Lỗi tạo tài khoản: ${e.toString()}',
         clearActionMessage: true,
@@ -377,6 +385,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
     try {
       await _userRepository.changePassword(event.userId, event.newPassword);
+      if (emit.isDone) return;
       final finishedProcessing = Set<String>.from(state.processingIds)..remove(event.userId);
       final user = state.users.where((u) => u.id == event.userId).firstOrNull;
       final name = user != null && user.fullName.isNotEmpty ? user.fullName : (user?.email ?? 'tài khoản');
@@ -386,6 +395,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         clearErrorMessage: true,
       ));
     } catch (e) {
+      if (emit.isDone) return;
       final finishedProcessing = Set<String>.from(state.processingIds)..remove(event.userId);
       emit(state.copyWith(
         processingIds: finishedProcessing,

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/network/api_error.dart';
 import '../../core/theme/app_palette.dart';
+import 'in_app_notification_banner.dart';
+import '../../features/notifications/models/app_notification_model.dart';
 
 /// Bộ hiển thị thông báo & lỗi chuyên biệt theo phong cách Modern Luxury.
 /// Tự động trích xuất và hiển thị trọn vẹn thông điệp do Backend NestJS trả về.
@@ -399,6 +401,161 @@ class AppNotification {
           ),
         ),
       ),
+    );
+  }
+
+  /// Hiển thị thông báo nổi In-App với kiểu dáng mong muốn (hoặc kiểu người dùng đã chọn trong cài đặt).
+  static void showInAppNotification({
+    BuildContext? context,
+    required String title,
+    required String body,
+    AppNotificationStyle? style,
+    AppNotificationCategory? notificationCategory,
+    Map<String, dynamic>? data,
+    VoidCallback? onTap,
+    IconData? icon,
+    String? category,
+    Duration duration = const Duration(milliseconds: 4500),
+  }) {
+    InAppNotificationBanner.show(
+      context: context,
+      title: title,
+      body: body,
+      style: style,
+      notificationCategory: notificationCategory,
+      data: data,
+      onTap: onTap,
+      icon: icon,
+      category: category,
+      duration: duration,
+    );
+  }
+
+  /// Hiển thị kiểu Modern Luxury Banner (Midnight Navy + Viền vàng + Đếm ngược)
+  static void showLuxuryBanner({
+    BuildContext? context,
+    required String title,
+    required String body,
+    AppNotificationCategory? notificationCategory,
+    Map<String, dynamic>? data,
+    VoidCallback? onTap,
+    IconData? icon,
+    String? category,
+    Duration duration = const Duration(milliseconds: 4500),
+  }) {
+    showInAppNotification(
+      context: context,
+      title: title,
+      body: body,
+      style: AppNotificationStyle.luxuryBanner,
+      notificationCategory: notificationCategory,
+      data: data,
+      onTap: onTap,
+      icon: icon,
+      category: category,
+      duration: duration,
+    );
+  }
+
+  /// Hiển thị kiểu Dynamic Island Capsule (Viên thuốc đen bóng bo tròn phong cách iOS)
+  static void showDynamicIsland({
+    BuildContext? context,
+    required String title,
+    required String body,
+    AppNotificationCategory? notificationCategory,
+    Map<String, dynamic>? data,
+    VoidCallback? onTap,
+    IconData? icon,
+    String? category,
+    Duration duration = const Duration(milliseconds: 4500),
+  }) {
+    showInAppNotification(
+      context: context,
+      title: title,
+      body: body,
+      style: AppNotificationStyle.dynamicIsland,
+      notificationCategory: notificationCategory,
+      data: data,
+      onTap: onTap,
+      icon: icon,
+      category: category,
+      duration: duration,
+    );
+  }
+
+  /// Hiển thị kiểu Frosted Glass Card (Kính mờ xuyên thấu Glassmorphism)
+  static void showGlassCard({
+    BuildContext? context,
+    required String title,
+    required String body,
+    AppNotificationCategory? notificationCategory,
+    Map<String, dynamic>? data,
+    VoidCallback? onTap,
+    IconData? icon,
+    String? category,
+    Duration duration = const Duration(milliseconds: 4500),
+  }) {
+    showInAppNotification(
+      context: context,
+      title: title,
+      body: body,
+      style: AppNotificationStyle.glassCard,
+      notificationCategory: notificationCategory,
+      data: data,
+      onTap: onTap,
+      icon: icon,
+      category: category,
+      duration: duration,
+    );
+  }
+
+  /// Hiển thị kiểu Floating Bottom Toast (Thanh nổi trên bottom bar)
+  static void showBottomToast({
+    BuildContext? context,
+    required String title,
+    required String body,
+    AppNotificationCategory? notificationCategory,
+    Map<String, dynamic>? data,
+    VoidCallback? onTap,
+    IconData? icon,
+    String? category,
+    Duration duration = const Duration(milliseconds: 4500),
+  }) {
+    showInAppNotification(
+      context: context,
+      title: title,
+      body: body,
+      style: AppNotificationStyle.bottomToast,
+      notificationCategory: notificationCategory,
+      data: data,
+      onTap: onTap,
+      icon: icon,
+      category: category,
+      duration: duration,
+    );
+  }
+
+  /// Hiển thị kiểu Luxury Modal Dialog (Pop-up trung tâm làm mờ nền)
+  static void showDialogAlert({
+    BuildContext? context,
+    required String title,
+    required String body,
+    AppNotificationCategory? notificationCategory,
+    Map<String, dynamic>? data,
+    VoidCallback? onTap,
+    IconData? icon,
+    String? category,
+  }) {
+    showInAppNotification(
+      context: context,
+      title: title,
+      body: body,
+      style: AppNotificationStyle.dialogAlert,
+      notificationCategory: notificationCategory,
+      data: data,
+      onTap: onTap,
+      icon: icon,
+      category: category,
     );
   }
 

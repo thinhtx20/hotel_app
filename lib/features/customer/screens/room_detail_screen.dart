@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,7 @@ import '../../../shared/repositories/room_repository.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
+import '../../../shared/widgets/room_status_update_sheet.dart';
 import '../../../shared/widgets/status_badge.dart';
 import '../../admin/widgets/edit_room_modal.dart';
 import '../widgets/create_booking_modal.dart';
@@ -44,17 +46,33 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
   int _currentImageIndex = 0;
   bool _isFavorite = false;
   bool _isDescriptionExpanded = false;
+  StreamSubscription? _statusSub;
 
   @override
   void initState() {
     super.initState();
     _room = widget.initialRoom;
     _roomRepository.addListener(_onRepositoryUpdated);
+    _roomRepository.startRealtimeStream();
+
+    // Lắng nghe stream trạng thái phòng chuyên biệt
+    _statusSub = _roomRepository.onRoomStatusChanged.listen((event) {
+      if (!mounted) return;
+      if (event.roomId == widget.roomId) {
+        setState(() {
+          _room = _room?.copyWith(status: event.status);
+        });
+        // Tải ngầm chi tiết phòng để đồng bộ đầy đủ thông tin
+        _fetchRoomDetailSilently();
+      }
+    });
+
     _fetchRoomDetail();
   }
 
   @override
   void dispose() {
+    _statusSub?.cancel();
     _roomRepository.removeListener(_onRepositoryUpdated);
     _pageController.dispose();
     super.dispose();
@@ -71,6 +89,17 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
           _room = _room!.copyWith(status: updated.status);
         });
       }
+    } catch (_) {}
+  }
+
+  /// Tải ngầm chi tiết phòng từ API mà không hiển thị loading
+  Future<void> _fetchRoomDetailSilently() async {
+    try {
+      final detail = await _roomRepository.fetchDetail(widget.roomId);
+      if (!mounted) return;
+      setState(() {
+        _room = detail;
+      });
     } catch (_) {}
   }
 
@@ -140,8 +169,35 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
       onSuccess: () => _fetchRoomDetail(),
     );
     if (updated == true && mounted) {
-      _fetchRoomDetail();
+      final stillExists = _roomRepository.rooms.any((r) => r.id == widget.roomId);
+      if (!stillExists) {
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/customer');
+        }
+      } else {
+        _fetchRoomDetail();
+      }
     }
+  }
+
+  void _openStatusUpdateSheet() {
+    if (_room == null) return;
+    RoomStatusUpdateSheet.show(
+      context: context,
+      room: _room!,
+      roomRepository: _roomRepository,
+      onStatusChanged: _fetchRoomDetail,
+      onRoomDeleted: () {
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/customer');
+        }
+      },
+      onRoomUpdated: _fetchRoomDetail,
+    );
   }
 
   @override
@@ -261,6 +317,15 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                   ),
                 ),
                 actions: [
+                  if (context.currentRole.canChangeRoomStatus) ...[
+                    Center(
+                      child: _buildFrostedCircleButton(
+                        icon: Icons.published_with_changes_rounded,
+                        onTap: _openStatusUpdateSheet,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                  ],
                   if (context.currentRole.canEditRoom) ...[
                     Center(
                       child: _buildFrostedCircleButton(
@@ -1155,6 +1220,24 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
             ],
           ),
           const SizedBox(width: AppSpacing.lg),
+          if (context.currentRole.canChangeRoomStatus) ...[
+            SizedBox(
+              height: 50,
+              child: OutlinedButton.icon(
+                onPressed: _openStatusUpdateSheet,
+                icon: const Icon(Icons.published_with_changes_rounded, size: 18),
+                label: const Text('Đổi trạng thái'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: const BorderSide(color: AppColors.primary, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.button),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+          ],
           if (context.currentRole.canEditRoom) ...[
             SizedBox(
               height: 50,

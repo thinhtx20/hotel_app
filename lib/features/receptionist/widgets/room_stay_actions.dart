@@ -215,6 +215,10 @@ class RoomStayActionsState extends State<RoomStayActions> {
             ink: palette.statusOccupiedInk,
             icon: Icons.logout_rounded,
             heading: 'Khách đang lưu trú',
+            badge: stay.checkOutDate.isAfter(DateTime.now())
+                ? 'Trả phòng sớm'
+                : null,
+            badgeColor: palette.statusOccupiedInk,
             detail:
                 'Trả dự kiến: ${Formatters.formatDate(stay.checkOutDate)} • ${stay.nightsCount} đêm • ${Formatters.formatCurrency(stay.totalAmount)}',
             actionLabel: 'Trả phòng & Xuất hóa đơn',
@@ -265,6 +269,8 @@ class RoomStayActionsState extends State<RoomStayActions> {
     required String detail,
     required String actionLabel,
     required VoidCallback onAction,
+    String? badge,
+    Color? badgeColor,
   }) {
     return Container(
       width: double.infinity,
@@ -290,6 +296,30 @@ class RoomStayActionsState extends State<RoomStayActions> {
                   color: ink,
                 ),
               ),
+              if (badge != null) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: (badgeColor ?? palette.accent).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: (badgeColor ?? palette.accent).withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Text(
+                    badge,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: badgeColor ?? palette.accent,
+                    ),
+                  ),
+                ),
+              ],
               const Spacer(),
               Text(
                 booking.displayCode,

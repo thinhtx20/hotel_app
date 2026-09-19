@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../shared/models/booking_model.dart';
+import 'today_check_outs_state.dart';
 
 abstract class TodayCheckOutsEvent extends Equatable {
   const TodayCheckOutsEvent();
@@ -19,6 +20,15 @@ class TodayCheckOutsFetchRequested extends TodayCheckOutsEvent {
 
 class TodayCheckOutsRefreshRequested extends TodayCheckOutsEvent {
   const TodayCheckOutsRefreshRequested();
+}
+
+class TodayCheckOutsScopeChanged extends TodayCheckOutsEvent {
+  final TodayCheckOutScope scope;
+
+  const TodayCheckOutsScopeChanged(this.scope);
+
+  @override
+  List<Object?> get props => [scope];
 }
 
 class TodayCheckOutsTabChanged extends TodayCheckOutsEvent {

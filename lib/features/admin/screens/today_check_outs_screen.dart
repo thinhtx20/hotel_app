@@ -158,14 +158,18 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Trả Phòng Hôm Nay',
+                          state.scope == TodayCheckOutScope.today
+                              ? 'Trả Phòng Hôm Nay'
+                              : 'Khách Đang Lưu Trú (Trả Trước)',
                           style: textTheme.titleMedium?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         Text(
-                          'Dự kiến: $totalCount  •  Đã trả: $checkedOutCount  •  Chờ: $pendingCount',
+                          state.scope == TodayCheckOutScope.today
+                              ? 'Dự kiến: $totalCount  •  Đã trả: $checkedOutCount  •  Chờ: $pendingCount'
+                              : 'Tổng phòng đang ở: $totalCount  •  Đã trả: $checkedOutCount  •  Chưa trả: $pendingCount',
                           style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 11,
@@ -193,6 +197,8 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
                     ),
                     child: Column(
                       children: [
+                        _buildScopeSelector(state),
+                        const SizedBox(height: AppSpacing.sm),
                         _buildSearchBar(state),
                         const SizedBox(height: AppSpacing.sm),
                         _buildTabs(
@@ -228,14 +234,17 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
                     ),
                   )
                 else if (filteredBookings.isEmpty)
-                  const SliverFillRemaining(
+                  SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(
                       child: AppEmptyState(
                         icon: Icons.no_meeting_room_outlined,
-                        title: 'Không có lượt trả phòng',
-                        description:
-                            'Không tìm thấy phòng nào cần trả hôm nay.',
+                        title: state.scope == TodayCheckOutScope.today
+                            ? 'Không có lượt trả phòng'
+                            : 'Không có khách đang lưu trú',
+                        description: state.scope == TodayCheckOutScope.today
+                            ? 'Không tìm thấy phòng nào cần trả hôm nay.'
+                            : 'Không tìm thấy khách nào đang lưu trú cần làm thủ tục trả phòng.',
                       ),
                     ),
                   )
@@ -263,10 +272,115 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
   }
 
   // Thanh lọc phải cao cố định để sliver ghim biết trước kích thước.
+  static const double _scopeHeight = 34;
   static const double _searchHeight = 46;
   static const double _tabsHeight = 38;
   static const double _filterHeight =
-      _searchHeight + AppSpacing.sm + _tabsHeight;
+      _scopeHeight + AppSpacing.sm + _searchHeight + AppSpacing.sm + _tabsHeight;
+
+  Widget _buildScopeSelector(TodayCheckOutsState state) {
+    final palette = context.palette;
+    final isToday = state.scope == TodayCheckOutScope.today;
+
+    return Container(
+      height: _scopeHeight,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: palette.surfaceMuted,
+        borderRadius: BorderRadius.circular(AppRadius.button),
+        border: Border.all(color: palette.border),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildScopeItem(
+              label: 'Đến hạn hôm nay',
+              icon: Icons.event_available_rounded,
+              isSelected: isToday,
+              onTap: () {
+                if (!isToday) {
+                  _bloc.add(
+                    const TodayCheckOutsScopeChanged(TodayCheckOutScope.today),
+                  );
+                }
+              },
+            ),
+          ),
+          const SizedBox(width: 2),
+          Expanded(
+            child: _buildScopeItem(
+              label: 'Khách đang ở (Trả trước)',
+              icon: Icons.history_toggle_off_rounded,
+              isSelected: !isToday,
+              onTap: () {
+                if (isToday) {
+                  _bloc.add(
+                    const TodayCheckOutsScopeChanged(
+                      TodayCheckOutScope.allActiveStays,
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScopeItem({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final palette = context.palette;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        decoration: BoxDecoration(
+          color: isSelected ? palette.accent : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.button - 2),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: palette.accent.withValues(alpha: 0.25),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  )
+                ]
+              : null,
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: isSelected ? Colors.white : palette.inkMuted,
+            ),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? Colors.white : palette.inkMuted,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildSearchBar(TodayCheckOutsState state) {
     final palette = context.palette;
@@ -370,6 +484,7 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
     final palette = context.palette;
     final textTheme = Theme.of(context).textTheme;
     final isCheckedOut = booking.status == 'CHECKED_OUT';
+    final isEarly = !isCheckedOut && booking.checkOutDate.isAfter(DateTime.now());
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -410,27 +525,66 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: isCheckedOut
-                      ? palette.success.withValues(alpha: 0.12)
-                      : const Color(0xFF3B82F6).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                ),
-                child: Text(
-                  isCheckedOut ? 'ĐÃ TRẢ PHÒNG' : 'CHỜ TRẢ PHÒNG',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: isCheckedOut
-                        ? palette.success
-                        : const Color(0xFF3B82F6),
+              Row(
+                children: [
+                  if (isEarly) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: palette.warning.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(AppRadius.xs),
+                        border: Border.all(
+                          color: palette.warning.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.history_toggle_off_rounded,
+                            size: 11,
+                            color: palette.warningInk,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            'TRẢ TRƯỚC HẠN',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: palette.warningInk,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                  ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isCheckedOut
+                          ? palette.success.withValues(alpha: 0.12)
+                          : const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                    ),
+                    child: Text(
+                      isCheckedOut ? 'ĐÃ TRẢ PHÒNG' : 'CHỜ TRẢ PHÒNG',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: isCheckedOut
+                            ? palette.success
+                            : const Color(0xFF3B82F6),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -508,12 +662,37 @@ class _TodayCheckOutsScreenState extends State<TodayCheckOutsScreen> {
                 color: palette.inkFaint,
               ),
               const SizedBox(width: 6),
-              Text(
-                'Nhận: ${Formatters.formatDate(booking.checkInDate)}  •  ${booking.nightsCount} đêm',
-                style: TextStyle(fontSize: 12, color: palette.inkFaint),
+              Expanded(
+                child: Text(
+                  'Nhận: ${Formatters.formatDate(booking.checkInDate)}  •  ${isEarly ? 'Trả dự kiến: ${Formatters.formatDate(booking.checkOutDate)}' : Formatters.formatDate(booking.checkOutDate)}  •  ${booking.nightsCount} đêm',
+                  style: TextStyle(fontSize: 12, color: palette.inkFaint),
+                ),
               ),
             ],
           ),
+          if (isEarly) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  size: 13,
+                  color: palette.warningInk,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    'Trả phòng sớm hơn dự kiến — có thể tính lại tiền phòng & hoàn tiền',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: palette.warningInk,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: AppSpacing.md),
           Divider(height: 1, color: palette.divider),
           const SizedBox(height: AppSpacing.sm),

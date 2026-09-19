@@ -18,6 +18,8 @@ import '../../../shared/widgets/app_search_field.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/skeletons/room_card_skeleton.dart';
 import '../../../shared/widgets/status_badge.dart';
+import '../../../shared/widgets/room_status_update_sheet.dart';
+import '../../../core/constants/role_permissions.dart';
 import '../widgets/create_booking_modal.dart';
 
 class RoomSearchScreen extends StatefulWidget {
@@ -49,6 +51,7 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
   void initState() {
     super.initState();
     _roomRepository.addListener(_onRepositoryUpdated);
+    _roomRepository.startRealtimeStream();
     _performSearch(_searchController.text);
   }
 
@@ -517,6 +520,18 @@ class _RoomSearchScreenState extends State<RoomSearchScreen> {
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.sm),
       onTap: () => context.push('/rooms/${room.id}'),
+      onLongPress: context.readRole.canChangeRoomStatus
+          ? () {
+              RoomStatusUpdateSheet.show(
+                context: context,
+                room: room,
+                roomRepository: _roomRepository,
+                onStatusChanged: () => _performSearch(_searchController.text),
+                onRoomDeleted: () => _performSearch(_searchController.text),
+                onRoomUpdated: () => _performSearch(_searchController.text),
+              );
+            }
+          : null,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

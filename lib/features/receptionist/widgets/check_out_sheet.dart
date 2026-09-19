@@ -65,10 +65,15 @@ class CheckOutSheet extends StatefulWidget {
   /// Hộp thoại tóm tắt hóa đơn vừa xuất sau khi trả phòng.
   static Future<void> showInvoiceSuccessDialog(
     BuildContext context,
-    InvoiceModel invoice,
-  ) {
+    InvoiceModel invoice, {
+    num? refundAmount,
+  }) {
     final palette = context.palette;
     final remaining = invoice.remainingAmount;
+    final actualRefund = refundAmount ??
+        (invoice.paidAmount > invoice.finalAmount
+            ? (invoice.paidAmount - invoice.finalAmount)
+            : null);
 
     return showDialog<void>(
       context: context,
@@ -124,6 +129,39 @@ class CheckOutSheet extends StatefulWidget {
               ),
             ),
             Text('Đã thu: ${Formatters.formatCurrency(invoice.paidAmount)}'),
+            if (actualRefund != null && actualRefund > 0) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: palette.statusAvailable.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  border: Border.all(
+                    color: palette.statusAvailable.withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.currency_exchange_rounded,
+                      color: palette.statusAvailableInk,
+                      size: 18,
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: Text(
+                        'Đã hoàn trả khách: ${Formatters.formatCurrency(actualRefund)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: palette.statusAvailableInk,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             if (remaining > 0) ...[
               const SizedBox(height: 6),
               Text(
@@ -140,6 +178,7 @@ class CheckOutSheet extends StatefulWidget {
                 style: TextStyle(fontSize: 12, color: palette.inkMuted),
               ),
             ],
+            const SizedBox(height: 6),
             Text('Trạng thái: ${invoice.paymentStatus}'),
           ],
         ),
@@ -172,8 +211,11 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
   );
   final TextEditingController _amountCollectedController =
       TextEditingController();
+  final TextEditingController _refundController = TextEditingController();
 
   String _paymentMethod = 'CASH';
+  String _refundMethod = 'CASH';
+  bool _recalculateRoomAmount = true;
   bool _isSubmitting = false;
   String? _errorMessage;
 
@@ -187,19 +229,166 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
   @override
   void initState() {
     super.initState();
+    _discountController.addListener(_onFormNumberChanged);
+    _taxController.addListener(_onFormNumberChanged);
     _loadPreview();
   }
 
   @override
   void dispose() {
+    _discountController.removeListener(_onFormNumberChanged);
+    _taxController.removeListener(_onFormNumberChanged);
     _discountController.dispose();
     _taxController.dispose();
     _amountCollectedController.dispose();
+    _refundController.dispose();
     super.dispose();
   }
 
-  /// Số còn phải thu theo bảng kê của máy chủ (`amountDue`).
-  num get _amountDue => _preview?.amountDue ?? 0;
+  void _onFormNumberChanged() {
+    setState(() {
+      _syncAmounts();
+    });
+  }
+
+  bool get _isEarlyCheckOut {
+    if (_preview != null) return _preview!.isEarlyCheckOut;
+    final inDate = widget.booking.actualCheckIn ?? widget.booking.checkInDate;
+    final now = DateTime.now();
+    final diff = now.difference(inDate).inDays;
+    final actual = diff <= 0 ? 1 : diff;
+    final bookedDiff = widget.booking.checkOutDate.difference(inDate).inDays;
+    final booked = bookedDiff <= 0 ? 1 : bookedDiff;
+    return now.isBefore(widget.booking.checkOutDate) && actual < booked;
+  }
+
+  int get _bookedNights {
+    if (_preview != null && _preview!.bookedNights > 0) {
+      return _preview!.bookedNights;
+    }
+    final inDate = widget.booking.actualCheckIn ?? widget.booking.checkInDate;
+    final diff = widget.booking.checkOutDate.difference(inDate).inDays;
+    return diff <= 0 ? 1 : diff;
+  }
+
+  int get _actualNights {
+    if (_preview != null && _preview!.actualNights > 0) {
+      return _preview!.actualNights;
+    }
+    final inDate = widget.booking.actualCheckIn ?? widget.booking.checkInDate;
+    final now = DateTime.now();
+    final diff = now.difference(inDate).inDays;
+    return diff <= 0 ? 1 : diff;
+  }
+
+  num get _basePrice {
+    if (_preview != null && _preview!.basePrice > 0) return _preview!.basePrice;
+    if (_bookedNights > 0) {
+      return (widget.booking.totalAmount / _bookedNights).round();
+    }
+    return widget.booking.totalAmount;
+  }
+
+  num get _originalRoomAmount {
+    if (_preview != null && _preview!.originalRoomAmount > 0) {
+      return _preview!.originalRoomAmount;
+    }
+    return widget.booking.totalAmount;
+  }
+
+  num get _recalculatedRoomAmount {
+    if (_preview != null && _preview!.recalculatedRoomAmount > 0) {
+      return _preview!.recalculatedRoomAmount;
+    }
+    return _actualNights * _basePrice;
+  }
+
+  bool get _hasCustomAdjustments {
+    if (_preview == null) return false;
+    final discountInput = num.tryParse(_discountController.text.trim()) ?? 0;
+    if (discountInput != _preview!.discount) return true;
+
+    final taxInput = num.tryParse(_taxController.text.trim());
+    if (taxInput != null) {
+      final inputTaxRate = taxInput / 100.0;
+      if ((inputTaxRate - _preview!.taxRate).abs() > 0.001) return true;
+    }
+
+    if (_isEarlyCheckOut && _recalculateRoomAmount != _preview!.isEarlyCheckOut) {
+      return true;
+    }
+    return false;
+  }
+
+  num get _effectiveRoomAmount {
+    if (_preview != null && !_hasCustomAdjustments) {
+      return _preview!.roomAmount;
+    }
+    if (_isEarlyCheckOut) {
+      return _recalculateRoomAmount ? _recalculatedRoomAmount : _originalRoomAmount;
+    }
+    return _preview?.roomAmount ?? widget.booking.totalAmount;
+  }
+
+  num get _effectiveServicesAmount => _preview?.servicesAmount ?? 0;
+
+  num get _effectiveDiscount =>
+      num.tryParse(_discountController.text.trim()) ?? (_preview?.discount ?? 0);
+
+  num get _effectiveTaxRate =>
+      (num.tryParse(_taxController.text.trim()) ??
+          (_preview != null ? (_preview!.taxRate * 100) : 10)) /
+      100.0;
+
+  num get _effectiveTaxable =>
+      (_effectiveRoomAmount + _effectiveServicesAmount - _effectiveDiscount)
+          .clamp(0, double.infinity);
+
+  num get _effectiveTax {
+    if (_preview != null && !_hasCustomAdjustments) {
+      return _preview!.tax;
+    }
+    return (_effectiveTaxable * _effectiveTaxRate).round();
+  }
+
+  num get _effectiveFinalAmount {
+    if (_preview != null && !_hasCustomAdjustments) {
+      return _preview!.finalAmount;
+    }
+    return (_effectiveTaxable + _effectiveTax).round();
+  }
+
+  num get _effectivePaidAmount => _preview?.paidAmount ?? 0;
+
+  num get _amountDue {
+    if (_preview == null) return 0;
+    if (!_hasCustomAdjustments) {
+      return _preview!.amountDue;
+    }
+    return (_effectiveFinalAmount - _effectivePaidAmount).clamp(0, double.infinity);
+  }
+
+  num get _refundDue {
+    if (_preview == null) return 0;
+    if (!_hasCustomAdjustments) {
+      return _preview!.refundDue;
+    }
+    return (_effectivePaidAmount - _effectiveFinalAmount).clamp(0, double.infinity);
+  }
+
+  void _syncAmounts() {
+    if (_amountEdited) return;
+    if (_refundDue > 0) {
+      _refundController.text = Formatters.formatNumber(_refundDue);
+      _amountCollectedController.clear();
+    } else if (_amountDue > 0) {
+      _amountCollectedController.text = Formatters.formatNumber(_amountDue);
+      _refundController.clear();
+    } else {
+      _amountCollectedController.clear();
+      _refundController.clear();
+    }
+  }
 
   Future<void> _loadPreview() async {
     setState(() {
@@ -215,12 +404,15 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
       setState(() {
         _preview = preview;
         _isLoadingPreview = false;
-        // Mặc định thu trọn số còn lại — thao tác phổ biến nhất ở quầy.
-        if (!_amountEdited && preview.amountDue > 0) {
-          _amountCollectedController.text = Formatters.formatNumber(
-            preview.amountDue,
-          );
+        _recalculateRoomAmount = preview.isEarlyCheckOut;
+        if (!_amountEdited) {
+          if (preview.discount > 0) {
+            _discountController.text = preview.discount.toInt().toString();
+          }
+          final taxPct = (preview.taxRate * 100).round();
+          _taxController.text = taxPct.toString();
         }
+        _syncAmounts();
       });
     } catch (e) {
       if (!mounted) return;
@@ -236,12 +428,23 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
     final taxPercent = num.tryParse(_taxController.text.trim()) ?? 10;
     final collected =
         Formatters.parseCurrency(_amountCollectedController.text) ?? 0;
+    final refund =
+        Formatters.parseCurrency(_refundController.text) ?? _refundDue;
 
     // Máy chủ cũng chặn thu vượt, báo sớm ở đây để đỡ một vòng gọi API.
-    if (_preview != null && _amountDue > 0 && collected > _amountDue) {
+    if (_amountDue > 0 && collected > _amountDue) {
       setState(() {
         _errorMessage =
             'Không thu vượt số còn lại (${Formatters.formatCurrency(_amountDue)}).';
+      });
+      return;
+    }
+
+    // Kiểm tra thanh toán: Nếu còn tiền phải thu, bắt buộc phải thu đủ trước khi hoàn tất trả phòng và đổi trạng thái phòng
+    if (_amountDue > 0 && collected < _amountDue) {
+      setState(() {
+        _errorMessage =
+            'Vui lòng thu đủ số tiền còn lại (${Formatters.formatCurrency(_amountDue)}) trước khi hoàn tất trả phòng và đổi trạng thái phòng.';
       });
       return;
     }
@@ -257,8 +460,13 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
         paymentMethod: _paymentMethod,
         discount: discount > 0 ? discount : null,
         taxRate: taxPercent / 100.0,
-        // Bỏ trống = không thu thêm; khách vẫn được trả phòng.
         amountCollected: collected > 0 ? collected : null,
+        recalculateRoomAmount: _isEarlyCheckOut ? _recalculateRoomAmount : null,
+        refundAmount: _refundDue > 0 ? refund : null,
+        refundMethod: _refundDue > 0 ? _refundMethod : null,
+        refundReason: _isEarlyCheckOut
+            ? 'Khách trả phòng trước hạn ($_actualNights/$_bookedNights đêm)'
+            : null,
       );
       if (!mounted) return;
       Navigator.of(context).pop(result);
@@ -346,58 +554,63 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (_isEarlyCheckOut) _buildEarlyCheckOutBanner(palette),
                     // Bảng kê & số còn phải thu
                     // (GET /bookings/:id/checkout-preview)
                     _buildPreviewSection(palette),
                     const SizedBox(height: AppSpacing.md),
 
-                    // Chọn phương thức thanh toán
-                    Text(
-                      'Phương thức thanh toán:',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: palette.ink,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    DropdownButtonFormField<String>(
-                      initialValue: _paymentMethod,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.sm),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
+                    if (_refundDue > 0)
+                      _buildRefundSection(palette)
+                    else ...[
+                      // Chọn phương thức thanh toán
+                      Text(
+                        'Phương thức thanh toán:',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: palette.ink,
                         ),
                       ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'CASH',
-                          child: Text('Tiền mặt (CASH)'),
+                      const SizedBox(height: AppSpacing.xs),
+                      DropdownButtonFormField<String>(
+                        initialValue: _paymentMethod,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.sm,
+                          ),
                         ),
-                        DropdownMenuItem(
-                          value: 'BANK_TRANSFER',
-                          child: Text('Chuyển khoản (BANK_TRANSFER)'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'CREDIT_CARD',
-                          child: Text('Thẻ tín dụng (CREDIT_CARD)'),
-                        ),
-                      ],
-                      onChanged: _isSubmitting
-                          ? null
-                          : (val) {
-                              if (val != null) {
-                                setState(() => _paymentMethod = val);
-                              }
-                            },
-                    ),
-                    const SizedBox(height: AppSpacing.md),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'CASH',
+                            child: Text('Tiền mặt (CASH)'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'BANK_TRANSFER',
+                            child: Text('Chuyển khoản (BANK_TRANSFER)'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'CREDIT_CARD',
+                            child: Text('Thẻ tín dụng (CREDIT_CARD)'),
+                          ),
+                        ],
+                        onChanged: _isSubmitting
+                            ? null
+                            : (val) {
+                                if (val != null) {
+                                  setState(() => _paymentMethod = val);
+                                }
+                              },
+                      ),
+                      const SizedBox(height: AppSpacing.md),
 
-                    // Số tiền thu ngân thực nhận -> amountCollected
-                    _buildAmountCollectedField(palette),
+                      // Số tiền thu ngân thực nhận -> amountCollected
+                      _buildAmountCollectedField(palette),
+                    ],
                     const SizedBox(height: AppSpacing.md),
 
                     Row(
@@ -515,7 +728,9 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _checkOutBlue,
+                  backgroundColor: _refundDue > 0
+                      ? palette.statusAvailable
+                      : _checkOutBlue,
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.button),
@@ -530,9 +745,11 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        'Xác nhận Trả phòng & Xuất Hóa đơn',
-                        style: TextStyle(
+                    : Text(
+                        _refundDue > 0
+                            ? 'Xác nhận Trả phòng & Hoàn tiền'
+                            : 'Xác nhận Trả phòng & Xuất Hóa đơn',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                         ),
@@ -623,6 +840,15 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
     final preview = _preview;
     if (preview == null) return const SizedBox.shrink();
 
+    final effectiveRoom = _effectiveRoomAmount;
+    final effectiveServices = _effectiveServicesAmount;
+    final effectiveDisc = _effectiveDiscount;
+    final effectiveTax = _effectiveTax;
+    final effectiveFinal = _effectiveFinalAmount;
+    final effectivePaid = _effectivePaidAmount;
+    final effectiveDue = _amountDue;
+    final effectiveRefund = _refundDue;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -636,61 +862,109 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
           ),
           child: Column(
             children: [
-              _buildPreviewRow(palette, 'Tiền phòng', preview.roomAmount),
-              if (preview.servicesAmount > 0)
+              _buildPreviewRow(
+                palette,
+                _isEarlyCheckOut
+                    ? (_recalculateRoomAmount
+                        ? 'Tiền phòng ($_actualNights/$_bookedNights đêm)'
+                        : 'Tiền phòng (Giữ nguyên $_bookedNights đêm)')
+                    : 'Tiền phòng',
+                effectiveRoom,
+              ),
+              if (effectiveServices > 0)
                 _buildPreviewRow(
                   palette,
                   'Dịch vụ phát sinh',
-                  preview.servicesAmount,
+                  effectiveServices,
                 ),
-              if (preview.discount > 0)
-                _buildPreviewRow(palette, 'Giảm giá', -preview.discount),
-              if (preview.tax > 0)
-                _buildPreviewRow(palette, 'Thuế VAT', preview.tax),
+              if (effectiveDisc > 0)
+                _buildPreviewRow(palette, 'Giảm giá', -effectiveDisc),
+              if (effectiveTax > 0)
+                _buildPreviewRow(palette, 'Thuế VAT', effectiveTax),
               Divider(height: 18, color: palette.border),
               _buildPreviewRow(
                 palette,
                 'Tổng hóa đơn',
-                preview.finalAmount,
+                effectiveFinal,
                 isBold: true,
               ),
               _buildPreviewRow(
                 palette,
                 'Đã thu (gồm tiền cọc)',
-                preview.paidAmount,
+                effectivePaid,
                 color: palette.statusAvailableInk,
               ),
               Divider(height: 18, color: palette.border),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'CÒN PHẢI THU',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: palette.ink,
-                      letterSpacing: 0.3,
+              if (effectiveRefund > 0)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.currency_exchange_rounded,
+                          size: 16,
+                          color: palette.statusAvailableInk,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'CẦN HOÀN TRẢ KHÁCH',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: palette.statusAvailableInk,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        Formatters.formatCurrency(preview.amountDue),
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: preview.amountDue > 0
-                              ? palette.error
-                              : palette.statusAvailableInk,
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          Formatters.formatCurrency(effectiveRefund),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: palette.statusAvailableInk,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                )
+              else
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'CÒN PHẢI THU',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: palette.ink,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          Formatters.formatCurrency(effectiveDue),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: effectiveDue > 0
+                                ? palette.error
+                                : palette.statusAvailableInk,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -794,7 +1068,7 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
           onChanged: (_) => setState(() => _amountEdited = true),
           style: TextStyle(fontWeight: FontWeight.w700, color: palette.accent),
           decoration: InputDecoration(
-            hintText: 'Bỏ trống = không thu thêm',
+            hintText: 'Nhập số tiền thu tại quầy',
             suffixText: '₫',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -812,7 +1086,8 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
           children: [
             if (due > 0)
               ActionChip(
-                label: Text('Thu đủ ${Formatters.formatNumber(due)}'),
+                avatar: const Icon(Icons.check_circle_rounded, size: 16),
+                label: Text('Thu đủ ${Formatters.formatNumber(due)} ₫'),
                 onPressed: _isSubmitting
                     ? null
                     : () => setState(() {
@@ -821,22 +1096,242 @@ class _CheckOutSheetState extends State<CheckOutSheet> {
                             Formatters.formatNumber(due);
                       }),
               ),
-            ActionChip(
-              label: const Text('Không thu thêm'),
-              onPressed: _isSubmitting
-                  ? null
-                  : () => setState(() {
-                      _amountEdited = true;
-                      _amountCollectedController.clear();
-                    }),
-            ),
           ],
         ),
         const SizedBox(height: 4),
         Text(
-          'Bỏ trống thì khách vẫn trả phòng được — hóa đơn còn nợ sẽ hiện trong '
-          'app của khách để trả sau.',
+          'Cần kiểm tra và thu đủ thanh toán để hoàn tất thủ tục trả phòng và chuyển trạng thái phòng sang Chờ dọn.',
           style: TextStyle(fontSize: 11.5, color: palette.inkMuted),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEarlyCheckOutBanner(AppPalette palette) {
+    if (!_isEarlyCheckOut) return const SizedBox.shrink();
+
+    final booked = _bookedNights;
+    final actual = _actualNights;
+    final scheduledDate = Formatters.formatDate(widget.booking.checkOutDate);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: palette.warningSurface,
+        borderRadius: BorderRadius.circular(AppRadius.cardSmall),
+        border: Border.all(color: palette.warning.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: palette.warning,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+                child: const Text(
+                  'TRẢ PHÒNG TRƯỚC HẠN',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Expanded(
+                child: Text(
+                  'Lưu trú: $actual / $booked đêm',
+                  textAlign: TextAlign.end,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: palette.warningInk,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Khách làm thủ tục trả phòng trước ngày dự kiến ($scheduledDate).',
+            style: TextStyle(fontSize: 12, color: palette.warningInk),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Material(
+            color: palette.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+              side: BorderSide(color: palette.border),
+            ),
+            child: SwitchListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+              ),
+              dense: true,
+              title: const Text(
+                'Tính lại tiền phòng theo số đêm thực tế',
+                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+              ),
+              subtitle: Text(
+                _recalculateRoomAmount
+                    ? 'Áp dụng $actual đêm: ${Formatters.formatCurrency(_recalculatedRoomAmount)} (Đơn giá ${Formatters.formatCurrency(_basePrice)}/đêm)'
+                    : 'Giữ nguyên giá ban đầu: ${Formatters.formatCurrency(_originalRoomAmount)} ($booked đêm)',
+                style: TextStyle(fontSize: 11.5, color: palette.inkMuted),
+              ),
+              value: _recalculateRoomAmount,
+              activeThumbColor: palette.accent,
+              onChanged: _isSubmitting
+                  ? null
+                  : (val) {
+                      setState(() {
+                        _recalculateRoomAmount = val;
+                        _amountEdited = false;
+                        _syncAmounts();
+                      });
+                    },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRefundSection(AppPalette palette) {
+    final refund = _refundDue;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: palette.statusAvailable.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            border: Border.all(
+              color: palette.statusAvailable.withValues(alpha: 0.35),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.currency_exchange_rounded,
+                size: 20,
+                color: palette.statusAvailableInk,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  'Khách đã thanh toán/đặt cọc vượt quá tiền phòng thực tế (${Formatters.formatCurrency(refund)}). '
+                  'Vui lòng hoàn tiền cho khách tại quầy để hoàn tất trả phòng.',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: palette.statusAvailableInk,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          'Hình thức hoàn tiền:',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: palette.ink,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        DropdownButtonFormField<String>(
+          initialValue: _refundMethod,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+          ),
+          items: const [
+            DropdownMenuItem(
+              value: 'CASH',
+              child: Text('Tiền mặt (CASH)'),
+            ),
+            DropdownMenuItem(
+              value: 'BANK_TRANSFER',
+              child: Text('Chuyển khoản (BANK_TRANSFER)'),
+            ),
+            DropdownMenuItem(
+              value: 'CREDIT_CARD',
+              child: Text('Hoàn thẻ (CREDIT_CARD)'),
+            ),
+          ],
+          onChanged: _isSubmitting
+              ? null
+              : (val) {
+                  if (val != null) {
+                    setState(() => _refundMethod = val);
+                  }
+                },
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          'Số tiền hoàn trả khách (VNĐ):',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: palette.ink,
+          ),
+        ),
+        const SizedBox(height: 4),
+        TextField(
+          controller: _refundController,
+          enabled: !_isSubmitting,
+          keyboardType: TextInputType.number,
+          inputFormatters: [CurrencyInputFormatter()],
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: palette.statusAvailableInk,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Nhập số tiền hoàn cho khách',
+            suffixText: '₫',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.xs,
+          children: [
+            if (refund > 0)
+              ActionChip(
+                avatar: const Icon(Icons.check_circle_rounded, size: 16),
+                label: Text('Hoàn đủ ${Formatters.formatNumber(refund)} ₫'),
+                onPressed: _isSubmitting
+                    ? null
+                    : () => setState(() {
+                        _refundController.text = Formatters.formatNumber(refund);
+                      }),
+              ),
+          ],
         ),
       ],
     );

@@ -142,6 +142,8 @@ class ApiEndpoints {
   static String changeUserPassword(String id) => '/users/$id/password';
   /// GET — ADMIN (SSE stream realtime danh sách người dùng)
   static const String usersStream = '/users/stream';
+  /// PATCH / POST — Cập nhật FCM token nhận push notification
+  static const String fcmToken = '/users/fcm-token';
 
   // --- Services (§3.8 & A2) --------------------------------------------------
   /// GET — Public, POST — ADMIN
@@ -179,4 +181,14 @@ class ApiEndpoints {
   static const String shifts = '/shifts';
   /// GET — ADMIN, RECEPTIONIST (Chi tiết ca trực & các giao dịch trong ca)
   static String shiftDetail(String id) => '/shifts/$id';
+
+  // --- Notifications ---------------------------------------------------------
+  /// GET — Lấy danh sách thông báo của user hiện tại
+  static const String notifications = '/notifications';
+  /// PATCH — Đánh dấu tất cả là đã đọc
+  static const String notificationsReadAll = '/notifications/read-all';
+  /// PATCH — Đánh dấu một thông báo là đã đọc
+  static String markNotificationRead(String id) => '/notifications/$id/read';
+  /// POST — Bắn thông báo thử nghiệm
+  static const String notificationsTest = '/notifications/test';
 }

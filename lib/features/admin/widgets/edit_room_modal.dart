@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/role_enum.dart';
 import '../../../core/theme/app_palette.dart';
@@ -75,6 +76,7 @@ class _EditRoomModalState extends State<EditRoomModal> {
 
   bool _isLoadingTypes = false;
   bool _isSubmitting = false;
+  bool _isDeleting = false;
   bool _isUploadingImages = false;
 
   final ImagePicker _picker = ImagePicker();
@@ -279,6 +281,81 @@ class _EditRoomModalState extends State<EditRoomModal> {
         context,
         e,
         title: 'Cập nhật phòng thất bại',
+      );
+    }
+  }
+
+  Future<void> _confirmAndDeleteRoom() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.rose.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.delete_forever_rounded, color: AppColors.rose, size: 22),
+            ),
+            const SizedBox(width: 10),
+            const Text('Xác Nhận Xóa Phòng', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+          ],
+        ),
+        content: Text(
+          'Bạn có chắc chắn muốn xóa vĩnh viễn Phòng ${widget.room.roomNumber} khỏi hệ thống không?\n\nLưu ý: Nếu phòng đã có lịch sử đơn đặt phòng, hệ thống sẽ yêu cầu bạn chuyển sang trạng thái "Bảo trì" để bảo vệ tính toàn vẹn dữ liệu.',
+          style: const TextStyle(fontSize: 13, height: 1.45),
+        ),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            style: OutlinedButton.styleFrom(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
+            ),
+            child: const Text('Hủy bỏ'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.rose,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
+            ),
+            child: const Text('Xóa Phòng'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isDeleting = true);
+
+    try {
+      await _roomRepo.deleteRoom(widget.room.id);
+      if (!mounted) return;
+
+      setState(() => _isDeleting = false);
+      Navigator.of(context).pop(true);
+      widget.onSuccess?.call();
+
+      AppNotification.showSuccess(
+        context,
+        'Đã xóa phòng ${widget.room.roomNumber} thành công!',
+        title: 'Đã xóa phòng',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isDeleting = false);
+      AppNotification.showError(
+        context,
+        e,
+        title: 'Xóa phòng thất bại',
       );
     }
   }
@@ -922,6 +999,35 @@ class _EditRoomModalState extends State<EditRoomModal> {
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: _isSubmitting || _isDeleting ? null : _confirmAndDeleteRoom,
+                  icon: _isDeleting
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.rose),
+                        )
+                      : const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.rose),
+                  label: Text(
+                    _isDeleting ? 'Đang xóa phòng...' : 'Xóa phòng ${widget.room.roomNumber} vĩnh viễn (ADMIN)',
+                    style: const TextStyle(
+                      color: AppColors.rose,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: AppColors.rose.withValues(alpha: 0.08),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.button),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
             ],
           ),
         ),

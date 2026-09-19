@@ -14,6 +14,7 @@ import '../../../shared/models/room_model.dart';
 import '../../../shared/repositories/booking_repository.dart';
 import '../../../shared/repositories/room_repository.dart';
 import '../../admin/widgets/edit_room_modal.dart';
+import '../../customer/widgets/create_room_modal.dart';
 import '../widgets/add_service_sheet.dart';
 import '../widgets/change_room_sheet.dart';
 import '../widgets/check_in_confirm_dialog.dart';
@@ -138,6 +139,34 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
 
   Future<void> _updateRoomStatus(RoomModel room, RoomStatus newStatus) async {
     if (room.status == newStatus) return;
+
+    if (room.status == RoomStatus.occupied && newStatus == RoomStatus.available) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Phòng ${room.roomNumber} đang có khách lưu trú. Vui lòng kiểm tra thanh toán và hoàn tất thủ tục trả phòng.',
+          ),
+          backgroundColor: context.palette.warning,
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Trả phòng ngay',
+            textColor: Colors.white,
+            onPressed: () async {
+              try {
+                final bookings = await _bookingRepo.fetchBookings(
+                  roomId: room.id,
+                  status: 'CHECKED_IN',
+                );
+                if (bookings.isNotEmpty && mounted) {
+                  _performCheckOut(room, bookings.first);
+                }
+              } catch (_) {}
+            },
+          ),
+        ),
+      );
+      return;
+    }
 
     final oldStatus = room.status;
     final roomId = room.id;
@@ -613,6 +642,32 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _deleteRoom(room);
+                      },
+                      icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.rose),
+                      label: Text(
+                        'Xóa Phòng ${room.roomNumber} (ADMIN)',
+                        style: const TextStyle(
+                          color: AppColors.rose,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        backgroundColor: AppColors.rose.withValues(alpha: 0.08),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.button),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
                 ],
                 SizedBox(
                   width: double.infinity,
@@ -810,6 +865,77 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
     );
   }
 
+  Future<void> _deleteRoom(RoomModel room) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
+        title: const Row(
+          children: [
+            Icon(Icons.delete_forever_rounded, color: AppColors.rose, size: 22),
+            SizedBox(width: 8),
+            Text('Xác Nhận Xóa Phòng', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          ],
+        ),
+        content: Text(
+          'Bạn có chắc chắn muốn xóa Phòng ${room.roomNumber} khỏi hệ thống không?\n\nLưu ý: Nếu phòng đã có lịch sử đơn đặt phòng, hệ thống sẽ yêu cầu bạn chuyển sang trạng thái "Bảo trì" để bảo toàn dữ liệu.',
+          style: const TextStyle(fontSize: 13, height: 1.45),
+        ),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Hủy bỏ'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.rose,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Xóa Phòng'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _roomRepo.deleteRoom(room.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã xóa phòng ${room.roomNumber} thành công!'),
+            backgroundColor: context.palette.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        _fetchRooms(isSilent: true);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Xóa phòng thất bại: ${e.toString()}'),
+            backgroundColor: context.palette.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  void _openCreateRoomModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => CreateRoomModal(
+        onSuccess: () => _fetchRooms(isSilent: true),
+      ),
+    );
+  }
+
   Widget _buildActionButton({
     required BuildContext ctx,
     required RoomModel room,
@@ -991,6 +1117,13 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                       ),
                       Row(
                         children: [
+                          if (context.readRole.canEditRoom) ...[
+                            _buildGlassCircleBtn(
+                              icon: Icons.add_rounded,
+                              onTap: _openCreateRoomModal,
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                          ],
                           _buildGlassCircleBtn(
                             icon: Icons.refresh,
                             onTap: () => _fetchRooms(isSilent: true),

@@ -17,11 +17,33 @@ class CheckoutPreviewModel {
   final num servicesAmount;
   final num discount;
   final num tax;
+  final num taxRate;
   final num finalAmount;
   final num paidAmount;
 
   /// Số còn phải thu do backend tính — FE không tự trừ.
   final num amountDue;
+
+  /// Số tiền khách sạn cần hoàn trả cho khách khi trả phòng trước hạn và đã thu dư.
+  final num refundDue;
+
+  /// Cờ nhận diện lượt trả phòng là trước hạn (Early Check-Out).
+  final bool isEarlyCheckOut;
+
+  /// Số đêm đặt ban đầu theo hợp đồng.
+  final int bookedNights;
+
+  /// Số đêm lưu trú thực tế.
+  final int actualNights;
+
+  /// Đơn giá phòng 1 đêm.
+  final num basePrice;
+
+  /// Tiền phòng ban đầu theo đơn đặt.
+  final num originalRoomAmount;
+
+  /// Tiền phòng tính lại theo số đêm thực tế.
+  final num recalculatedRoomAmount;
 
   final String? paymentStatus;
   final List<InvoiceItemModel> items;
@@ -42,9 +64,17 @@ class CheckoutPreviewModel {
     this.servicesAmount = 0,
     this.discount = 0,
     this.tax = 0,
+    this.taxRate = 0.1,
     this.finalAmount = 0,
     this.paidAmount = 0,
     this.amountDue = 0,
+    this.refundDue = 0,
+    this.isEarlyCheckOut = false,
+    this.bookedNights = 1,
+    this.actualNights = 1,
+    this.basePrice = 0,
+    this.originalRoomAmount = 0,
+    this.recalculatedRoomAmount = 0,
     this.paymentStatus,
     this.items = const [],
     this.payments = const [],
@@ -61,7 +91,10 @@ class CheckoutPreviewModel {
         : const <String, dynamic>{};
 
     num pickNum(String key, {num fallback = 0}) =>
-        (json[key] as num?) ?? (invoice[key] as num?) ?? fallback;
+        (json[key] as num?) ??
+        (invoice[key] as num?) ??
+        (booking[key] as num?) ??
+        fallback;
 
     String? pickStr(String key) =>
         json[key]?.toString() ?? invoice[key]?.toString() ?? booking[key]?.toString();
@@ -89,11 +122,30 @@ class CheckoutPreviewModel {
     );
 
     final finalAmount = pickNum('finalAmount');
-    final paidAmount = pickNum('paidAmount');
+    final paidAmount = pickNum(
+      'paidAmount',
+      fallback: pickNum(
+        'alreadyPaidAmount',
+        fallback: pickNum('depositAmount'),
+      ),
+    );
+    final taxRate = (json['taxRate'] as num?) ??
+        (invoice['taxRate'] as num?) ??
+        0.1;
     final amountDue = (json['amountDue'] as num?) ??
         (json['remainingAmount'] as num?) ??
         (invoice['remainingAmount'] as num?) ??
         (finalAmount - paidAmount).clamp(0, double.infinity);
+    final refundDue = (json['refundDue'] as num?) ??
+        (paidAmount > finalAmount ? (paidAmount - finalAmount) : 0);
+    final isEarlyCheckOut = (json['isEarlyCheckOut'] as bool?) ?? false;
+    final bookedNights = (json['bookedNights'] as num?)?.toInt() ?? 1;
+    final actualNights = (json['actualNights'] as num?)?.toInt() ?? 1;
+    final basePrice = pickNum('basePrice');
+    final originalRoomAmount =
+        pickNum('originalRoomAmount', fallback: pickNum('roomAmount'));
+    final recalculatedRoomAmount =
+        pickNum('recalculatedRoomAmount', fallback: pickNum('roomAmount'));
 
     return CheckoutPreviewModel(
       bookingId: json['bookingId']?.toString() ?? booking['id']?.toString(),
@@ -108,9 +160,17 @@ class CheckoutPreviewModel {
       servicesAmount: pickNum('servicesAmount'),
       discount: pickNum('discount'),
       tax: pickNum('tax'),
+      taxRate: taxRate,
       finalAmount: finalAmount,
       paidAmount: paidAmount,
       amountDue: amountDue,
+      refundDue: refundDue,
+      isEarlyCheckOut: isEarlyCheckOut,
+      bookedNights: bookedNights,
+      actualNights: actualNights,
+      basePrice: basePrice,
+      originalRoomAmount: originalRoomAmount,
+      recalculatedRoomAmount: recalculatedRoomAmount,
       paymentStatus: pickStr('paymentStatus'),
       items: rawItems
               ?.whereType<Map>()

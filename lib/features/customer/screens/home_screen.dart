@@ -19,9 +19,12 @@ import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../shared/widgets/motion/staggered_list.dart';
 import '../../../shared/widgets/skeletons/room_card_skeleton.dart';
 import '../../../shared/widgets/status_badge.dart';
+import '../../../shared/widgets/room_status_update_sheet.dart';
+import '../../../core/constants/role_permissions.dart';
 
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
+import '../../notifications/repositories/notification_repository.dart';
 import '../widgets/create_booking_modal.dart';
 
 double _lerp(double a, double b, double t) => a + (b - a) * t;
@@ -113,7 +116,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   void initState() {
     super.initState();
     _roomRepository.addListener(_onRepositoryUpdated);
-    _roomRepository.fetchRooms();
+    _roomRepository.startRealtimeStream();
+    _roomRepository.fetchRooms().catchError((_) {});
   }
 
   @override
@@ -309,7 +313,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           description:
               'Hiện tại khách sạn chưa có phòng nào sẵn sàng. Vui lòng tải lại hoặc tạo phòng mới!',
           actionText: 'Tải lại danh sách',
-          onAction: () => _roomRepository.fetchRooms(forceRefresh: true),
+          onAction: () => _roomRepository.fetchRooms(forceRefresh: true).catchError((_) {}),
         ),
       );
     }
@@ -461,7 +465,66 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
+                    // Nút chuông thông báo có badge số lượng chưa đọc
+                    ValueListenableBuilder<int>(
+                      valueListenable: sl<NotificationRepository>().unreadCountNotifier,
+                      builder: (context, unreadCount, _) {
+                        return PressableScale(
+                          onTap: () => context.push('/notifications'),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                width: _lerp(42, 36, t),
+                                height: _lerp(42, 36, t),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: palette.accent.withValues(alpha: 0.5),
+                                    width: 1.2,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.notifications_outlined,
+                                    color: Colors.white,
+                                    size: _lerp(20, 18, t),
+                                  ),
+                                ),
+                              ),
+                              if (unreadCount > 0)
+                                Positioned(
+                                  top: -2,
+                                  right: -2,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.secondary,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: Colors.white, width: 1.2),
+                                    ),
+                                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                    child: Center(
+                                      child: Text(
+                                        unreadCount > 99 ? '99+' : '$unreadCount',
+                                        style: const TextStyle(
+                                          fontFamily: 'Outfit',
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                          height: 1,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
 
                     PressableScale(
                       onTap: () => context.push('/profile'),
@@ -521,6 +584,18 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     return AppCard(
       padding: EdgeInsets.zero,
       onTap: () => context.push('/rooms/${room.id}'),
+      onLongPress: context.readRole.canChangeRoomStatus
+          ? () {
+              RoomStatusUpdateSheet.show(
+                context: context,
+                room: room,
+                roomRepository: sl<RoomRepository>(),
+                onStatusChanged: () => sl<RoomRepository>().fetchRooms(forceRefresh: true),
+                onRoomDeleted: () => sl<RoomRepository>().fetchRooms(forceRefresh: true),
+                onRoomUpdated: () => sl<RoomRepository>().fetchRooms(forceRefresh: true),
+              );
+            }
+          : null,
       // Phòng còn trống được viền accent mảnh để nổi hơn phòng đã kín.
       border: isBookable
           ? Border.all(color: palette.accent.withValues(alpha: 0.35), width: 1)

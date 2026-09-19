@@ -4,8 +4,11 @@ import '../../../shared/models/booking_model.dart';
 
 enum TodayCheckOutsStatus { initial, loading, success, failure }
 
+enum TodayCheckOutScope { today, allActiveStays }
+
 class TodayCheckOutsState extends Equatable {
   final TodayCheckOutsStatus status;
+  final TodayCheckOutScope scope;
   final List<BookingModel> bookings;
   final int selectedTabIndex;
   final String searchQuery;
@@ -13,6 +16,7 @@ class TodayCheckOutsState extends Equatable {
 
   const TodayCheckOutsState({
     this.status = TodayCheckOutsStatus.initial,
+    this.scope = TodayCheckOutScope.today,
     this.bookings = const [],
     this.selectedTabIndex = 0,
     this.searchQuery = '',
@@ -48,6 +52,7 @@ class TodayCheckOutsState extends Equatable {
 
   TodayCheckOutsState copyWith({
     TodayCheckOutsStatus? status,
+    TodayCheckOutScope? scope,
     List<BookingModel>? bookings,
     int? selectedTabIndex,
     String? searchQuery,
@@ -55,6 +60,7 @@ class TodayCheckOutsState extends Equatable {
   }) {
     return TodayCheckOutsState(
       status: status ?? this.status,
+      scope: scope ?? this.scope,
       bookings: bookings ?? this.bookings,
       selectedTabIndex: selectedTabIndex ?? this.selectedTabIndex,
       searchQuery: searchQuery ?? this.searchQuery,
@@ -65,6 +71,7 @@ class TodayCheckOutsState extends Equatable {
   @override
   List<Object?> get props => [
         status,
+        scope,
         bookings,
         selectedTabIndex,
         searchQuery,

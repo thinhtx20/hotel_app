@@ -36,6 +36,8 @@ import '../../features/receptionist/screens/front_desk_today_screen.dart';
 import '../../features/receptionist/screens/room_matrix_screen.dart';
 import '../../features/receptionist/screens/payment_requests_screen.dart';
 import '../../features/receptionist/screens/shift_close_screen.dart';
+import '../../features/notifications/screens/notifications_screen.dart';
+import '../../features/notifications/screens/notification_settings_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../shared/widgets/staff_tab_scaffold.dart';
 
@@ -158,6 +160,8 @@ const Map<String, Set<UserRole>> _sharedRouteAccess = {
   '/receptionist/profile': _staffRoles,
   '/receptionist/dashboard': _staffRoles,
   '/receptionist/shift-close': _staffRoles,
+  '/notifications': {UserRole.customer, UserRole.admin, UserRole.receptionist},
+  '/notification-settings': {UserRole.customer, UserRole.admin, UserRole.receptionist},
 };
 
 /// Route công khai / không gắn với vai trò nào.
@@ -189,6 +193,10 @@ bool _canAccess(UserRole role, String location) {
 }
 
 class AppRouter {
+  static final GlobalKey<NavigatorState> rootNavigatorKey =
+      GlobalKey<NavigatorState>();
+  static GoRouter? router;
+
   static GoRouter createRouter(AuthBloc authBloc) {
     // Tài khoản của lần chạy guard gần nhất. Đổi tài khoản giữa phiên (nút
     // chuyển vai trò ở Hồ sơ, hoặc đăng nhập lại) phải nhảy về màn chính của
@@ -196,7 +204,8 @@ class AppRouter {
     // nếu không, người dùng ở nguyên màn cũ và tưởng app không đổi gì.
     String? lastUserId;
 
-    return GoRouter(
+    final r = GoRouter(
+      navigatorKey: rootNavigatorKey,
       initialLocation: '/',
       refreshListenable: GoRouterRefreshStream(authBloc.stream),
       redirect: (context, state) {
@@ -265,6 +274,52 @@ class AppRouter {
         }
 
         return null;
+      },
+      errorBuilder: (context, state) {
+        debugPrint('⚠️ [GoRouter] Không tìm thấy route: ${state.uri.toString()}');
+        final authState = authBloc.state;
+        final fallback = authState is AuthAuthenticated
+            ? authState.user.role.homeRoute
+            : '/login';
+        return Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.explore_off_rounded, size: 52, color: Color(0xFFD97706)),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Không tìm thấy trang yêu cầu',
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Đường dẫn ${state.uri.toString()} không tồn tại hoặc đã thay đổi.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 13,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: () => context.go(fallback),
+                    icon: const Icon(Icons.home_rounded),
+                    label: const Text('Quay về trang chính'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
       },
       routes: [
         GoRoute(
@@ -707,8 +762,24 @@ class AppRouter {
             ),
           ),
         ),
+        GoRoute(
+          path: '/notifications',
+          pageBuilder: (context, state) => AppPage.slide(
+            key: state.pageKey,
+            child: const NotificationsScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/notification-settings',
+          pageBuilder: (context, state) => AppPage.slide(
+            key: state.pageKey,
+            child: const NotificationSettingsScreen(),
+          ),
+        ),
       ],
     );
+    router = r;
+    return r;
   }
 }
 

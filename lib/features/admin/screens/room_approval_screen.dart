@@ -9,7 +9,9 @@ import '../../../di/injection_container.dart';
 import '../../../shared/models/room_model.dart';
 import '../../../shared/repositories/room_repository.dart';
 import '../../../shared/widgets/status_badge.dart';
+import '../../../shared/widgets/room_status_update_sheet.dart';
 import '../../customer/widgets/create_room_modal.dart';
+import '../widgets/edit_room_modal.dart';
 
 class RoomApprovalScreen extends StatefulWidget {
   const RoomApprovalScreen({super.key});
@@ -29,7 +31,7 @@ class _RoomApprovalScreenState extends State<RoomApprovalScreen>
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _roomRepository.fetchRooms(forceRefresh: true);
+      _roomRepository.fetchRooms(forceRefresh: true).catchError((_) {});
     });
   }
 
@@ -102,6 +104,88 @@ class _RoomApprovalScreenState extends State<RoomApprovalScreen>
         );
       }
     }
+  }
+
+  Future<void> _openEditRoom(RoomModel room) async {
+    await EditRoomModal.show(
+      context: context,
+      room: room,
+      roomRepository: _roomRepository,
+      onSuccess: () => _roomRepository.fetchRooms(forceRefresh: true),
+    );
+  }
+
+  Future<void> _deleteRoom(RoomModel room) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.delete_forever_rounded, color: AppColors.rose, size: 22),
+            SizedBox(width: 8),
+            Text('Xác Nhận Xóa Phòng', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          ],
+        ),
+        content: Text(
+          'Bạn có chắc chắn muốn xóa Phòng ${room.roomNumber} khỏi hệ thống không?\n\nLưu ý: Nếu phòng đã có lịch sử đơn đặt phòng, hệ thống sẽ yêu cầu bạn chuyển sang trạng thái "Bảo trì" thay vì xóa.',
+          style: const TextStyle(fontSize: 13, height: 1.45),
+        ),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.rose,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Xóa Phòng'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _processingRoomIds.add(room.id));
+    try {
+      await _roomRepository.deleteRoom(room.id);
+      if (mounted) {
+        setState(() => _processingRoomIds.remove(room.id));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã xóa phòng ${room.roomNumber} thành công!'),
+            backgroundColor: AppColors.emerald,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _processingRoomIds.remove(room.id));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi xóa phòng: ${e.toString()}'),
+            backgroundColor: AppColors.rose,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  void _openStatusSheet(RoomModel room) {
+    RoomStatusUpdateSheet.show(
+      context: context,
+      room: room,
+      roomRepository: _roomRepository,
+      onStatusChanged: () => _roomRepository.fetchRooms(forceRefresh: true),
+      onRoomDeleted: () => _roomRepository.fetchRooms(forceRefresh: true),
+      onRoomUpdated: () => _roomRepository.fetchRooms(forceRefresh: true),
+    );
   }
 
   @override
@@ -344,7 +428,7 @@ class _RoomApprovalScreenState extends State<RoomApprovalScreen>
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () => _roomRepository.fetchRooms(forceRefresh: true),
+                onPressed: () => _roomRepository.fetchRooms(forceRefresh: true).catchError((_) {}),
                 icon: const Icon(Icons.refresh_rounded, size: 18),
                 label: const Text('Thử lại'),
                 style: ElevatedButton.styleFrom(
@@ -441,9 +525,12 @@ class _RoomApprovalScreenState extends State<RoomApprovalScreen>
       ),
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
+          InkWell(
+            onTap: () => _openStatusSheet(room),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Image Thumbnail
@@ -545,14 +632,28 @@ class _RoomApprovalScreenState extends State<RoomApprovalScreen>
               ],
             ),
           ),
+        ),
 
-          // Divider & Action buttons
+        // Divider & Action buttons
           const Divider(height: 1, color: AppColors.slate100),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                // Quick Edit & Delete Icon Buttons
+                IconButton(
+                  onPressed: () => _openEditRoom(room),
+                  icon: const Icon(Icons.edit_outlined, size: 19, color: AppColors.primary),
+                  tooltip: 'Sửa phòng',
+                  visualDensity: VisualDensity.compact,
+                ),
+                IconButton(
+                  onPressed: () => _deleteRoom(room),
+                  icon: const Icon(Icons.delete_outline_rounded, size: 19, color: AppColors.rose),
+                  tooltip: 'Xóa phòng',
+                  visualDensity: VisualDensity.compact,
+                ),
+                const Spacer(),
                 if (isProcessing) ...[
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -582,7 +683,7 @@ class _RoomApprovalScreenState extends State<RoomApprovalScreen>
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
+                        horizontal: 12,
                         vertical: 8,
                       ),
                     ),
@@ -602,29 +703,24 @@ class _RoomApprovalScreenState extends State<RoomApprovalScreen>
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 14,
                         vertical: 8,
                       ),
                     ),
                   ),
                 ] else ...[
-                  // Quick Status Toggle Options
-                  TextButton.icon(
-                    onPressed: room.status == RoomStatus.available ? null : () => _approveRoom(room),
-                    icon: const Icon(Icons.check_circle_outline, size: 16),
-                    label: const Text('Đặt là Đã duyệt'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.emerald,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                    ),
-                  ),
-                  TextButton.icon(
-                    onPressed: room.status == RoomStatus.rejected ? null : () => _rejectRoom(room),
-                    icon: const Icon(Icons.block_outlined, size: 16),
-                    label: const Text('Từ chối'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.rose,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                  // Nút Đổi Trạng Thái mở sheet toàn diện
+                  OutlinedButton.icon(
+                    onPressed: () => _openStatusSheet(room),
+                    icon: const Icon(Icons.published_with_changes_rounded, size: 16),
+                    label: const Text('Đổi trạng thái'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                   ),
                 ],

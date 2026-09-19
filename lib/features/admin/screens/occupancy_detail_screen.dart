@@ -18,6 +18,7 @@ import '../../../shared/repositories/room_repository.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
+import '../../../shared/widgets/room_status_update_sheet.dart';
 
 /// Màn hình Chi tiết Tỷ lệ Lấp đầy (Occupancy Detail Screen)
 /// Phục vụ khi người dùng nhấn vào thẻ "Tỷ lệ lấp đầy" từ Admin Dashboard
@@ -780,6 +781,16 @@ class _OccupancyDetailScreenState extends State<OccupancyDetailScreen> {
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
+      onTap: () {
+        RoomStatusUpdateSheet.show(
+          context: context,
+          room: room,
+          roomRepository: _roomRepository,
+          onStatusChanged: () => _fetchOccupancyDetail(),
+          onRoomDeleted: () => _fetchOccupancyDetail(),
+          onRoomUpdated: () => _fetchOccupancyDetail(),
+        );
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

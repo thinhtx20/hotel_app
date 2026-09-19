@@ -37,6 +37,7 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
   bool _isLoadingTypes = false;
 
   bool _isSubmitting = false;
+  RoomStatus _selectedStatus = RoomStatus.available;
   final List<String> _uploadedImages = [];
   bool _isUploadingImages = false;
   final ImagePicker _picker = ImagePicker();
@@ -160,7 +161,7 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
       id: 'room_${DateTime.now().millisecondsSinceEpoch}',
       roomNumber: roomNumber,
       floor: floor,
-      status: RoomStatus.pendingApproval,
+      status: _selectedStatus,
       pricePerNight: price,
       roomTypeId: _selectedRoomType!.id,
       roomTypeName: _selectedRoomType?.name ?? 'Phòng Tiêu Chuẩn',
@@ -174,6 +175,12 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
       setState(() => _isSubmitting = false);
       Navigator.of(context).pop();
 
+      final successMsg = _selectedStatus == RoomStatus.available
+          ? 'Đã tạo phòng $roomNumber thành công! Phòng đã sẵn sàng đón khách.'
+          : (_selectedStatus == RoomStatus.pendingApproval
+              ? 'Đã tạo phòng $roomNumber! Đang chờ Admin phê duyệt.'
+              : 'Đã tạo phòng $roomNumber! Trạng thái: ${_selectedStatus.label}');
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -182,13 +189,13 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  'Đã tạo phòng $roomNumber! Đang chờ Admin phê duyệt.',
+                  successMsg,
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ],
           ),
-          backgroundColor: AppColors.secondary,
+          backgroundColor: _selectedStatus == RoomStatus.available ? AppColors.emerald : AppColors.secondary,
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
@@ -356,6 +363,48 @@ class _CreateRoomModalState extends State<CreateRoomModal> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Trạng thái ban đầu
+              Text(
+                'TRẠNG THÁI PHÒNG BAN ĐẦU',
+                style: textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: palette.ink,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  RoomStatus.available,
+                  RoomStatus.cleaning,
+                  RoomStatus.maintenance,
+                  RoomStatus.pendingApproval,
+                ].map((st) {
+                  final isSelected = _selectedStatus == st;
+                  return ChoiceChip(
+                    label: Text(st.label),
+                    selected: isSelected,
+                    selectedColor: palette.accent.withValues(alpha: 0.2),
+                    backgroundColor: palette.surfaceMuted,
+                    labelStyle: TextStyle(
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected ? palette.accent : palette.ink,
+                    ),
+                    side: BorderSide(
+                      color: isSelected ? palette.accent : palette.border,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                    onSelected: (val) {
+                      if (val) setState(() => _selectedStatus = st);
+                    },
+                  );
+                }).toList(),
               ),
               const SizedBox(height: AppSpacing.lg),
 
