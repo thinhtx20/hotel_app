@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/theme/app_palette.dart';
+import '../../../di/injection_container.dart';
+import '../../../shared/repositories/room_repository.dart';
+import '../../../shared/widgets/app_error_display.dart';
 import '../../../shared/widgets/motion/pressable_scale.dart';
 import '../../receptionist/screens/room_matrix_screen.dart';
 import 'room_approval_screen.dart';
@@ -18,11 +21,32 @@ class RoomOperationsScreen extends StatefulWidget {
 
 class _RoomOperationsScreenState extends State<RoomOperationsScreen> {
   late int _selectedSegment;
+  bool _isSyncing = false;
 
   @override
   void initState() {
     super.initState();
     _selectedSegment = widget.initialSegment;
+  }
+
+  Future<void> _syncRoomStatuses() async {
+    if (_isSyncing) return;
+    setState(() => _isSyncing = true);
+    try {
+      final repo = sl<RoomRepository>();
+      final result = await repo.syncStatus();
+      if (!mounted) return;
+      setState(() => _isSyncing = false);
+      final syncedCount = result['updatedCount'] ?? result['count'] ?? result['synced'] ?? '';
+      final msg = syncedCount != '' && syncedCount != 0
+          ? 'Đã rà soát & đồng bộ $syncedCount phòng theo lịch đặt hiện hành.'
+          : 'Trạng thái toàn bộ phòng đã khớp chính xác với lịch đặt.';
+      AppNotification.showSuccess(context, msg, title: 'Đồng bộ phòng');
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSyncing = false);
+      AppNotification.showError(context, e, title: 'Đồng bộ thất bại');
+    }
   }
 
   @override
@@ -36,6 +60,22 @@ class _RoomOperationsScreenState extends State<RoomOperationsScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Rà soát & đồng bộ trạng thái phòng (FR-27)',
+            icon: _isSyncing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.sync_rounded),
+            onPressed: _isSyncing ? null : _syncRoomStatuses,
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Container(

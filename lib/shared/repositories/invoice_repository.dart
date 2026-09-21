@@ -427,6 +427,27 @@ class InvoiceRepository {
     }
   }
 
+  /// Lễ tân/Thu ngân từ chối một dòng thanh toán nghi vấn hoặc không thấy tiền:
+  /// POST /invoices/payments/:paymentId/reject (FR-26)
+  Future<InvoiceModel> rejectPayment(
+    String paymentId, {
+    required String reason,
+  }) async {
+    try {
+      final res = await _dioClient.dio.post(
+        ApiEndpoints.rejectInvoicePayment(paymentId),
+        data: {'reason': reason},
+      );
+
+      final data = ApiResult.unwrapNestedMap(res, 'invoice');
+      return InvoiceModel.fromJson(data);
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
   /// Tổng kết ca trực cá nhân: GET /invoices/summary?date=...&staffId=me (S1)
   Future<Map<String, dynamic>> getShiftSummary({
     String? date,

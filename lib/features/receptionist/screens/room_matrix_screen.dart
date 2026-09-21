@@ -70,8 +70,30 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
   final Set<String> _updatingRoomIds = {};
   final GlobalKey<ReceptionistShiftBannerState> _shiftBannerKey = GlobalKey<ReceptionistShiftBannerState>();
 
+  /// Đang gọi API đồng bộ trạng thái phòng (FR-27)
+  bool _isSyncing = false;
+
   /// Chip KPI ca trực đang được chọn để lọc sơ đồ phòng (null = xem tất cả).
   ShiftKpiFilter? _activeFilter;
+
+  Future<void> _syncRoomStatuses() async {
+    if (_isSyncing) return;
+    setState(() => _isSyncing = true);
+    try {
+      final result = await _roomRepo.syncStatus();
+      if (!mounted) return;
+      setState(() => _isSyncing = false);
+      final syncedCount = result['updatedCount'] ?? result['count'] ?? result['synced'] ?? '';
+      final msg = syncedCount != '' && syncedCount != 0
+          ? 'Đã rà soát & đồng bộ $syncedCount phòng theo lịch đặt hiện hành.'
+          : 'Trạng thái toàn bộ phòng đã khớp chính xác với lịch đặt.';
+      AppNotification.showSuccess(context, msg, title: 'Đồng bộ phòng');
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSyncing = false);
+      AppNotification.showError(context, e, title: 'Đồng bộ thất bại');
+    }
+  }
 
   @override
   void initState() {
@@ -1125,6 +1147,13 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
                             const SizedBox(width: AppSpacing.sm),
                           ],
                           _buildGlassCircleBtn(
+                            icon: _isSyncing
+                                ? Icons.hourglass_top_rounded
+                                : Icons.sync_rounded,
+                            onTap: _isSyncing ? null : () => _syncRoomStatuses(),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          _buildGlassCircleBtn(
                             icon: Icons.refresh,
                             onTap: () => _fetchRooms(isSilent: true),
                           ),
@@ -1464,7 +1493,7 @@ class _RoomMatrixScreenState extends State<RoomMatrixScreen> {
 
   Widget _buildGlassCircleBtn({
     required IconData icon,
-    required VoidCallback onTap,
+    VoidCallback? onTap,
   }) {
     return PressableScale(
       onTap: onTap,

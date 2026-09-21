@@ -649,6 +649,21 @@ class RoomRepository extends ChangeNotifier {
     }
   }
 
+  /// Rà soát & Tự động đồng bộ trạng thái phòng theo lịch đặt hiện hành:
+  /// POST /rooms/sync-status (FR-27)
+  Future<Map<String, dynamic>> syncStatus() async {
+    try {
+      final res = await _dioClient.dio.post(ApiEndpoints.roomsSyncStatus);
+      final data = ApiResult.unwrapMap(res);
+      await fetchRooms(forceRefresh: true);
+      return data;
+    } on DioException catch (e) {
+      throw ApiError.fromDioException(e);
+    } catch (e) {
+      throw ApiError.fromDynamic(e);
+    }
+  }
+
   RoomStatus? _findRoomStatus(String roomId) {
     final idx = _rooms.indexWhere((r) => r.id == roomId);
     return idx != -1 ? _rooms[idx].status : null;

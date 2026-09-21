@@ -359,6 +359,24 @@ void main() {
       expect(invoice.paymentStatus, 'PAID');
     });
 
+    test('rejectPayment gửi POST tới /invoices/payments/:id/reject kèm lý do (FR-26)', () async {
+      final stub = _LedgerStubDioClient(
+        (_) => {
+          'invoice': _invoiceWithLedger(),
+        },
+      );
+      final repo = InvoiceRepository(dioClient: stub);
+
+      final invoice = await repo.rejectPayment(
+        'pay-pending',
+        reason: 'Chưa thấy tiền vào tài khoản Techcombank',
+      );
+
+      expect(stub.paths.single, '/invoices/payments/pay-pending/reject');
+      expect((stub.bodies.single as Map)['reason'], 'Chưa thấy tiền vào tài khoản Techcombank');
+      expect(invoice.id, 'inv-77');
+    });
+
     test('danh sách yêu cầu chờ đối chiếu bóc từ mảng data', () async {
       final stub = _LedgerStubDioClient(
         (_) => {

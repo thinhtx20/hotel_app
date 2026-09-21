@@ -109,6 +109,9 @@ class ApiEndpoints {
   /// POST — ADMIN, RECEPTIONIST (xác nhận đã nhận tiền → `paidAmount` mới tăng)
   static String confirmInvoicePayment(String paymentId) =>
       '/invoices/payments/$paymentId/confirm';
+  /// POST — ADMIN, RECEPTIONIST (từ chối yêu cầu chuyển khoản / nghi vấn FR-26)
+  static String rejectInvoicePayment(String paymentId) =>
+      '/invoices/payments/$paymentId/reject';
 
   // --- Analytics (§3.7) -----------------------------------------------------
   /// GET — ADMIN, RECEPTIONIST

@@ -38,6 +38,9 @@ class _PaymentRequestsScreenState extends State<PaymentRequestsScreen> {
   /// Id dòng thanh toán đang gửi lệnh xác nhận.
   String? _confirmingId;
 
+  /// Id dòng thanh toán đang gửi lệnh từ chối.
+  String? _rejectingId;
+
   @override
   void initState() {
     super.initState();
@@ -145,6 +148,117 @@ class _PaymentRequestsScreenState extends State<PaymentRequestsScreen> {
         context,
         e,
         title: 'Xác nhận thanh toán thất bại',
+      );
+    }
+  }
+
+  /// Từ chối giao dịch chuyển khoản không hợp lệ hoặc chưa thấy tiền (FR-26)
+  Future<void> _reject(PaymentRequestModel request) async {
+    final palette = context.palette;
+    final reasonController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final agreed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: palette.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.cancel_outlined, color: palette.error, size: 22),
+            const SizedBox(width: AppSpacing.sm),
+            const Text(
+              'Từ chối giao dịch',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hóa đơn #${request.displayCode} • ${Formatters.formatCurrency(request.amount.abs())}',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Giao dịch này sẽ bị hủy bỏ và không cộng vào hóa đơn. Vui lòng nhập lý do giải thích cho khách hàng.',
+                style: TextStyle(fontSize: 12, color: palette.inkMuted),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(
+                controller: reasonController,
+                maxLines: 2,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Lý do từ chối *',
+                  hintText: 'Ví dụ: Chưa nhận được tiền, sai mã tham chiếu...',
+                  hintStyle: TextStyle(fontSize: 12, color: palette.inkMuted),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                ),
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) {
+                    return 'Vui lòng nhập lý do từ chối';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Đóng'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState?.validate() == true) {
+                Navigator.of(ctx).pop(true);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: palette.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.button),
+              ),
+            ),
+            child: const Text('Từ chối giao dịch'),
+          ),
+        ],
+      ),
+    );
+
+    if (agreed != true || !mounted) return;
+
+    final reason = reasonController.text.trim();
+    setState(() => _rejectingId = request.id);
+    try {
+      await _invoiceRepo.rejectPayment(request.id, reason: reason);
+      if (!mounted) return;
+      setState(() {
+        _requests.removeWhere((r) => r.id == request.id);
+        _rejectingId = null;
+      });
+      AppNotification.showSuccess(
+        context,
+        'Đã từ chối giao dịch của hóa đơn #${request.displayCode}. Lý do: $reason',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _rejectingId = null);
+      AppNotification.showError(
+        context,
+        e,
+        title: 'Từ chối thanh toán thất bại',
       );
     }
   }
@@ -273,6 +387,7 @@ class _PaymentRequestsScreenState extends State<PaymentRequestsScreen> {
 
   Widget _buildRequestCard(AppPalette palette, PaymentRequestModel request) {
     final isConfirming = _confirmingId == request.id;
+    final isRejecting = _rejectingId == request.id;
     final payment = request.payment;
 
     return AppCard(
@@ -376,44 +491,100 @@ class _PaymentRequestsScreenState extends State<PaymentRequestsScreen> {
             ),
           ],
           const SizedBox(height: AppSpacing.md),
-          PressableScale(
-            onTap: isConfirming ? null : () => _confirm(request),
-            child: Container(
-              width: double.infinity,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: AppGradients.gold,
-                borderRadius: BorderRadius.circular(AppRadius.button),
-                boxShadow: AppShadows.goldGlow,
-              ),
-              child: Center(
-                child: isConfirming
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.verified_rounded,
-                              color: Colors.white, size: 18),
-                          SizedBox(width: AppSpacing.sm),
-                          Text(
-                            'Đã thấy tiền — Xác nhận',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
+          Row(
+            children: [
+              // Nút Từ chối giao dịch nghi vấn (FR-26)
+              Expanded(
+                flex: 2,
+                child: PressableScale(
+                  onTap: (isConfirming || isRejecting)
+                      ? null
+                      : () => _reject(request),
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: palette.error.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(AppRadius.button),
+                      border: Border.all(
+                        color: palette.error.withValues(alpha: 0.35),
                       ),
+                    ),
+                    child: Center(
+                      child: isRejecting
+                          ? SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: palette.error,
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.cancel_outlined,
+                                    color: palette.error, size: 17),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Từ chối',
+                                  style: TextStyle(
+                                    color: palette.error,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: AppSpacing.sm),
+              // Nút Xác nhận tiền đã về két/tài khoản
+              Expanded(
+                flex: 3,
+                child: PressableScale(
+                  onTap: (isConfirming || isRejecting)
+                      ? null
+                      : () => _confirm(request),
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: AppGradients.gold,
+                      borderRadius: BorderRadius.circular(AppRadius.button),
+                      boxShadow: AppShadows.goldGlow,
+                    ),
+                    child: Center(
+                      child: isConfirming
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.verified_rounded,
+                                    color: Colors.white, size: 18),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Xác nhận tiền',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
