@@ -1,0 +1,5779 @@
+{
+  "info": {
+    "name": "Luxe Grand Hotel – Hotel Management API",
+    "description": "Bộ request kiểm thử RESTful API (NestJS) cho bài tập lớn Kiến trúc & Thiết kế phần mềm.\nChạy thư mục \"Kiểm thử\" theo đúng thứ tự bằng Collection Runner: các request trước lưu token/ID cho request sau.\nĐặt biến baseUrl = http://localhost:3000/api/v1 khi chạy cục bộ.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1"
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "receptionToken",
+      "value": ""
+    },
+    {
+      "key": "customerToken",
+      "value": ""
+    },
+    {
+      "key": "customerRefresh",
+      "value": ""
+    },
+    {
+      "key": "customerId",
+      "value": ""
+    },
+    {
+      "key": "testEmail",
+      "value": ""
+    },
+    {
+      "key": "roomId",
+      "value": ""
+    },
+    {
+      "key": "bookingId",
+      "value": ""
+    },
+    {
+      "key": "serviceId",
+      "value": ""
+    },
+    {
+      "key": "serviceCode",
+      "value": ""
+    },
+    {
+      "key": "checkIn",
+      "value": ""
+    },
+    {
+      "key": "checkOut",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Kiểm thử (chạy theo thứ tự)",
+      "item": [
+        {
+          "name": "1. Xác thực & tài khoản",
+          "item": [
+            {
+              "name": "TC01 - Đăng ký tài khoản khách hàng mới (cố tình gửi role = ADMIN)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('testEmail', 'sv.test' + Date.now() + '@mail.com');"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC01 - HTTP 201', function () { pm.response.to.have.status(201); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC01 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC01 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.user.role).to.eql('CUSTOMER');",
+                      "  pm.expect(json.data.accessToken).to.be.a('string');",
+                      "});",
+                      "if (pm.response.code === 201) {",
+                      "  pm.collectionVariables.set('customerToken', json.data.accessToken);",
+                      "  pm.collectionVariables.set('customerRefresh', json.data.refreshToken);",
+                      "  pm.collectionVariables.set('customerId', json.data.user.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Test@123\",\n  \"fullName\": \"Sinh Viên Kiểm Thử\",\n  \"phone\": \"0912345678\",\n  \"role\": \"ADMIN\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 201. Tạo tài khoản; server ép role = CUSTOMER; trả về accessToken, refreshToken"
+              }
+            },
+            {
+              "name": "TC02 - Đăng ký trùng email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC02 - HTTP 409', function () { pm.response.to.have.status(409); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC02 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Test@123\",\n  \"fullName\": \"Trùng Email\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 409. message = \"Email này đã được đăng ký trong hệ thống\""
+              }
+            },
+            {
+              "name": "TC03 - Đăng ký thiếu dữ liệu / sai định dạng",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC03 - HTTP 400', function () { pm.response.to.have.status(400); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC03 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });",
+                      "pm.test('TC03 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.errors).to.be.an('array').that.is.not.empty;",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"khong-phai-email\",\n  \"password\": \"123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 400. ValidationPipe trả mảng errors: email sai định dạng, mật khẩu < 6 ký tự, thiếu họ tên"
+              }
+            },
+            {
+              "name": "TC04 - Đăng nhập Admin đúng thông tin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC04 - HTTP 201', function () { pm.response.to.have.status(201); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC04 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC04 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.user.role).to.eql('ADMIN');",
+                      "});",
+                      "if (pm.response.code === 201) {",
+                      "  pm.collectionVariables.set('adminToken', json.data.accessToken);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@hotel.com\",\n  \"password\": \"Admin@123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 201. Trả về user (role = ADMIN), accessToken và refreshToken (JWT)"
+              }
+            },
+            {
+              "name": "TC05 - Đăng nhập Lễ tân",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC05 - HTTP 201', function () { pm.response.to.have.status(201); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC05 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC05 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.user.role).to.eql('RECEPTIONIST');",
+                      "});",
+                      "if (pm.response.code === 201) {",
+                      "  pm.collectionVariables.set('receptionToken', json.data.accessToken);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"reception@hotel.com\",\n  \"password\": \"Staff@123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 201. Trả về user (role = RECEPTIONIST) và cặp token"
+              }
+            },
+            {
+              "name": "TC06 - Đăng nhập sai mật khẩu",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC06 - HTTP 401', function () { pm.response.to.have.status(401); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC06 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"reception@hotel.com\",\n  \"password\": \"sai-mat-khau\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 401. message = \"Email hoặc mật khẩu không chính xác\""
+              }
+            },
+            {
+              "name": "TC07 - Gọi API cần đăng nhập nhưng không gửi token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC07 - HTTP 401', function () { pm.response.to.have.status(401); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC07 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Kết quả mong đợi: HTTP 401. message = \"Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn\""
+              }
+            },
+            {
+              "name": "TC08 - Gửi token giả mạo",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC08 - HTTP 401', function () { pm.response.to.have.status(401); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC08 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "abc.def.ghi",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 401. JwtStrategy từ chối chữ ký không hợp lệ"
+              }
+            },
+            {
+              "name": "TC09 - Xem thông tin cá nhân",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC09 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC09 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC09 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data).to.not.have.property('password');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 200. Trả về hồ sơ của chính tài khoản đang đăng nhập, không có trường password"
+              }
+            },
+            {
+              "name": "TC10 - Làm mới token (refresh token rotation)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC10 - HTTP 201', function () { pm.response.to.have.status(201); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC10 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC10 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.accessToken).to.be.a('string');",
+                      "  pm.expect(json.data.refreshToken).to.be.a('string');",
+                      "});",
+                      "if (pm.response.code === 201) {",
+                      "  pm.collectionVariables.set('customerToken', json.data.accessToken);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/refresh-token",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "refresh-token"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"{{customerRefresh}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 201. Cấp cặp accessToken + refreshToken mới"
+              }
+            },
+            {
+              "name": "TC11 - Cập nhật thông tin cá nhân",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC11 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC11 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC11 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.fullName).to.eql('Sinh Viên Đã Cập Nhật');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Sinh Viên Đã Cập Nhật\",\n  \"phone\": \"0987654321\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 200. fullName, phone được cập nhật"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Phân quyền (RBAC)",
+          "item": [
+            {
+              "name": "TC12 - Khách hàng xem danh sách người dùng",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC12 - HTTP 403', function () { pm.response.to.have.status(403); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC12 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 403. RolesGuard: \"Quyền truy cập bị từ chối: Yêu cầu vai trò [ADMIN, RECEPTIONIST]\""
+              }
+            },
+            {
+              "name": "TC13 - Lễ tân xem báo cáo doanh thu năm (chỉ Admin)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC13 - HTTP 403', function () { pm.response.to.have.status(403); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC13 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/revenue",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "revenue"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{receptionToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 403. RolesGuard chặn vì endpoint chỉ dành cho ADMIN"
+              }
+            },
+            {
+              "name": "TC14 - Khách hàng tạo loại phòng",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC14 - HTTP 403', function () { pm.response.to.have.status(403); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC14 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/room-types",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "room-types"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Hack\",\n  \"code\": \"HACK\",\n  \"basePrice\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 403. Chỉ ADMIN được tạo loại phòng"
+              }
+            },
+            {
+              "name": "TC15 - Admin xem danh sách người dùng có tìm kiếm + phân trang",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC15 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC15 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC15 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.meta.limit).to.eql(5);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users?search=hotel&page=1&limit=5",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "hotel"
+                    },
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "5"
+                    }
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 200. data là mảng ≤ 5 phần tử, meta có total, page = 1, limit = 5, totalPages"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Danh mục: loại phòng, phòng, dịch vụ",
+          "item": [
+            {
+              "name": "TC16 - Xem loại phòng (công khai)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC16 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC16 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/room-types",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "room-types"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Kết quả mong đợi: HTTP 200. Không cần token; trả danh sách loại phòng kèm giá, tiện nghi"
+              }
+            },
+            {
+              "name": "TC17 - Danh sách phòng có phân trang + lọc trạng thái",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC17 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC17 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC17 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.meta).to.have.property('totalPages');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms?status=AVAILABLE&page=1&limit=5",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "AVAILABLE"
+                    },
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "5"
+                    }
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Kết quả mong đợi: HTTP 200. Cấu trúc { data: [...], meta: { total, page, limit, totalPages } }"
+              }
+            },
+            {
+              "name": "TC18 - Lọc phòng với trạng thái không hợp lệ",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC18 - HTTP 400', function () { pm.response.to.have.status(400); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC18 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms?status=ABC",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "ABC"
+                    }
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Kết quả mong đợi: HTTP 400. message = \"status không hợp lệ\""
+              }
+            },
+            {
+              "name": "TC19 - Tìm phòng trống theo khoảng ngày",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const d = 200 + Math.floor(Math.random() * 400);",
+                      "const ci = new Date(Date.now() + d * 86400000); const co = new Date(ci.getTime() + 2 * 86400000);",
+                      "pm.collectionVariables.set('checkIn', ci.toISOString().slice(0, 10));",
+                      "pm.collectionVariables.set('checkOut', co.toISOString().slice(0, 10));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC19 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC19 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "if (pm.response.code === 200) {",
+                      "  const list = Array.isArray(json.data) ? json.data : (json.data.data || []);",
+                      "  if (list.length) pm.collectionVariables.set('roomId', list[0].id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/available?checkInDate={{checkIn}}&checkOutDate={{checkOut}}&guestCount=1",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    "available"
+                  ],
+                  "query": [
+                    {
+                      "key": "checkInDate",
+                      "value": "{{checkIn}}"
+                    },
+                    {
+                      "key": "checkOutDate",
+                      "value": "{{checkOut}}"
+                    },
+                    {
+                      "key": "guestCount",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Kết quả mong đợi: HTTP 200. Trả danh sách phòng không trùng lịch trong khoảng ngày; lưu roomId đầu tiên để đặt phòng"
+              }
+            },
+            {
+              "name": "TC20 - Admin thêm dịch vụ mới",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('serviceCode', 'TEST_' + Date.now());"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC20 - HTTP 201', function () { pm.response.to.have.status(201); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC20 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "if (pm.response.code === 201) {",
+                      "  pm.collectionVariables.set('serviceId', json.data.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/services",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "services"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"{{serviceCode}}\",\n  \"name\": \"Dịch vụ kiểm thử\",\n  \"category\": \"CONVENIENCE\",\n  \"unitPrice\": 50000,\n  \"unit\": \"lần\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 201. Tạo bản ghi dịch vụ, trả về id"
+              }
+            },
+            {
+              "name": "TC21 - Admin thêm dịch vụ với đơn giá âm",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC21 - HTTP 400', function () { pm.response.to.have.status(400); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC21 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/services",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "services"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"NEG\",\n  \"name\": \"Sai giá\",\n  \"category\": \"CONVENIENCE\",\n  \"unitPrice\": -1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 400. message chứa \"Đơn giá phải lớn hơn 0\""
+              }
+            },
+            {
+              "name": "TC22 - Admin cập nhật dịch vụ",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC22 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC22 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC22 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.unitPrice).to.eql(60000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/services/{{serviceId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "services",
+                    "{{serviceId}}"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"unitPrice\": 60000,\n  \"isAvailable\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 200. unitPrice = 60000, isAvailable = false"
+              }
+            },
+            {
+              "name": "TC23 - Admin xóa dịch vụ",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC23 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC23 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/services/{{serviceId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "services",
+                    "{{serviceId}}"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 200. Xóa thành công bản ghi dịch vụ thử"
+              }
+            },
+            {
+              "name": "TC24 - Xem dịch vụ vừa xóa",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC24 - HTTP 404', function () { pm.response.to.have.status(404); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC24 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/services/{{serviceId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "services",
+                    "{{serviceId}}"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Kết quả mong đợi: HTTP 404. Không còn tìm thấy dịch vụ"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Đặt phòng & quản lý trạng thái",
+          "item": [
+            {
+              "name": "TC25 - Đặt phòng với ngày nhận ≥ ngày trả",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC25 - HTTP 400', function () { pm.response.to.have.status(400); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC25 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"checkInDate\": \"{{checkOut}}\",\n  \"checkOutDate\": \"{{checkIn}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 400. message = \"Ngày nhận phòng phải trước ngày trả phòng\""
+              }
+            },
+            {
+              "name": "TC26 - Khách hàng đặt phòng hợp lệ",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC26 - HTTP 201', function () { pm.response.to.have.status(201); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC26 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC26 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.status).to.eql('PENDING');",
+                      "  pm.expect(json.data.nights).to.eql(2);",
+                      "});",
+                      "if (pm.response.code === 201) {",
+                      "  pm.collectionVariables.set('bookingId', json.data.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"checkInDate\": \"{{checkIn}}\",\n  \"checkOutDate\": \"{{checkOut}}\",\n  \"guestCount\": 1,\n  \"specialRequests\": \"Phòng không hút thuốc\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 201. Đơn ở trạng thái PENDING, có bookingCode BK-xxxx, totalAmount = số đêm × giá loại phòng"
+              }
+            },
+            {
+              "name": "TC27 - Đặt trùng lịch cùng phòng",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC27 - HTTP 409', function () { pm.response.to.have.status(409); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC27 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"checkInDate\": \"{{checkIn}}\",\n  \"checkOutDate\": \"{{checkOut}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 409. \"Phòng này đã có khách đặt hoặc đang ở trong khoảng thời gian được chọn\""
+              }
+            },
+            {
+              "name": "TC28 - Check-in đơn đang chờ duyệt",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC28 - HTTP 400', function () { pm.response.to.have.status(400); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC28 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/{{bookingId}}/check-in",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    "{{bookingId}}",
+                    "check-in"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{receptionToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 400. Từ chối vì đơn PENDING chưa được phê duyệt"
+              }
+            },
+            {
+              "name": "TC29 - Lễ tân phê duyệt đơn",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC29 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC29 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC29 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.booking.status).to.eql('CONFIRMED');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/{{bookingId}}/approve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    "{{bookingId}}",
+                    "approve"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{receptionToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"depositAmount\": 0,\n  \"paymentMethod\": \"BANK_TRANSFER\",\n  \"notes\": \"Kiểm thử tự động\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 200. Đơn chuyển PENDING → CONFIRMED, ghi người duyệt và thời điểm duyệt"
+              }
+            },
+            {
+              "name": "TC30 - Khách hàng xem danh sách đơn của mình",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC30 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC30 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC30 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.meta.total).to.eql(1);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings?page=1&limit=10",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 200. Chỉ trả về đơn của chính khách hàng (server ép customerId = user hiện tại)"
+              }
+            },
+            {
+              "name": "TC31 - Khách tự hủy đơn đã được xác nhận",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC31 - HTTP 403', function () { pm.response.to.have.status(403); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC31 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/{{bookingId}}/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    "{{bookingId}}",
+                    "cancel"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cancellationReason\": \"Khách đổi kế hoạch\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 403. Khách chỉ được tự hủy đơn PENDING; đơn CONFIRMED phải liên hệ lễ tân"
+              }
+            },
+            {
+              "name": "TC32 - Lễ tân hủy đơn có lý do",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC32 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC32 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC32 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.status).to.eql('CANCELLED');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/{{bookingId}}/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    "{{bookingId}}",
+                    "cancel"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{receptionToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cancellationReason\": \"Kiểm thử tự động – dọn dữ liệu\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 200. Đơn chuyển CANCELLED, lưu cancellationReason, cancelledAt, cancelledBy"
+              }
+            },
+            {
+              "name": "TC33 - Xem đơn đặt phòng không tồn tại",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC33 - HTTP 404', function () { pm.response.to.have.status(404); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC33 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/00000000-0000-0000-0000-000000000000",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 404. NotFoundException với thông điệp tiếng Việt"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Thống kê, đăng xuất & khóa tài khoản",
+          "item": [
+            {
+              "name": "TC34 - Dashboard thống kê",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC34 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC34 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/dashboard",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "dashboard"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 200. Trả các KPI: công suất phòng, doanh thu, số booking, phòng trống…"
+              }
+            },
+            {
+              "name": "TC35 - Danh sách hóa đơn có phân trang",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC35 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC35 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices?page=1&limit=5",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "5"
+                    }
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{receptionToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 200. Cấu trúc { data, meta }, tối đa 5 hóa đơn"
+              }
+            },
+            {
+              "name": "TC36 - Đăng xuất",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC36 - HTTP 201', function () { pm.response.to.have.status(201); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC36 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/logout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 201. \"Đăng xuất thành công\"; refresh token bị thu hồi, activeSessionId bị xóa"
+              }
+            },
+            {
+              "name": "TC37 - Dùng lại token sau khi đăng xuất",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC37 - HTTP 401', function () { pm.response.to.have.status(401); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC37 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 401. \"Phiên làm việc đã kết thúc do đăng xuất. Vui lòng đăng nhập lại\""
+              }
+            },
+            {
+              "name": "TC38 - Admin vô hiệu hóa tài khoản kiểm thử",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC38 - HTTP 200', function () { pm.response.to.have.status(200); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC38 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
+                      "pm.test('TC38 - Kiểm tra nghiệp vụ', function () {",
+                      "  pm.expect(json.data.isActive).to.eql(false);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/{{customerId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{customerId}}"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Kết quả mong đợi: HTTP 200. isActive = false (xóa mềm)"
+              }
+            },
+            {
+              "name": "TC39 - Đăng nhập bằng tài khoản đã bị khóa",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('TC39 - HTTP 401', function () { pm.response.to.have.status(401); });",
+                      "let json = {};",
+                      "try { json = pm.response.json(); } catch (e) {}",
+                      "pm.test('TC39 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', false); });"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Test@123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Kết quả mong đợi: HTTP 401. message = \"Tài khoản của bạn đã bị khóa\""
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tài liệu tham chiếu – toàn bộ endpoint",
+      "item": [
+        {
+          "name": "Xác thực (AuthController – /auth)",
+          "item": [
+            {
+              "name": "POST /auth/register",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Đăng ký tài khoản khách hàng (server ép role = CUSTOMER). Quyền: Public"
+              }
+            },
+            {
+              "name": "POST /auth/login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Đăng nhập, trả accessToken + refreshToken. Quyền: Public"
+              }
+            },
+            {
+              "name": "POST /auth/refresh-token",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/refresh-token",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "refresh-token"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Cấp lại cặp token mới (token rotation). Quyền: Public"
+              }
+            },
+            {
+              "name": "POST /auth/forgot-password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/forgot-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "forgot-password"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Gửi mã OTP đặt lại mật khẩu qua email. Quyền: Public"
+              }
+            },
+            {
+              "name": "POST /auth/verify-reset-otp",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/verify-reset-otp",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "verify-reset-otp"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Xác thực OTP, nhận resetToken. Quyền: Public"
+              }
+            },
+            {
+              "name": "POST /auth/reset-password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/reset-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "reset-password"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Đặt lại mật khẩu mới. Quyền: Public"
+              }
+            },
+            {
+              "name": "GET /auth/me",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Thông tin tài khoản đang đăng nhập. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "POST /auth/change-password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/change-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "change-password"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Đổi mật khẩu. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "POST /auth/logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/logout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Đăng xuất, thu hồi refresh token, blacklist access token. Quyền: Đăng nhập"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Người dùng (UsersController – /users)",
+          "item": [
+            {
+              "name": "PATCH /users/me",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Cập nhật hồ sơ cá nhân. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "PATCH /users/fcm-token",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/fcm-token",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "fcm-token"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Lưu FCM token nhận thông báo đẩy. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "POST /users",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Tạo tài khoản nhân viên / khách hàng. Quyền: A"
+              }
+            },
+            {
+              "name": "GET /users",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Danh sách người dùng: tìm kiếm, lọc vai trò, phân trang. Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET (SSE) /users/stream",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/stream",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "stream"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Luồng sự kiện realtime khi tài khoản thay đổi. Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET /users/{id}",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Chi tiết người dùng. Quyền: A, R"
+              }
+            },
+            {
+              "name": "PATCH /users/{id}",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Cập nhật thông tin / vai trò người dùng. Quyền: A"
+              }
+            },
+            {
+              "name": "PATCH, POST /users/{id}/password",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/:id/password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":id",
+                    "password"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Quản trị viên đặt lại mật khẩu. Quyền: A"
+              }
+            },
+            {
+              "name": "DELETE /users/{id}",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Vô hiệu hóa tài khoản. Quyền: A"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Loại phòng (RoomTypesController – /room-types)",
+          "item": [
+            {
+              "name": "POST /room-types",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/room-types",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "room-types"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Tạo loại phòng. Quyền: A"
+              }
+            },
+            {
+              "name": "GET /room-types",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/room-types",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "room-types"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Danh sách loại phòng, giá, tiện nghi. Quyền: Public"
+              }
+            },
+            {
+              "name": "GET /room-types/{id}",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/room-types/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "room-types",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Chi tiết loại phòng. Quyền: Public"
+              }
+            },
+            {
+              "name": "PATCH /room-types/{id}",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/room-types/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "room-types",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Cập nhật loại phòng, đơn giá. Quyền: A"
+              }
+            },
+            {
+              "name": "DELETE /room-types/{id}",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/room-types/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "room-types",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Xóa loại phòng. Quyền: A"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Phòng (RoomsController – /rooms)",
+          "item": [
+            {
+              "name": "POST /rooms",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Tạo phòng (Admin duyệt thẳng, vai trò khác tạo bản chờ duyệt). Quyền: A, R, C"
+              }
+            },
+            {
+              "name": "GET (SSE) /rooms/stream",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/stream",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    "stream"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Luồng realtime thay đổi trạng thái phòng. Quyền: Public"
+              }
+            },
+            {
+              "name": "GET /rooms/search",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/search",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    "search"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Tìm kiếm full-text (Elasticsearch, fuzzy, khoảng giá). Quyền: Public"
+              }
+            },
+            {
+              "name": "GET /rooms/available",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/available",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    "available"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Phòng trống theo khoảng ngày (cache Redis 60 giây). Quyền: Public"
+              }
+            },
+            {
+              "name": "GET /rooms",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Sơ đồ / danh sách phòng: lọc tầng, trạng thái, loại; phân trang. Quyền: Public"
+              }
+            },
+            {
+              "name": "GET /rooms/{id}",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Chi tiết phòng. Quyền: Public"
+              }
+            },
+            {
+              "name": "PATCH /rooms/{id}/approve",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/:id/approve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    ":id",
+                    "approve"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Phê duyệt phòng mới. Quyền: A, R"
+              }
+            },
+            {
+              "name": "PATCH /rooms/{id}/reject",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/:id/reject",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    ":id",
+                    "reject"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Từ chối phòng mới. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /rooms/sync-status",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/sync-status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    "sync-status"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Đồng bộ trạng thái phòng theo đơn đặt phòng. Quyền: A, R"
+              }
+            },
+            {
+              "name": "PATCH /rooms/{id}/status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    ":id",
+                    "status"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Cập nhật nhanh trạng thái (trống, dọn dẹp, bảo trì…). Quyền: A, R"
+              }
+            },
+            {
+              "name": "PATCH /rooms/{id}",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Cập nhật một phần thông tin phòng. Quyền: A"
+              }
+            },
+            {
+              "name": "PUT /rooms/{id}",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Cập nhật toàn bộ thông tin phòng. Quyền: A"
+              }
+            },
+            {
+              "name": "DELETE /rooms/{id}",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/rooms/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "rooms",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Xóa phòng. Quyền: A"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đặt phòng & lưu trú (BookingsController – /bookings)",
+          "item": [
+            {
+              "name": "POST /bookings",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Đặt phòng: chống trùng lịch, tự tính tiền. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "GET /bookings",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Danh sách đơn: lọc trạng thái, khoảng ngày, tìm kiếm, phân trang (khách chỉ thấy đơn của mình). Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "GET /bookings/{id}",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Chi tiết đơn. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "PATCH, POST /bookings/{id}/approve",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/approve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "approve"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Phê duyệt đơn và ghi nhận tiền cọc. Quyền: A, R"
+              }
+            },
+            {
+              "name": "PATCH, POST /bookings/{id}/confirm",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/confirm",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "confirm"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Xác nhận đơn PENDING → CONFIRMED. Quyền: A, R"
+              }
+            },
+            {
+              "name": "PATCH, POST /bookings/{id}/reject",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/reject",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "reject"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Từ chối đơn đặt trước. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /bookings/{id}/check-in",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/check-in",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "check-in"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Nhận phòng: đơn CHECKED_IN, phòng OCCUPIED. Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET /bookings/{id}/checkout-preview",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/checkout-preview",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "checkout-preview"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Xem trước bảng quyết toán trả phòng. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /bookings/{id}/check-out",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/check-out",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "check-out"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Trả phòng, chốt hóa đơn, thu / hoàn tiền. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST, PATCH /bookings/{id}/cancel",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "cancel"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Hủy đơn có lý do. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "POST /bookings/{id}/services",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/services",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "services"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Ghi nhận dịch vụ phát sinh. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /bookings/{id}/change-room",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/change-room",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "change-room"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Đổi phòng cho khách đang lưu trú. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /bookings/{id}/service-requests",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/service-requests",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "service-requests"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Khách gọi dịch vụ tại phòng. Quyền: C"
+              }
+            },
+            {
+              "name": "PATCH /bookings/{id}/services/{orderId}",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/services/:orderId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "services",
+                    ":orderId"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Duyệt / từ chối yêu cầu dịch vụ. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /bookings/{id}/notify-checkout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/:id/notify-checkout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    ":id",
+                    "notify-checkout"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Gửi nhắc trả phòng cho một đơn. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /bookings/notify-today-checkouts",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/notify-today-checkouts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings",
+                    "notify-today-checkouts"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Gửi nhắc trả phòng cho các đơn hôm nay. Quyền: A, R"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Hóa đơn & thanh toán (InvoicesController – /invoices)",
+          "item": [
+            {
+              "name": "GET /invoices/summary",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices/summary",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    "summary"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Tổng quan doanh thu / sổ quỹ ca. Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET /invoices/my",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices/my",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    "my"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Hóa đơn của tôi (phân trang). Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "GET /invoices/payment-requests",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices/payment-requests",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    "payment-requests"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Hàng chờ yêu cầu thanh toán của khách. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /invoices/payments/{paymentId}/confirm",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices/payments/:paymentId/confirm",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    "payments",
+                    ":paymentId",
+                    "confirm"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Xác nhận đã nhận tiền. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /invoices/payments/{paymentId}/reject",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices/payments/:paymentId/reject",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    "payments",
+                    ":paymentId",
+                    "reject"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Từ chối yêu cầu thanh toán. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /invoices",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Tạo hóa đơn thủ công. Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET /invoices",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Danh sách hóa đơn: lọc, phân trang. Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET /invoices/{id}",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Chi tiết hóa đơn (khách chỉ xem hóa đơn của mình). Quyền: A, R, C"
+              }
+            },
+            {
+              "name": "POST /invoices/{id}/pay",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices/:id/pay",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    ":id",
+                    "pay"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Thu tiền tại quầy. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /invoices/{id}/payment-requests",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices/:id/payment-requests",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    ":id",
+                    "payment-requests"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Khách gửi yêu cầu thanh toán (chuyển khoản). Quyền: A, R, C"
+              }
+            },
+            {
+              "name": "DELETE /invoices/{id}/payment-requests/{paymentId}",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices/:id/payment-requests/:paymentId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    ":id",
+                    "payment-requests",
+                    ":paymentId"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Hủy yêu cầu thanh toán. Quyền: A, R, C"
+              }
+            },
+            {
+              "name": "POST /invoices/{id}/refund",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/invoices/:id/refund",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    ":id",
+                    "refund"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Hoàn tiền. Quyền: A, R"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Dịch vụ khách sạn (ServicesController – /services)",
+          "item": [
+            {
+              "name": "GET /services",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/services",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "services"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Danh mục dịch vụ. Quyền: Public"
+              }
+            },
+            {
+              "name": "GET /services/{id}",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/services/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "services",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Chi tiết dịch vụ. Quyền: Public"
+              }
+            },
+            {
+              "name": "POST /services",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/services",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "services"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Thêm dịch vụ. Quyền: A"
+              }
+            },
+            {
+              "name": "PATCH /services/{id}",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/services/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "services",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Cập nhật dịch vụ, đơn giá, trạng thái. Quyền: A"
+              }
+            },
+            {
+              "name": "DELETE /services/{id}",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/services/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "services",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Xóa dịch vụ. Quyền: A"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ca trực (ShiftsController – /shifts)",
+          "item": [
+            {
+              "name": "POST /shifts/open",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shifts/open",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shifts",
+                    "open"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Mở ca, khai báo tiền đầu ca. Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET /shifts/current",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shifts/current",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shifts",
+                    "current"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Ca đang mở của nhân viên hiện tại. Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET /shifts/active",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shifts/active",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shifts",
+                    "active"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Các ca đang mở trong khách sạn. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /shifts/close",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shifts/close",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shifts",
+                    "close"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Chốt ca: đối chiếu tiền thực tế và sổ sách. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /shifts/{id}/close",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shifts/:id/close",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shifts",
+                    ":id",
+                    "close"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Quản trị viên chốt hộ ca. Quyền: A"
+              }
+            },
+            {
+              "name": "GET /shifts",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shifts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shifts"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Lịch sử ca trực (lọc, phân trang). Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET /shifts/{id}",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shifts/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shifts",
+                    ":id"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Chi tiết ca trực. Quyền: A, R"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Thống kê (AnalyticsController – /analytics)",
+          "item": [
+            {
+              "name": "GET /analytics/dashboard",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/dashboard",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "dashboard"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "KPI tổng quan: công suất, doanh thu, booking. Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET /analytics/revenue",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/revenue",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "revenue"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Doanh thu theo năm, biểu đồ 12 tháng. Quyền: A"
+              }
+            },
+            {
+              "name": "GET /analytics/revenue/years",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/revenue/years",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "revenue",
+                    "years"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Các năm có phát sinh doanh thu. Quyền: A"
+              }
+            },
+            {
+              "name": "GET /analytics/revenue/export",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/revenue/export",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "revenue",
+                    "export"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Xuất báo cáo doanh thu CSV. Quyền: A"
+              }
+            },
+            {
+              "name": "GET /analytics/revenue/daily",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/revenue/daily",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "revenue",
+                    "daily"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Doanh thu theo ngày (7/30/90/365 ngày). Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET /analytics/occupancy-by-type",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/occupancy-by-type",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "occupancy-by-type"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Tỷ lệ lấp đầy theo loại phòng. Quyền: A, R"
+              }
+            },
+            {
+              "name": "GET /analytics/staff-performance",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/staff-performance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "staff-performance"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Hiệu suất nhân viên. Quyền: A"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Thông báo (NotificationsController – /notifications)",
+          "item": [
+            {
+              "name": "GET /notifications",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/notifications",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Thông báo của người dùng hiện tại. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "PATCH /notifications/read-all",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/read-all",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "read-all"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Đánh dấu tất cả đã đọc. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "PATCH /notifications/{id}/read",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/:id/read",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    ":id",
+                    "read"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Đánh dấu một thông báo đã đọc. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "POST /notifications/test",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/test",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "test"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Gửi thông báo thử tới chính mình. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "POST /notifications/send",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/send",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "send"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Gửi thông báo tới một người dùng. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "POST /notifications/broadcast",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/broadcast",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "broadcast"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Gửi thông báo hàng loạt theo vai trò. Quyền: Đăng nhập"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tải ảnh (UploadController – /upload)",
+          "item": [
+            {
+              "name": "POST /upload/avatar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/upload/avatar",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "upload",
+                    "avatar"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Tải ảnh đại diện. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "POST /upload/room",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/upload/room",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "upload",
+                    "room"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Tải một ảnh phòng. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /upload/rooms",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/upload/rooms",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "upload",
+                    "rooms"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Tải nhiều ảnh phòng. Quyền: A, R"
+              }
+            },
+            {
+              "name": "POST /upload/image",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/upload/image",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "upload",
+                    "image"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Tải một ảnh đa mục đích. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "POST /upload/images",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/upload/images",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "upload",
+                    "images"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Tải nhiều ảnh. Quyền: Đăng nhập"
+              }
+            },
+            {
+              "name": "DELETE /upload",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/upload",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "upload"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{customerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "Xóa ảnh khỏi kho lưu trữ. Quyền: Đăng nhập"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

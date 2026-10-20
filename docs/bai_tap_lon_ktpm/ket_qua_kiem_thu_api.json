@@ -1,0 +1,2281 @@
+{
+  "baseUrl": "https://hotel-management-plsp.onrender.com/api/v1",
+  "runAt": "2026-10-20T08:31:14.921Z",
+  "total": 39,
+  "passed": 38,
+  "avgTimeMs": 322,
+  "results": [
+    {
+      "id": "TC01",
+      "name": "Đăng ký tài khoản khách hàng mới (cố tình gửi role = ADMIN)",
+      "method": "POST",
+      "path": "/auth/register",
+      "expected": 201,
+      "actual": 201,
+      "timeMs": 811,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "email": "sv.test1792485062331@mail.com",
+        "password": "Test@123",
+        "fullName": "Sinh Viên Kiểm Thử",
+        "phone": "0912345678",
+        "role": "ADMIN"
+      },
+      "response": {
+        "statusCode": 201,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "user": {
+            "id": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+            "email": "sv.test1792485062331@mail.com",
+            "fullName": "Sinh Viên Kiểm Thử",
+            "phone": "0912345678",
+            "avatar": null,
+            "role": "CUSTOMER",
+            "createdAt": "2026-10-20T08:31:05.310Z"
+          },
+          "accessToken": "eyJhbGciOiJIUzI1NiIs…",
+          "refreshToken": "eyJhbGciOiJIUzI1NiIs…",
+          "tokenType": "Bearer",
+          "expiresIn": 86400
+        },
+        "timestamp": "2026-10-20T08:31:05.319Z"
+      },
+      "group": "1. Xác thực & tài khoản"
+    },
+    {
+      "id": "TC02",
+      "name": "Đăng ký trùng email",
+      "method": "POST",
+      "path": "/auth/register",
+      "expected": 409,
+      "actual": 409,
+      "timeMs": 265,
+      "message": "Email này đã được đăng ký trong hệ thống",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "email": "sv.test1792485062331@mail.com",
+        "password": "Test@123",
+        "fullName": "Trùng Email"
+      },
+      "response": {
+        "statusCode": 409,
+        "success": false,
+        "message": "Email này đã được đăng ký trong hệ thống",
+        "error": "Conflict",
+        "timestamp": "2026-10-20T08:31:05.589Z",
+        "path": "/api/v1/auth/register"
+      },
+      "group": "1. Xác thực & tài khoản"
+    },
+    {
+      "id": "TC03",
+      "name": "Đăng ký thiếu dữ liệu / sai định dạng",
+      "method": "POST",
+      "path": "/auth/register",
+      "expected": 400,
+      "actual": 400,
+      "timeMs": 268,
+      "message": "Email không đúng định dạng. Mật khẩu phải có tối thiểu 6 ký tự. Họ tên không được để trống. Họ tên phải là chuỗi",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "email": "khong-phai-email",
+        "password": "123"
+      },
+      "response": {
+        "statusCode": 400,
+        "success": false,
+        "message": "Email không đúng định dạng. Mật khẩu phải có tối thiểu 6 ký tự. Họ tên không được để trống. Họ tên phải là chuỗi",
+        "error": "Bad Request",
+        "errors": [
+          "Email không đúng định dạng",
+          "Mật khẩu phải có tối thiểu 6 ký tự"
+        ],
+        "timestamp": "2026-10-20T08:31:05.861Z",
+        "path": "/api/v1/auth/register"
+      },
+      "group": "1. Xác thực & tài khoản"
+    },
+    {
+      "id": "TC04",
+      "name": "Đăng nhập Admin đúng thông tin",
+      "method": "POST",
+      "path": "/auth/login",
+      "expected": 201,
+      "actual": 201,
+      "timeMs": 972,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "email": "admin@hotel.com",
+        "password": "Admin@123"
+      },
+      "response": {
+        "statusCode": 201,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "user": {
+            "id": "25db82d0-6b94-40bd-9570-bbdf276f7622",
+            "email": "admin@hotel.com",
+            "fullName": "Nguyễn Văn Quản Trị (Super Admin)",
+            "phone": "0901112233",
+            "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+            "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+            "role": "ADMIN"
+          },
+          "accessToken": "eyJhbGciOiJIUzI1NiIs…",
+          "refreshToken": "eyJhbGciOiJIUzI1NiIs…",
+          "tokenType": "Bearer",
+          "expiresIn": 86400
+        },
+        "timestamp": "2026-10-20T08:31:06.818Z"
+      },
+      "group": "1. Xác thực & tài khoản"
+    },
+    {
+      "id": "TC05",
+      "name": "Đăng nhập Lễ tân",
+      "method": "POST",
+      "path": "/auth/login",
+      "expected": 201,
+      "actual": 201,
+      "timeMs": 779,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "email": "reception@hotel.com",
+        "password": "Staff@123"
+      },
+      "response": {
+        "statusCode": 201,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "user": {
+            "id": "ea49ec97-fe9d-4000-b702-76841cb290fa",
+            "email": "reception@hotel.com",
+            "fullName": "Lê Thu Hà (Trưởng ca Lễ tân)",
+            "phone": "0903334455",
+            "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+            "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+            "role": "RECEPTIONIST"
+          },
+          "accessToken": "eyJhbGciOiJIUzI1NiIs…",
+          "refreshToken": "eyJhbGciOiJIUzI1NiIs…",
+          "tokenType": "Bearer",
+          "expiresIn": 86400
+        },
+        "timestamp": "2026-10-20T08:31:07.610Z"
+      },
+      "group": "1. Xác thực & tài khoản"
+    },
+    {
+      "id": "TC06",
+      "name": "Đăng nhập sai mật khẩu",
+      "method": "POST",
+      "path": "/auth/login",
+      "expected": 401,
+      "actual": 401,
+      "timeMs": 519,
+      "message": "Email hoặc mật khẩu không chính xác",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "email": "reception@hotel.com",
+        "password": "sai-mat-khau"
+      },
+      "response": {
+        "statusCode": 401,
+        "success": false,
+        "message": "Email hoặc mật khẩu không chính xác",
+        "error": "Unauthorized",
+        "timestamp": "2026-10-20T08:31:08.120Z",
+        "path": "/api/v1/auth/login"
+      },
+      "group": "1. Xác thực & tài khoản"
+    },
+    {
+      "id": "TC07",
+      "name": "Gọi API cần đăng nhập nhưng không gửi token",
+      "method": "GET",
+      "path": "/auth/me",
+      "expected": 401,
+      "actual": 401,
+      "timeMs": 263,
+      "message": "Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 401,
+        "success": false,
+        "message": "Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn",
+        "error": "Unauthorized",
+        "timestamp": "2026-10-20T08:31:08.382Z",
+        "path": "/api/v1/auth/me"
+      },
+      "group": "1. Xác thực & tài khoản"
+    },
+    {
+      "id": "TC08",
+      "name": "Gửi token giả mạo",
+      "method": "GET",
+      "path": "/auth/me",
+      "expected": 401,
+      "actual": 401,
+      "timeMs": 256,
+      "message": "Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 401,
+        "success": false,
+        "message": "Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn",
+        "error": "Unauthorized",
+        "timestamp": "2026-10-20T08:31:08.646Z",
+        "path": "/api/v1/auth/me"
+      },
+      "group": "1. Xác thực & tài khoản"
+    },
+    {
+      "id": "TC09",
+      "name": "Xem thông tin cá nhân",
+      "method": "GET",
+      "path": "/auth/me",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 273,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "id": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+          "email": "sv.test1792485062331@mail.com",
+          "fullName": "Sinh Viên Kiểm Thử",
+          "phone": "0912345678",
+          "avatar": null,
+          "role": "CUSTOMER",
+          "isActive": true,
+          "createdAt": "2026-10-20T08:31:05.310Z",
+          "avatarUrl": null,
+          "stats": {
+            "totalBookings": 0,
+            "activeBookings": 0,
+            "averageRating": 5
+          }
+        },
+        "timestamp": "2026-10-20T08:31:08.922Z"
+      },
+      "group": "1. Xác thực & tài khoản"
+    },
+    {
+      "id": "TC10",
+      "name": "Làm mới token (refresh token rotation)",
+      "method": "POST",
+      "path": "/auth/refresh-token",
+      "expected": 201,
+      "actual": 201,
+      "timeMs": 260,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "refreshToken": "eyJhbGciOiJIUzI1NiIs…"
+      },
+      "response": {
+        "statusCode": 201,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "accessToken": "eyJhbGciOiJIUzI1NiIs…",
+          "refreshToken": "eyJhbGciOiJIUzI1NiIs…",
+          "tokenType": "Bearer",
+          "expiresIn": 86400,
+          "user": {
+            "id": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+            "email": "sv.test1792485062331@mail.com",
+            "fullName": "Sinh Viên Kiểm Thử",
+            "phone": "0912345678",
+            "avatar": null,
+            "avatarUrl": null,
+            "role": "CUSTOMER"
+          }
+        },
+        "timestamp": "2026-10-20T08:31:09.185Z"
+      },
+      "group": "1. Xác thực & tài khoản"
+    },
+    {
+      "id": "TC11",
+      "name": "Cập nhật thông tin cá nhân",
+      "method": "PATCH",
+      "path": "/users/me",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 279,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "fullName": "Sinh Viên Đã Cập Nhật",
+        "phone": "0987654321"
+      },
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "id": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+          "email": "sv.test1792485062331@mail.com",
+          "fullName": "Sinh Viên Đã Cập Nhật",
+          "phone": "0987654321",
+          "avatar": null,
+          "role": "CUSTOMER",
+          "isActive": true,
+          "createdAt": "2026-10-20T08:31:05.310Z",
+          "updatedAt": "2026-10-20T08:31:09.448Z",
+          "avatarUrl": null
+        },
+        "timestamp": "2026-10-20T08:31:09.451Z"
+      },
+      "group": "1. Xác thực & tài khoản"
+    },
+    {
+      "id": "TC12",
+      "name": "Khách hàng xem danh sách người dùng",
+      "method": "GET",
+      "path": "/users",
+      "expected": 403,
+      "actual": 403,
+      "timeMs": 272,
+      "message": "Quyền truy cập bị từ chối: Yêu cầu vai trò [ADMIN, RECEPTIONIST]",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 403,
+        "success": false,
+        "message": "Quyền truy cập bị từ chối: Yêu cầu vai trò [ADMIN, RECEPTIONIST]",
+        "error": "Forbidden",
+        "timestamp": "2026-10-20T08:31:09.724Z",
+        "path": "/api/v1/users"
+      },
+      "group": "2. Phân quyền (RBAC)"
+    },
+    {
+      "id": "TC13",
+      "name": "Lễ tân xem báo cáo doanh thu năm (chỉ Admin)",
+      "method": "GET",
+      "path": "/analytics/revenue",
+      "expected": 403,
+      "actual": 403,
+      "timeMs": 236,
+      "message": "Quyền truy cập bị từ chối: Yêu cầu vai trò [ADMIN]",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 403,
+        "success": false,
+        "message": "Quyền truy cập bị từ chối: Yêu cầu vai trò [ADMIN]",
+        "error": "Forbidden",
+        "timestamp": "2026-10-20T08:31:09.979Z",
+        "path": "/api/v1/analytics/revenue"
+      },
+      "group": "2. Phân quyền (RBAC)"
+    },
+    {
+      "id": "TC14",
+      "name": "Khách hàng tạo loại phòng",
+      "method": "POST",
+      "path": "/room-types",
+      "expected": 403,
+      "actual": 403,
+      "timeMs": 277,
+      "message": "Quyền truy cập bị từ chối: Yêu cầu vai trò [ADMIN]",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "name": "Hack",
+        "code": "HACK",
+        "basePrice": 1
+      },
+      "response": {
+        "statusCode": 403,
+        "success": false,
+        "message": "Quyền truy cập bị từ chối: Yêu cầu vai trò [ADMIN]",
+        "error": "Forbidden",
+        "timestamp": "2026-10-20T08:31:10.254Z",
+        "path": "/api/v1/room-types"
+      },
+      "group": "2. Phân quyền (RBAC)"
+    },
+    {
+      "id": "TC15",
+      "name": "Admin xem danh sách người dùng có tìm kiếm + phân trang",
+      "method": "GET",
+      "path": "/users?search=hotel&page=1&limit=5",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 262,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "data": [
+            {
+              "id": "c2696d1a-f92a-495f-b63b-e44587efae06",
+              "email": "customer@hotel.com",
+              "fullName": "Nguyễn Anh Tuấn (Khách VIP Platinum)",
+              "phone": "0918889900",
+              "avatar": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80",
+              "role": "CUSTOMER",
+              "isActive": true,
+              "createdAt": "2026-10-20T08:09:47.520Z",
+              "_count": {
+                "bookings": 185
+              }
+            },
+            {
+              "id": "cb088392-8156-4f4a-92fb-67ec96362baf",
+              "email": "cashier.accounting@hotel.com",
+              "fullName": "Vũ Thị Bích Ngọc (Kế toán Thu chi)",
+              "phone": "0907778899",
+              "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80",
+              "role": "RECEPTIONIST",
+              "isActive": true,
+              "createdAt": "2026-10-20T08:09:47.515Z",
+              "_count": {
+                "bookings": 0
+              }
+            }
+          ],
+          "meta": {
+            "total": 7,
+            "page": 1,
+            "limit": 5,
+            "totalPages": 2
+          }
+        },
+        "timestamp": "2026-10-20T08:31:10.512Z"
+      },
+      "group": "2. Phân quyền (RBAC)"
+    },
+    {
+      "id": "TC16",
+      "name": "Xem loại phòng (công khai)",
+      "method": "GET",
+      "path": "/room-types",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 270,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": [
+          {
+            "id": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+            "name": "Standard Single Room",
+            "code": "STD-S",
+            "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+            "basePrice": 450000,
+            "capacityAdults": 1,
+            "capacityChildren": 0,
+            "sizeSqM": 20,
+            "amenities": [
+              "Wifi tốc độ cao",
+              "Điều hòa 2 chiều"
+            ],
+            "images": [
+              "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+              "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+            ],
+            "createdAt": "2026-10-20T08:09:47.604Z",
+            "updatedAt": "2026-10-20T08:09:47.604Z",
+            "_count": {
+              "rooms": 2
+            }
+          },
+          {
+            "id": "1aa319fa-629c-49c3-82fd-a6f2b7c56fbd",
+            "name": "Standard Queen Double",
+            "code": "STD-D",
+            "description": "Phòng tiêu chuẩn 1 giường đôi Queen êm ái, đầy đủ trang thiết bị hiện đại.",
+            "basePrice": 650000,
+            "capacityAdults": 2,
+            "capacityChildren": 1,
+            "sizeSqM": 28,
+            "amenities": [
+              "Wifi tốc độ cao",
+              "Điều hòa Inverter"
+            ],
+            "images": [
+              "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1000&q=80",
+              "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&w=1000&q=80"
+            ],
+            "createdAt": "2026-10-20T08:09:47.610Z",
+            "updatedAt": "2026-10-20T08:09:47.610Z",
+            "_count": {
+              "rooms": 2
+            }
+          }
+        ],
+        "timestamp": "2026-10-20T08:31:10.781Z"
+      },
+      "group": "3. Danh mục: loại phòng, phòng, dịch vụ"
+    },
+    {
+      "id": "TC17",
+      "name": "Danh sách phòng có phân trang + lọc trạng thái",
+      "method": "GET",
+      "path": "/rooms?status=AVAILABLE&page=1&limit=5",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 277,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "data": [
+            {
+              "id": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+              "roomNumber": "101",
+              "floor": 1,
+              "status": "AVAILABLE",
+              "roomTypeId": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+              "roomTypeName": "Standard Single Room",
+              "roomTypeCode": "STD-S",
+              "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+              "pricePerNight": 450000,
+              "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+              "imageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+              "images": [
+                "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+              ],
+              "amenities": [
+                "Wifi tốc độ cao",
+                "Điều hòa 2 chiều"
+              ],
+              "capacityAdults": 1,
+              "capacityChildren": 0,
+              "capacity": 1,
+              "sizeSqM": 20,
+              "area": 20,
+              "rating": 4.8,
+              "reviewCount": 38,
+              "bedType": "1 Giường đơn tiêu chuẩn cao cấp (1.2m x 2.0m)",
+              "viewType": "Hướng sân trong yên tĩnh (Courtyard View)",
+              "highlights": [
+                "Không gian ấm cúng, tối ưu cho công tác",
+                "Wifi tốc độ cao 300Mbps phủ sóng riêng"
+              ],
+              "policies": {
+                "checkInTime": "14:00",
+                "checkOutTime": "12:00",
+                "cancellation": "Miễn phí hủy phòng trước 24 giờ trước thời điểm nhận phòng (hoàn tiền 100%)",
+                "smoking": "Phòng không hút thuốc (Có ban công hoặc khu vực dành riêng ngoài trời)",
+                "pet": "Không mang theo thú cưng vào khuôn viên phòng nghỉ",
+                "children": "Trẻ em dưới 6 tuổi được ở miễn phí khi ngủ chung giường với bố mẹ"
+              },
+              "ratingBreakdown": {
+                "cleanliness": 4.9,
+                "comfort": 4.7,
+                "location": 4.8,
+                "service": 4.9,
+                "value": 4.9
+              },
+              "reviews": [
+                {
+                  "id": "rev-std-1",
+                  "authorName": "Nguyễn Tiến Dũng",
+                  "authorAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+                  "rating": 5,
+                  "date": "2026-08-25",
+                  "comment": "Phòng sạch sẽ, đệm nằm rất êm lưng. Tôi đi công tác 3 ngày ở đây làm việc rất yên tĩnh và thoải mái.",
+                  "stayDuration": "Lưu trú 3 đêm"
+                },
+                {
+                  "id": "rev-std-2",
+                  "authorName": "Hoàng Minh Châu",
+                  "authorAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+                  "rating": 4.8,
+                  "date": "2026-08-18",
+                  "comment": "Giá cả quá hợp lý so với chất lượng dịch vụ khách sạn 5 sao. Lễ tân nhiệt tình hỗ trợ check-in sớm.",
+                  "stayDuration": "Lưu trú 1 đêm"
+                }
+              ],
+              "amenityGroups": [
+                {
+                  "groupName": "Phòng ngủ & Thư giãn",
+                  "icon": "bed",
+                  "items": [
+                    "Đệm lò xo túi êm ái",
+                    "Bàn làm việc tiện nghi"
+                  ]
+                },
+                {
+                  "groupName": "Phòng tắm & Vệ sinh",
+                  "icon": "bathtub",
+                  "items": [
+                    "Vòi sen đứng nóng lạnh áp lực cao",
+                    "Khăn tắm dệt sợi bông mềm"
+                  ]
+                }
+              ],
+              "currentBooking": null,
+              "roomType": {
+                "id": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+                "name": "Standard Single Room",
+                "code": "STD-S",
+                "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+                "basePrice": 450000,
+                "capacityAdults": 1,
+                "capacityChildren": 0,
+                "sizeSqM": 20,
+                "amenities": [
+                  "Wifi tốc độ cao",
+                  "Điều hòa 2 chiều"
+                ],
+                "images": [
+                  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                  "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+                ],
+                "createdAt": "2026-10-20T08:09:47.604Z",
+                "updatedAt": "2026-10-20T08:09:47.604Z"
+              },
+              "bookings": []
+            },
+            {
+              "id": "00f92444-42eb-4043-84af-06d15a24cc84",
+              "roomNumber": "102",
+              "floor": 1,
+              "status": "AVAILABLE",
+              "roomTypeId": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+              "roomTypeName": "Standard Single Room",
+              "roomTypeCode": "STD-S",
+              "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+              "pricePerNight": 450000,
+              "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+              "imageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+              "images": [
+                "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+              ],
+              "amenities": [
+                "Wifi tốc độ cao",
+                "Điều hòa 2 chiều"
+              ],
+              "capacityAdults": 1,
+              "capacityChildren": 0,
+              "capacity": 1,
+              "sizeSqM": 20,
+              "area": 20,
+              "rating": 4.8,
+              "reviewCount": 38,
+              "bedType": "1 Giường đơn tiêu chuẩn cao cấp (1.2m x 2.0m)",
+              "viewType": "Hướng sân trong yên tĩnh (Courtyard View)",
+              "highlights": [
+                "Không gian ấm cúng, tối ưu cho công tác",
+                "Wifi tốc độ cao 300Mbps phủ sóng riêng"
+              ],
+              "policies": {
+                "checkInTime": "14:00",
+                "checkOutTime": "12:00",
+                "cancellation": "Miễn phí hủy phòng trước 24 giờ trước thời điểm nhận phòng (hoàn tiền 100%)",
+                "smoking": "Phòng không hút thuốc (Có ban công hoặc khu vực dành riêng ngoài trời)",
+                "pet": "Không mang theo thú cưng vào khuôn viên phòng nghỉ",
+                "children": "Trẻ em dưới 6 tuổi được ở miễn phí khi ngủ chung giường với bố mẹ"
+              },
+              "ratingBreakdown": {
+                "cleanliness": 4.9,
+                "comfort": 4.7,
+                "location": 4.8,
+                "service": 4.9,
+                "value": 4.9
+              },
+              "reviews": [
+                {
+                  "id": "rev-std-1",
+                  "authorName": "Nguyễn Tiến Dũng",
+                  "authorAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+                  "rating": 5,
+                  "date": "2026-08-25",
+                  "comment": "Phòng sạch sẽ, đệm nằm rất êm lưng. Tôi đi công tác 3 ngày ở đây làm việc rất yên tĩnh và thoải mái.",
+                  "stayDuration": "Lưu trú 3 đêm"
+                },
+                {
+                  "id": "rev-std-2",
+                  "authorName": "Hoàng Minh Châu",
+                  "authorAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+                  "rating": 4.8,
+                  "date": "2026-08-18",
+                  "comment": "Giá cả quá hợp lý so với chất lượng dịch vụ khách sạn 5 sao. Lễ tân nhiệt tình hỗ trợ check-in sớm.",
+                  "stayDuration": "Lưu trú 1 đêm"
+                }
+              ],
+              "amenityGroups": [
+                {
+                  "groupName": "Phòng ngủ & Thư giãn",
+                  "icon": "bed",
+                  "items": [
+                    "Đệm lò xo túi êm ái",
+                    "Bàn làm việc tiện nghi"
+                  ]
+                },
+                {
+                  "groupName": "Phòng tắm & Vệ sinh",
+                  "icon": "bathtub",
+                  "items": [
+                    "Vòi sen đứng nóng lạnh áp lực cao",
+                    "Khăn tắm dệt sợi bông mềm"
+                  ]
+                }
+              ],
+              "currentBooking": null,
+              "roomType": {
+                "id": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+                "name": "Standard Single Room",
+                "code": "STD-S",
+                "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+                "basePrice": 450000,
+                "capacityAdults": 1,
+                "capacityChildren": 0,
+                "sizeSqM": 20,
+                "amenities": [
+                  "Wifi tốc độ cao",
+                  "Điều hòa 2 chiều"
+                ],
+                "images": [
+                  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                  "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+                ],
+                "createdAt": "2026-10-20T08:09:47.604Z",
+                "updatedAt": "2026-10-20T08:09:47.604Z"
+              },
+              "bookings": []
+            }
+          ],
+          "meta": {
+            "total": 8,
+            "page": 1,
+            "limit": 5,
+            "totalPages": 2
+          }
+        },
+        "timestamp": "2026-10-20T08:31:11.056Z"
+      },
+      "group": "3. Danh mục: loại phòng, phòng, dịch vụ"
+    },
+    {
+      "id": "TC18",
+      "name": "Lọc phòng với trạng thái không hợp lệ",
+      "method": "GET",
+      "path": "/rooms?status=ABC",
+      "expected": 400,
+      "actual": 400,
+      "timeMs": 277,
+      "message": "status không hợp lệ",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 400,
+        "success": false,
+        "message": "status không hợp lệ",
+        "error": "Bad Request",
+        "errors": [
+          "status không hợp lệ"
+        ],
+        "timestamp": "2026-10-20T08:31:11.325Z",
+        "path": "/api/v1/rooms?status=ABC"
+      },
+      "group": "3. Danh mục: loại phòng, phòng, dịch vụ"
+    },
+    {
+      "id": "TC19",
+      "name": "Tìm phòng trống theo khoảng ngày",
+      "method": "GET",
+      "path": "/rooms/available?checkInDate={{checkIn}}&checkOutDate={{checkOut}}&guestCount=1",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 272,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": [
+          {
+            "id": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+            "roomNumber": "101",
+            "floor": 1,
+            "status": "AVAILABLE",
+            "roomTypeId": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+            "roomTypeName": "Standard Single Room",
+            "roomTypeCode": "STD-S",
+            "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+            "pricePerNight": 450000,
+            "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+            "imageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+            "images": [
+              "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+              "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+            ],
+            "amenities": [
+              "Wifi tốc độ cao",
+              "Điều hòa 2 chiều"
+            ],
+            "capacityAdults": 1,
+            "capacityChildren": 0,
+            "capacity": 1,
+            "sizeSqM": 20,
+            "area": 20,
+            "rating": 4.8,
+            "reviewCount": 38,
+            "bedType": "1 Giường đơn tiêu chuẩn cao cấp (1.2m x 2.0m)",
+            "viewType": "Hướng sân trong yên tĩnh (Courtyard View)",
+            "highlights": [
+              "Không gian ấm cúng, tối ưu cho công tác",
+              "Wifi tốc độ cao 300Mbps phủ sóng riêng"
+            ],
+            "policies": {
+              "checkInTime": "14:00",
+              "checkOutTime": "12:00",
+              "cancellation": "Miễn phí hủy phòng trước 24 giờ trước thời điểm nhận phòng (hoàn tiền 100%)",
+              "smoking": "Phòng không hút thuốc (Có ban công hoặc khu vực dành riêng ngoài trời)",
+              "pet": "Không mang theo thú cưng vào khuôn viên phòng nghỉ",
+              "children": "Trẻ em dưới 6 tuổi được ở miễn phí khi ngủ chung giường với bố mẹ"
+            },
+            "ratingBreakdown": {
+              "cleanliness": 4.9,
+              "comfort": 4.7,
+              "location": 4.8,
+              "service": 4.9,
+              "value": 4.9
+            },
+            "reviews": [
+              {
+                "id": "rev-std-1",
+                "authorName": "Nguyễn Tiến Dũng",
+                "authorAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+                "rating": 5,
+                "date": "2026-08-25",
+                "comment": "Phòng sạch sẽ, đệm nằm rất êm lưng. Tôi đi công tác 3 ngày ở đây làm việc rất yên tĩnh và thoải mái.",
+                "stayDuration": "Lưu trú 3 đêm"
+              },
+              {
+                "id": "rev-std-2",
+                "authorName": "Hoàng Minh Châu",
+                "authorAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+                "rating": 4.8,
+                "date": "2026-08-18",
+                "comment": "Giá cả quá hợp lý so với chất lượng dịch vụ khách sạn 5 sao. Lễ tân nhiệt tình hỗ trợ check-in sớm.",
+                "stayDuration": "Lưu trú 1 đêm"
+              }
+            ],
+            "amenityGroups": [
+              {
+                "groupName": "Phòng ngủ & Thư giãn",
+                "icon": "bed",
+                "items": [
+                  "Đệm lò xo túi êm ái",
+                  "Bàn làm việc tiện nghi"
+                ]
+              },
+              {
+                "groupName": "Phòng tắm & Vệ sinh",
+                "icon": "bathtub",
+                "items": [
+                  "Vòi sen đứng nóng lạnh áp lực cao",
+                  "Khăn tắm dệt sợi bông mềm"
+                ]
+              }
+            ],
+            "currentBooking": null,
+            "roomType": {
+              "id": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+              "name": "Standard Single Room",
+              "code": "STD-S",
+              "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+              "basePrice": 450000,
+              "capacityAdults": 1,
+              "capacityChildren": 0,
+              "sizeSqM": 20,
+              "amenities": [
+                "Wifi tốc độ cao",
+                "Điều hòa 2 chiều"
+              ],
+              "images": [
+                "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+              ],
+              "createdAt": "2026-10-20T08:09:47.604Z",
+              "updatedAt": "2026-10-20T08:09:47.604Z"
+            }
+          },
+          {
+            "id": "00f92444-42eb-4043-84af-06d15a24cc84",
+            "roomNumber": "102",
+            "floor": 1,
+            "status": "AVAILABLE",
+            "roomTypeId": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+            "roomTypeName": "Standard Single Room",
+            "roomTypeCode": "STD-S",
+            "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+            "pricePerNight": 450000,
+            "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+            "imageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+            "images": [
+              "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+              "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+            ],
+            "amenities": [
+              "Wifi tốc độ cao",
+              "Điều hòa 2 chiều"
+            ],
+            "capacityAdults": 1,
+            "capacityChildren": 0,
+            "capacity": 1,
+            "sizeSqM": 20,
+            "area": 20,
+            "rating": 4.8,
+            "reviewCount": 38,
+            "bedType": "1 Giường đơn tiêu chuẩn cao cấp (1.2m x 2.0m)",
+            "viewType": "Hướng sân trong yên tĩnh (Courtyard View)",
+            "highlights": [
+              "Không gian ấm cúng, tối ưu cho công tác",
+              "Wifi tốc độ cao 300Mbps phủ sóng riêng"
+            ],
+            "policies": {
+              "checkInTime": "14:00",
+              "checkOutTime": "12:00",
+              "cancellation": "Miễn phí hủy phòng trước 24 giờ trước thời điểm nhận phòng (hoàn tiền 100%)",
+              "smoking": "Phòng không hút thuốc (Có ban công hoặc khu vực dành riêng ngoài trời)",
+              "pet": "Không mang theo thú cưng vào khuôn viên phòng nghỉ",
+              "children": "Trẻ em dưới 6 tuổi được ở miễn phí khi ngủ chung giường với bố mẹ"
+            },
+            "ratingBreakdown": {
+              "cleanliness": 4.9,
+              "comfort": 4.7,
+              "location": 4.8,
+              "service": 4.9,
+              "value": 4.9
+            },
+            "reviews": [
+              {
+                "id": "rev-std-1",
+                "authorName": "Nguyễn Tiến Dũng",
+                "authorAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+                "rating": 5,
+                "date": "2026-08-25",
+                "comment": "Phòng sạch sẽ, đệm nằm rất êm lưng. Tôi đi công tác 3 ngày ở đây làm việc rất yên tĩnh và thoải mái.",
+                "stayDuration": "Lưu trú 3 đêm"
+              },
+              {
+                "id": "rev-std-2",
+                "authorName": "Hoàng Minh Châu",
+                "authorAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+                "rating": 4.8,
+                "date": "2026-08-18",
+                "comment": "Giá cả quá hợp lý so với chất lượng dịch vụ khách sạn 5 sao. Lễ tân nhiệt tình hỗ trợ check-in sớm.",
+                "stayDuration": "Lưu trú 1 đêm"
+              }
+            ],
+            "amenityGroups": [
+              {
+                "groupName": "Phòng ngủ & Thư giãn",
+                "icon": "bed",
+                "items": [
+                  "Đệm lò xo túi êm ái",
+                  "Bàn làm việc tiện nghi"
+                ]
+              },
+              {
+                "groupName": "Phòng tắm & Vệ sinh",
+                "icon": "bathtub",
+                "items": [
+                  "Vòi sen đứng nóng lạnh áp lực cao",
+                  "Khăn tắm dệt sợi bông mềm"
+                ]
+              }
+            ],
+            "currentBooking": null,
+            "roomType": {
+              "id": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+              "name": "Standard Single Room",
+              "code": "STD-S",
+              "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+              "basePrice": 450000,
+              "capacityAdults": 1,
+              "capacityChildren": 0,
+              "sizeSqM": 20,
+              "amenities": [
+                "Wifi tốc độ cao",
+                "Điều hòa 2 chiều"
+              ],
+              "images": [
+                "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+              ],
+              "createdAt": "2026-10-20T08:09:47.604Z",
+              "updatedAt": "2026-10-20T08:09:47.604Z"
+            }
+          }
+        ],
+        "timestamp": "2026-10-20T08:31:11.608Z"
+      },
+      "group": "3. Danh mục: loại phòng, phòng, dịch vụ"
+    },
+    {
+      "id": "TC20",
+      "name": "Admin thêm dịch vụ mới",
+      "method": "POST",
+      "path": "/services",
+      "expected": 201,
+      "actual": 201,
+      "timeMs": 255,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "code": "TEST_1792485069430",
+        "name": "Dịch vụ kiểm thử",
+        "category": "CONVENIENCE",
+        "unitPrice": 50000,
+        "unit": "lần"
+      },
+      "response": {
+        "statusCode": 201,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "id": "f542ab9c-4dc9-40d1-88f5-e696b1e1c1b9",
+          "code": "TEST_1792485069430",
+          "name": "Dịch vụ kiểm thử",
+          "category": "CONVENIENCE",
+          "description": null,
+          "unitPrice": 50000,
+          "unit": "lần",
+          "icon": null,
+          "isAvailable": true,
+          "createdAt": "2026-10-20T08:31:11.868Z",
+          "updatedAt": "2026-10-20T08:31:11.868Z"
+        },
+        "timestamp": "2026-10-20T08:31:11.871Z"
+      },
+      "group": "3. Danh mục: loại phòng, phòng, dịch vụ"
+    },
+    {
+      "id": "TC21",
+      "name": "Admin thêm dịch vụ với đơn giá âm",
+      "method": "POST",
+      "path": "/services",
+      "expected": 400,
+      "actual": 400,
+      "timeMs": 265,
+      "message": "Đơn giá phải lớn hơn 0",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "code": "NEG",
+        "name": "Sai giá",
+        "category": "CONVENIENCE",
+        "unitPrice": -1
+      },
+      "response": {
+        "statusCode": 400,
+        "success": false,
+        "message": "Đơn giá phải lớn hơn 0",
+        "error": "Bad Request",
+        "errors": [
+          "Đơn giá phải lớn hơn 0"
+        ],
+        "timestamp": "2026-10-20T08:31:12.119Z",
+        "path": "/api/v1/services"
+      },
+      "group": "3. Danh mục: loại phòng, phòng, dịch vụ"
+    },
+    {
+      "id": "TC22",
+      "name": "Admin cập nhật dịch vụ",
+      "method": "PATCH",
+      "path": "/services/{{serviceId}}",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 255,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "unitPrice": 60000,
+        "isAvailable": false
+      },
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "id": "f542ab9c-4dc9-40d1-88f5-e696b1e1c1b9",
+          "code": "TEST_1792485069430",
+          "name": "Dịch vụ kiểm thử",
+          "category": "CONVENIENCE",
+          "description": null,
+          "unitPrice": 60000,
+          "unit": "lần",
+          "icon": null,
+          "isAvailable": false,
+          "createdAt": "2026-10-20T08:31:11.868Z",
+          "updatedAt": "2026-10-20T08:31:12.389Z"
+        },
+        "timestamp": "2026-10-20T08:31:12.392Z"
+      },
+      "group": "3. Danh mục: loại phòng, phòng, dịch vụ"
+    },
+    {
+      "id": "TC23",
+      "name": "Admin xóa dịch vụ",
+      "method": "DELETE",
+      "path": "/services/{{serviceId}}",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 264,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "id": "f542ab9c-4dc9-40d1-88f5-e696b1e1c1b9",
+          "code": "TEST_1792485069430",
+          "name": "Dịch vụ kiểm thử",
+          "category": "CONVENIENCE",
+          "description": null,
+          "unitPrice": 60000,
+          "unit": "lần",
+          "icon": null,
+          "isAvailable": false,
+          "createdAt": "2026-10-20T08:31:11.868Z",
+          "updatedAt": "2026-10-20T08:31:12.389Z"
+        },
+        "timestamp": "2026-10-20T08:31:12.652Z"
+      },
+      "group": "3. Danh mục: loại phòng, phòng, dịch vụ"
+    },
+    {
+      "id": "TC24",
+      "name": "Xem dịch vụ vừa xóa",
+      "method": "GET",
+      "path": "/services/{{serviceId}}",
+      "expected": 404,
+      "actual": 404,
+      "timeMs": 254,
+      "message": "Không tìm thấy dịch vụ với ID: f542ab9c-4dc9-40d1-88f5-e696b1e1c1b9",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 404,
+        "success": false,
+        "message": "Không tìm thấy dịch vụ với ID: f542ab9c-4dc9-40d1-88f5-e696b1e1c1b9",
+        "error": "Not Found",
+        "timestamp": "2026-10-20T08:31:12.906Z",
+        "path": "/api/v1/services/f542ab9c-4dc9-40d1-88f5-e696b1e1c1b9"
+      },
+      "group": "3. Danh mục: loại phòng, phòng, dịch vụ"
+    },
+    {
+      "id": "TC25",
+      "name": "Đặt phòng với ngày nhận ≥ ngày trả",
+      "method": "POST",
+      "path": "/bookings",
+      "expected": 400,
+      "actual": 400,
+      "timeMs": 249,
+      "message": "Ngày nhận phòng phải trước ngày trả phòng",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "roomId": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+        "checkInDate": "2028-01-09",
+        "checkOutDate": "2028-01-07"
+      },
+      "response": {
+        "statusCode": 400,
+        "success": false,
+        "message": "Ngày nhận phòng phải trước ngày trả phòng",
+        "error": "Bad Request",
+        "timestamp": "2026-10-20T08:31:13.158Z",
+        "path": "/api/v1/bookings"
+      },
+      "group": "4. Đặt phòng & quản lý trạng thái"
+    },
+    {
+      "id": "TC26",
+      "name": "Khách hàng đặt phòng hợp lệ",
+      "method": "POST",
+      "path": "/bookings",
+      "expected": 201,
+      "actual": 201,
+      "timeMs": 281,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "roomId": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+        "checkInDate": "2028-01-07",
+        "checkOutDate": "2028-01-09",
+        "guestCount": 1,
+        "specialRequests": "Phòng không hút thuốc"
+      },
+      "response": {
+        "statusCode": 201,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "id": "6cd9b533-9a2a-453a-b282-aeffc10beeec",
+          "bookingCode": "BK-07341472",
+          "customerId": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+          "roomId": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+          "checkInDate": "2028-01-07T14:00:00.000Z",
+          "checkOutDate": "2028-01-09T12:00:00.000Z",
+          "actualCheckIn": null,
+          "actualCheckOut": null,
+          "guestCount": 1,
+          "totalAmount": 900000,
+          "depositAmount": 0,
+          "status": "PENDING",
+          "specialRequests": "Phòng không hút thuốc",
+          "confirmedAt": null,
+          "confirmedById": null,
+          "confirmationNote": null,
+          "cancellationReason": null,
+          "cancelledAt": null,
+          "cancelledById": null,
+          "createdAt": "2026-10-20T08:31:13.415Z",
+          "updatedAt": "2026-10-20T08:31:13.415Z",
+          "customer": {
+            "id": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+            "fullName": "Sinh Viên Đã Cập Nhật",
+            "email": "sv.test1792485062331@mail.com",
+            "phone": "0987654321"
+          },
+          "room": {
+            "id": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+            "roomNumber": "101",
+            "floor": 1,
+            "roomTypeId": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+            "status": "AVAILABLE",
+            "notes": null,
+            "createdAt": "2026-10-20T08:09:47.703Z",
+            "updatedAt": "2026-10-20T08:09:47.703Z",
+            "roomType": {
+              "id": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+              "name": "Standard Single Room",
+              "code": "STD-S",
+              "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+              "basePrice": 450000,
+              "capacityAdults": 1,
+              "capacityChildren": 0,
+              "sizeSqM": 20,
+              "amenities": [
+                "Wifi tốc độ cao",
+                "Điều hòa 2 chiều"
+              ],
+              "images": [
+                "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+              ],
+              "createdAt": "2026-10-20T08:09:47.604Z",
+              "updatedAt": "2026-10-20T08:09:47.604Z"
+            },
+            "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+            "imageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+            "images": [
+              "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+              "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+            ]
+          },
+          "invoice": null,
+          "serviceOrders": [],
+          "confirmedBy": null,
+          "cancelledBy": null,
+          "nights": 2,
+          "paymentStatus": "UNPAID",
+          "invoiceId": null,
+          "canCancel": true
+        },
+        "timestamp": "2026-10-20T08:31:13.436Z"
+      },
+      "group": "4. Đặt phòng & quản lý trạng thái"
+    },
+    {
+      "id": "TC27",
+      "name": "Đặt trùng lịch cùng phòng",
+      "method": "POST",
+      "path": "/bookings",
+      "expected": 409,
+      "actual": 409,
+      "timeMs": 248,
+      "message": "Phòng này đã có khách đặt hoặc đang ở trong khoảng thời gian được chọn",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "roomId": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+        "checkInDate": "2028-01-07",
+        "checkOutDate": "2028-01-09"
+      },
+      "response": {
+        "statusCode": 409,
+        "success": false,
+        "message": "Phòng này đã có khách đặt hoặc đang ở trong khoảng thời gian được chọn",
+        "error": "Conflict",
+        "timestamp": "2026-10-20T08:31:13.691Z",
+        "path": "/api/v1/bookings"
+      },
+      "group": "4. Đặt phòng & quản lý trạng thái"
+    },
+    {
+      "id": "TC28",
+      "name": "Check-in đơn đang chờ duyệt",
+      "method": "POST",
+      "path": "/bookings/{{bookingId}}/check-in",
+      "expected": 400,
+      "actual": 400,
+      "timeMs": 260,
+      "message": "Đơn đặt phòng đang ở trạng thái chờ duyệt. Lễ tân vui lòng phê duyệt đơn trước khi thực hiện check-in",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 400,
+        "success": false,
+        "message": "Đơn đặt phòng đang ở trạng thái chờ duyệt. Lễ tân vui lòng phê duyệt đơn trước khi thực hiện check-in",
+        "error": "Bad Request",
+        "timestamp": "2026-10-20T08:31:13.944Z",
+        "path": "/api/v1/bookings/6cd9b533-9a2a-453a-b282-aeffc10beeec/check-in"
+      },
+      "group": "4. Đặt phòng & quản lý trạng thái"
+    },
+    {
+      "id": "TC29",
+      "name": "Lễ tân phê duyệt đơn",
+      "method": "PATCH",
+      "path": "/bookings/{{bookingId}}/approve",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 306,
+      "message": "Phê duyệt đơn đặt phòng và xác nhận tiền cọc thành công",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "depositAmount": 0,
+        "paymentMethod": "BANK_TRANSFER",
+        "notes": "Kiểm thử tự động"
+      },
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Phê duyệt đơn đặt phòng và xác nhận tiền cọc thành công",
+        "data": {
+          "message": "Phê duyệt đơn đặt phòng và xác nhận tiền cọc thành công",
+          "depositAmount": 0,
+          "booking": {
+            "id": "6cd9b533-9a2a-453a-b282-aeffc10beeec",
+            "bookingCode": "BK-07341472",
+            "customerId": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+            "roomId": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+            "checkInDate": "2028-01-07T14:00:00.000Z",
+            "checkOutDate": "2028-01-09T12:00:00.000Z",
+            "actualCheckIn": null,
+            "actualCheckOut": null,
+            "guestCount": 1,
+            "totalAmount": 900000,
+            "depositAmount": 0,
+            "status": "CONFIRMED",
+            "specialRequests": "Phòng không hút thuốc",
+            "confirmedAt": "2026-10-20T08:31:14.222Z",
+            "confirmedById": "ea49ec97-fe9d-4000-b702-76841cb290fa",
+            "confirmationNote": "Kiểm thử tự động",
+            "cancellationReason": null,
+            "cancelledAt": null,
+            "cancelledById": null,
+            "createdAt": "2026-10-20T08:31:13.415Z",
+            "updatedAt": "2026-10-20T08:31:14.223Z",
+            "customer": {
+              "id": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+              "fullName": "Sinh Viên Đã Cập Nhật",
+              "email": "sv.test1792485062331@mail.com",
+              "phone": "0987654321"
+            },
+            "room": {
+              "id": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+              "roomNumber": "101",
+              "floor": 1,
+              "roomTypeId": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+              "status": "AVAILABLE",
+              "notes": null,
+              "createdAt": "2026-10-20T08:09:47.703Z",
+              "updatedAt": "2026-10-20T08:09:47.703Z",
+              "roomType": {
+                "id": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+                "name": "Standard Single Room",
+                "code": "STD-S",
+                "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+                "basePrice": 450000,
+                "capacityAdults": 1,
+                "capacityChildren": 0,
+                "sizeSqM": 20,
+                "amenities": [
+                  "Wifi tốc độ cao",
+                  "Điều hòa 2 chiều"
+                ],
+                "images": [
+                  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                  "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+                ],
+                "createdAt": "2026-10-20T08:09:47.604Z",
+                "updatedAt": "2026-10-20T08:09:47.604Z"
+              },
+              "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+              "imageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+              "images": [
+                "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+              ]
+            },
+            "invoice": null,
+            "serviceOrders": [],
+            "confirmedBy": {
+              "id": "ea49ec97-fe9d-4000-b702-76841cb290fa",
+              "fullName": "Lê Thu Hà (Trưởng ca Lễ tân)",
+              "role": "RECEPTIONIST"
+            },
+            "cancelledBy": null,
+            "nights": 2,
+            "paymentStatus": "UNPAID",
+            "invoiceId": null,
+            "canCancel": true
+          }
+        },
+        "timestamp": "2026-10-20T08:31:14.239Z"
+      },
+      "group": "4. Đặt phòng & quản lý trạng thái"
+    },
+    {
+      "id": "TC30",
+      "name": "Khách hàng xem danh sách đơn của mình",
+      "method": "GET",
+      "path": "/bookings?page=1&limit=10",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 252,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "data": [
+            {
+              "id": "6cd9b533-9a2a-453a-b282-aeffc10beeec",
+              "bookingCode": "BK-07341472",
+              "customerId": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+              "roomId": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+              "checkInDate": "2028-01-07T14:00:00.000Z",
+              "checkOutDate": "2028-01-09T12:00:00.000Z",
+              "actualCheckIn": null,
+              "actualCheckOut": null,
+              "guestCount": 1,
+              "totalAmount": 900000,
+              "depositAmount": 0,
+              "status": "CONFIRMED",
+              "specialRequests": "Phòng không hút thuốc",
+              "confirmedAt": "2026-10-20T08:31:14.222Z",
+              "confirmedById": "ea49ec97-fe9d-4000-b702-76841cb290fa",
+              "confirmationNote": "Kiểm thử tự động",
+              "cancellationReason": null,
+              "cancelledAt": null,
+              "cancelledById": null,
+              "createdAt": "2026-10-20T08:31:13.415Z",
+              "updatedAt": "2026-10-20T08:31:14.223Z",
+              "customer": {
+                "id": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+                "fullName": "Sinh Viên Đã Cập Nhật",
+                "email": "sv.test1792485062331@mail.com",
+                "phone": "0987654321"
+              },
+              "room": {
+                "id": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+                "roomNumber": "101",
+                "floor": 1,
+                "roomTypeId": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+                "status": "AVAILABLE",
+                "notes": null,
+                "createdAt": "2026-10-20T08:09:47.703Z",
+                "updatedAt": "2026-10-20T08:09:47.703Z",
+                "roomType": {
+                  "id": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+                  "name": "Standard Single Room",
+                  "code": "STD-S",
+                  "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+                  "basePrice": 450000,
+                  "capacityAdults": 1,
+                  "capacityChildren": 0,
+                  "sizeSqM": 20,
+                  "amenities": [
+                    "Wifi tốc độ cao",
+                    "Điều hòa 2 chiều"
+                  ],
+                  "images": [
+                    "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                    "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+                  ],
+                  "createdAt": "2026-10-20T08:09:47.604Z",
+                  "updatedAt": "2026-10-20T08:09:47.604Z"
+                },
+                "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                "imageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                "images": [
+                  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                  "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+                ]
+              },
+              "invoice": null,
+              "serviceOrders": [],
+              "confirmedBy": {
+                "id": "ea49ec97-fe9d-4000-b702-76841cb290fa",
+                "fullName": "Lê Thu Hà (Trưởng ca Lễ tân)",
+                "role": "RECEPTIONIST"
+              },
+              "cancelledBy": null,
+              "nights": 2,
+              "paymentStatus": "UNPAID",
+              "invoiceId": null,
+              "canCancel": false
+            }
+          ],
+          "meta": {
+            "total": 1,
+            "page": 1,
+            "limit": 10,
+            "totalPages": 1
+          }
+        },
+        "timestamp": "2026-10-20T08:31:14.508Z"
+      },
+      "group": "4. Đặt phòng & quản lý trạng thái"
+    },
+    {
+      "id": "TC31",
+      "name": "Khách tự hủy đơn đã được xác nhận",
+      "method": "PATCH",
+      "path": "/bookings/{{bookingId}}/cancel",
+      "expected": 403,
+      "actual": 403,
+      "timeMs": 259,
+      "message": "Đơn đặt phòng đã được lễ tân xác nhận nên không thể tự hủy. Vui lòng liên hệ lễ tân để được hỗ trợ.",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "cancellationReason": "Khách đổi kế hoạch"
+      },
+      "response": {
+        "statusCode": 403,
+        "success": false,
+        "message": "Đơn đặt phòng đã được lễ tân xác nhận nên không thể tự hủy. Vui lòng liên hệ lễ tân để được hỗ trợ.",
+        "error": "Forbidden",
+        "timestamp": "2026-10-20T08:31:14.770Z",
+        "path": "/api/v1/bookings/6cd9b533-9a2a-453a-b282-aeffc10beeec/cancel"
+      },
+      "group": "4. Đặt phòng & quản lý trạng thái"
+    },
+    {
+      "id": "TC32",
+      "name": "Lễ tân hủy đơn có lý do",
+      "method": "PATCH",
+      "path": "/bookings/{{bookingId}}/cancel",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 457,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "cancellationReason": "Kiểm thử tự động – dọn dữ liệu"
+      },
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "id": "6cd9b533-9a2a-453a-b282-aeffc10beeec",
+          "bookingCode": "BK-07341472",
+          "customerId": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+          "roomId": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+          "checkInDate": "2028-01-07T14:00:00.000Z",
+          "checkOutDate": "2028-01-09T12:00:00.000Z",
+          "actualCheckIn": null,
+          "actualCheckOut": null,
+          "guestCount": 1,
+          "totalAmount": 900000,
+          "depositAmount": 0,
+          "status": "CANCELLED",
+          "specialRequests": "Phòng không hút thuốc",
+          "confirmedAt": "2026-10-20T08:31:14.222Z",
+          "confirmedById": "ea49ec97-fe9d-4000-b702-76841cb290fa",
+          "confirmationNote": "Kiểm thử tự động",
+          "cancellationReason": "Kiểm thử tự động – dọn dữ liệu",
+          "cancelledAt": "2026-10-20T08:31:15.026Z",
+          "cancelledById": "ea49ec97-fe9d-4000-b702-76841cb290fa",
+          "createdAt": "2026-10-20T08:31:13.415Z",
+          "updatedAt": "2026-10-20T08:31:15.027Z",
+          "customer": {
+            "id": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+            "fullName": "Sinh Viên Đã Cập Nhật",
+            "email": "sv.test1792485062331@mail.com",
+            "phone": "0987654321"
+          },
+          "room": {
+            "id": "4a328a63-12c1-46b4-bd83-66cf18bf562b",
+            "roomNumber": "101",
+            "floor": 1,
+            "roomTypeId": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+            "status": "AVAILABLE",
+            "notes": null,
+            "createdAt": "2026-10-20T08:09:47.703Z",
+            "updatedAt": "2026-10-20T08:09:47.703Z",
+            "roomType": {
+              "id": "2aacccd4-17dd-49ce-aa6b-dc137692df74",
+              "name": "Standard Single Room",
+              "code": "STD-S",
+              "description": "Phòng tiêu chuẩn 1 giường đơn ấm cúng, tối ưu chi phí cho khách công tác.",
+              "basePrice": 450000,
+              "capacityAdults": 1,
+              "capacityChildren": 0,
+              "sizeSqM": 20,
+              "amenities": [
+                "Wifi tốc độ cao",
+                "Điều hòa 2 chiều"
+              ],
+              "images": [
+                "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+              ],
+              "createdAt": "2026-10-20T08:09:47.604Z",
+              "updatedAt": "2026-10-20T08:09:47.604Z"
+            },
+            "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+            "imageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+            "images": [
+              "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1000&q=80",
+              "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=1000&q=80"
+            ]
+          },
+          "invoice": null,
+          "serviceOrders": [],
+          "confirmedBy": {
+            "id": "ea49ec97-fe9d-4000-b702-76841cb290fa",
+            "fullName": "Lê Thu Hà (Trưởng ca Lễ tân)",
+            "role": "RECEPTIONIST"
+          },
+          "cancelledBy": {
+            "id": "ea49ec97-fe9d-4000-b702-76841cb290fa",
+            "fullName": "Lê Thu Hà (Trưởng ca Lễ tân)",
+            "role": "RECEPTIONIST"
+          },
+          "nights": 2,
+          "paymentStatus": "UNPAID",
+          "invoiceId": null,
+          "canCancel": false
+        },
+        "timestamp": "2026-10-20T08:31:15.048Z"
+      },
+      "group": "4. Đặt phòng & quản lý trạng thái"
+    },
+    {
+      "id": "TC33",
+      "name": "Xem đơn đặt phòng không tồn tại",
+      "method": "GET",
+      "path": "/bookings/00000000-0000-0000-0000-000000000000",
+      "expected": 404,
+      "actual": 404,
+      "timeMs": 242,
+      "message": "Không tìm thấy đơn đặt phòng ID: 00000000-0000-0000-0000-000000000000",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 404,
+        "success": false,
+        "message": "Không tìm thấy đơn đặt phòng ID: 00000000-0000-0000-0000-000000000000",
+        "error": "Not Found",
+        "timestamp": "2026-10-20T08:31:15.469Z",
+        "path": "/api/v1/bookings/00000000-0000-0000-0000-000000000000"
+      },
+      "group": "4. Đặt phòng & quản lý trạng thái"
+    },
+    {
+      "id": "TC34",
+      "name": "Dashboard thống kê",
+      "method": "GET",
+      "path": "/analytics/dashboard",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 285,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "totalRevenueToday": 0,
+          "todayRevenue": 0,
+          "yesterdayRevenue": 0,
+          "revenueChangePercent": null,
+          "occupancyRate": 22.2,
+          "totalRooms": 18,
+          "availableRooms": 8,
+          "occupiedRooms": 4,
+          "reservedRooms": 3,
+          "cleaningRooms": 2,
+          "maintenanceRooms": 1,
+          "checkInsToday": 0,
+          "todayCheckIns": 0,
+          "checkOutsToday": 0,
+          "todayCheckOuts": 0,
+          "activeBookings": 3,
+          "pendingBookings": 1,
+          "pendingInvoicesCount": 54,
+          "unpaidInvoices": 54,
+          "roomStatusBreakdown": {
+            "AVAILABLE": 8,
+            "OCCUPIED": 4,
+            "RESERVED": 3,
+            "CLEANING": 2,
+            "MAINTENANCE": 1
+          },
+          "activeShifts": [],
+          "activeStaffCount": 0,
+          "revenue7Days": [
+            {
+              "date": "2026-10-14",
+              "label": "T4",
+              "dateLabel": "14/10",
+              "revenue": 0,
+              "amount": 0,
+              "invoiceCount": 0
+            },
+            {
+              "date": "2026-10-15",
+              "label": "T5",
+              "dateLabel": "15/10",
+              "revenue": 0,
+              "amount": 0,
+              "invoiceCount": 0
+            }
+          ],
+          "revenueRanges": {
+            "1": {
+              "range": 1,
+              "from": "2026-10-20",
+              "to": "2026-10-20",
+              "series": [
+                {
+                  "date": "2026-10-20",
+                  "label": "T3",
+                  "dateLabel": "20/10",
+                  "revenue": 0,
+                  "amount": 0,
+                  "invoiceCount": 0
+                }
+              ],
+              "total": 0,
+              "average": 0,
+              "peak": {
+                "date": "2026-10-20",
+                "revenue": 0
+              },
+              "previousTotal": 0,
+              "changePercent": null,
+              "invoiceCount": 0
+            },
+            "7": {
+              "range": 7,
+              "from": "2026-10-14",
+              "to": "2026-10-20",
+              "series": [
+                {
+                  "date": "2026-10-14",
+                  "label": "T4",
+                  "dateLabel": "14/10",
+                  "revenue": 0,
+                  "amount": 0,
+                  "invoiceCount": 0
+                },
+                {
+                  "date": "2026-10-15",
+                  "label": "T5",
+                  "dateLabel": "15/10",
+                  "revenue": 0,
+                  "amount": 0,
+                  "invoiceCount": 0
+                }
+              ],
+              "total": 1584000,
+              "average": 226286,
+              "peak": {
+                "date": "2026-10-17",
+                "revenue": 1584000
+              },
+              "previousTotal": 0,
+              "changePercent": null,
+              "invoiceCount": 1
+            },
+            "14": {
+              "range": 14,
+              "from": "2026-10-07",
+              "to": "2026-10-20",
+              "series": [
+                {
+                  "date": "2026-10-07",
+                  "label": "T4",
+                  "dateLabel": "07/10",
+                  "revenue": 0,
+                  "amount": 0,
+                  "invoiceCount": 0
+                },
+                {
+                  "date": "2026-10-08",
+                  "label": "T5",
+                  "dateLabel": "08/10",
+                  "revenue": 0,
+                  "amount": 0,
+                  "invoiceCount": 0
+                }
+              ],
+              "total": 1584000,
+              "average": 113143,
+              "peak": {
+                "date": "2026-10-17",
+                "revenue": 1584000
+              },
+              "previousTotal": 0,
+              "changePercent": null,
+              "invoiceCount": 1
+            },
+            "30": {
+              "range": 30,
+              "from": "2026-09-21",
+              "to": "2026-10-20",
+              "series": [
+                {
+                  "date": "2026-09-21",
+                  "label": "T2",
+                  "dateLabel": "21/09",
+                  "revenue": 0,
+                  "amount": 0,
+                  "invoiceCount": 0
+                },
+                {
+                  "date": "2026-09-22",
+                  "label": "T3",
+                  "dateLabel": "22/09",
+                  "revenue": 0,
+                  "amount": 0,
+                  "invoiceCount": 0
+                }
+              ],
+              "total": 1584000,
+              "average": 52800,
+              "peak": {
+                "date": "2026-10-17",
+                "revenue": 1584000
+              },
+              "previousTotal": 0,
+              "changePercent": null,
+              "invoiceCount": 1
+            }
+          },
+          "availableRanges": [
+            1,
+            7
+          ],
+          "rooms": {
+            "total": 18,
+            "available": 8,
+            "occupied": 4,
+            "reserved": 3,
+            "cleaning": 2,
+            "maintenance": 1,
+            "occupancyRate": "22.2%"
+          },
+          "todayActivity": {
+            "expectedCheckIns": 0,
+            "expectedCheckOuts": 0,
+            "activeBookings": 3
+          },
+          "totalRevenue": 2628142000
+        },
+        "timestamp": "2026-10-20T08:31:15.735Z"
+      },
+      "group": "5. Thống kê, đăng xuất & khóa tài khoản"
+    },
+    {
+      "id": "TC35",
+      "name": "Danh sách hóa đơn có phân trang",
+      "method": "GET",
+      "path": "/invoices?page=1&limit=5",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 276,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "data": [
+            {
+              "id": "a7a5d719-cc08-4fa3-9932-409e7b04ea6b",
+              "invoiceCode": "INV-2026-004",
+              "bookingId": "1c8105b8-ba74-45c6-bdde-7183e4a46264",
+              "roomAmount": 8400000,
+              "servicesAmount": 1600000,
+              "discount": 0,
+              "tax": 1000000,
+              "finalAmount": 11000000,
+              "paidAmount": 4000000,
+              "paymentMethod": "CREDIT_CARD",
+              "paymentStatus": "PARTIAL",
+              "issuedById": "df8eebcb-181a-47aa-a400-8ed5d81d353d",
+              "notes": "Khách quốc tế, thanh toán phần còn lại khi trả phòng",
+              "paidAt": null,
+              "createdAt": "2026-10-20T08:09:48.011Z",
+              "updatedAt": "2026-10-20T08:09:48.011Z",
+              "booking": {
+                "id": "1c8105b8-ba74-45c6-bdde-7183e4a46264",
+                "bookingCode": "BK-2026-002",
+                "customerId": "78eb05c0-5a72-4845-a12e-b9a493cf4319",
+                "roomId": "35ea4e8b-cc82-4068-bc4e-1493c686c6a7",
+                "checkInDate": "2026-10-18T08:09:47.842Z",
+                "checkOutDate": "2026-10-21T08:09:47.842Z",
+                "actualCheckIn": "2026-10-18T08:09:47.842Z",
+                "actualCheckOut": null,
+                "guestCount": 2,
+                "totalAmount": 8400000,
+                "depositAmount": 4000000,
+                "status": "CHECKED_IN",
+                "specialRequests": "Cần đưa đón sân bay và xuất hóa đơn VAT công ty",
+                "confirmedAt": null,
+                "confirmedById": null,
+                "confirmationNote": null,
+                "cancellationReason": null,
+                "cancelledAt": null,
+                "cancelledById": null,
+                "createdAt": "2026-10-20T08:09:48.002Z",
+                "updatedAt": "2026-10-20T08:09:48.002Z",
+                "customer": {
+                  "id": "78eb05c0-5a72-4845-a12e-b9a493cf4319",
+                  "fullName": "Johnathan Miller (Khách Quốc tế)",
+                  "phone": "0935558899",
+                  "email": "customer.john@gmail.com"
+                },
+                "room": {
+                  "roomNumber": "401"
+                },
+                "serviceOrders": [
+                  "{…}",
+                  "{…}"
+                ]
+              },
+              "issuedBy": {
+                "fullName": "Trần Văn Minh (Thu ngân Quầy sảnh)",
+                "email": "cashier@hotel.com",
+                "role": "RECEPTIONIST"
+              },
+              "payments": [
+                {
+                  "id": "146c31f5-598b-4014-b6a4-cf3e713c6e13",
+                  "amount": 4000000,
+                  "type": "PAYMENT",
+                  "paymentMethod": "CREDIT_CARD",
+                  "paidAt": "2026-10-20T08:09:48.011Z",
+                  "reference": null,
+                  "note": "Khoản thu chuyển từ dữ liệu cũ (trước khi có sổ thu tiền chi tiết)",
+                  "cashierName": "Trần Văn Minh (Thu ngân Quầy sảnh)"
+                }
+              ],
+              "pendingPayments": [],
+              "roomNumber": "401",
+              "customerName": "Johnathan Miller (Khách Quốc tế)",
+              "customerPhone": "0935558899",
+              "items": [
+                {
+                  "name": "Tiền thuê phòng P.401",
+                  "quantity": 1,
+                  "unitPrice": 8400000,
+                  "amount": 8400000
+                },
+                {
+                  "name": "Dịch vụ xe Limousine đưa đón sân bay 2 chiều",
+                  "quantity": 1,
+                  "unitPrice": 800000,
+                  "amount": 800000
+                }
+              ],
+              "depositAmount": 4000000,
+              "remainingAmount": 7000000,
+              "pendingAmount": 0,
+              "hasPendingPaymentRequest": false,
+              "canRequestPayment": true
+            },
+            {
+              "id": "b1973876-f0cc-49af-8abc-6166d3df4c05",
+              "invoiceCode": "INV-2026-003",
+              "bookingId": "e74c7c28-c69e-461f-9b1d-7f1eb9ebcc88",
+              "roomAmount": 2850000,
+              "servicesAmount": 0,
+              "discount": 0,
+              "tax": 285000,
+              "finalAmount": 3135000,
+              "paidAmount": 1000000,
+              "paymentMethod": "BANK_TRANSFER",
+              "paymentStatus": "PARTIAL",
+              "issuedById": "df8eebcb-181a-47aa-a400-8ed5d81d353d",
+              "notes": "Tiền cọc giữ phòng qua quét mã VietQR",
+              "paidAt": null,
+              "createdAt": "2026-10-20T08:09:47.996Z",
+              "updatedAt": "2026-10-20T08:09:47.996Z",
+              "booking": {
+                "id": "e74c7c28-c69e-461f-9b1d-7f1eb9ebcc88",
+                "bookingCode": "BK-2026-004",
+                "customerId": "c2696d1a-f92a-495f-b63b-e44587efae06",
+                "roomId": "0a806e29-ffb4-4cfb-aa4a-6e3c3f75b8dc",
+                "checkInDate": "2026-10-21T08:09:47.842Z",
+                "checkOutDate": "2026-10-24T08:09:47.842Z",
+                "actualCheckIn": null,
+                "actualCheckOut": null,
+                "guestCount": 3,
+                "totalAmount": 2850000,
+                "depositAmount": 1000000,
+                "status": "CONFIRMED",
+                "specialRequests": "Gia đình có em bé nhỏ 3 tuổi, cần nôi em bé và phòng không mùi khói thuốc",
+                "confirmedAt": null,
+                "confirmedById": null,
+                "confirmationNote": null,
+                "cancellationReason": null,
+                "cancelledAt": null,
+                "cancelledById": null,
+                "createdAt": "2026-10-20T08:09:47.936Z",
+                "updatedAt": "2026-10-20T08:09:47.936Z",
+                "customer": {
+                  "id": "c2696d1a-f92a-495f-b63b-e44587efae06",
+                  "fullName": "Nguyễn Anh Tuấn (Khách VIP Platinum)",
+                  "phone": "0918889900",
+                  "email": "customer@hotel.com"
+                },
+                "room": {
+                  "roomNumber": "203"
+                },
+                "serviceOrders": []
+              },
+              "issuedBy": {
+                "fullName": "Trần Văn Minh (Thu ngân Quầy sảnh)",
+                "email": "cashier@hotel.com",
+                "role": "RECEPTIONIST"
+              },
+              "payments": [
+                {
+                  "id": "4dc9fa54-cdbd-4ce8-8cd9-b41ecf7c5dea",
+                  "amount": 1000000,
+                  "type": "PAYMENT",
+                  "paymentMethod": "BANK_TRANSFER",
+                  "paidAt": "2026-10-20T08:09:47.996Z",
+                  "reference": null,
+                  "note": "Khoản thu chuyển từ dữ liệu cũ (trước khi có sổ thu tiền chi tiết)",
+                  "cashierName": "Trần Văn Minh (Thu ngân Quầy sảnh)"
+                }
+              ],
+              "pendingPayments": [],
+              "roomNumber": "203",
+              "customerName": "Nguyễn Anh Tuấn (Khách VIP Platinum)",
+              "customerPhone": "0918889900",
+              "items": [
+                {
+                  "name": "Tiền thuê phòng P.203",
+                  "quantity": 1,
+                  "unitPrice": 2850000,
+                  "amount": 2850000
+                }
+              ],
+              "depositAmount": 1000000,
+              "remainingAmount": 2135000,
+              "pendingAmount": 0,
+              "hasPendingPaymentRequest": false,
+              "canRequestPayment": true
+            }
+          ],
+          "meta": {
+            "total": 4,
+            "page": 1,
+            "limit": 5,
+            "totalPages": 1,
+            "timeFilter": {
+              "type": "week",
+              "startDate": "2026-10-18T17:00:00.000Z",
+              "endDate": "2026-10-25T16:59:59.999Z",
+              "label": "Tuần này (19/10 - 25/10/2026)"
+            }
+          }
+        },
+        "timestamp": "2026-10-20T08:31:16.027Z"
+      },
+      "group": "5. Thống kê, đăng xuất & khóa tài khoản"
+    },
+    {
+      "id": "TC36",
+      "name": "Đăng xuất",
+      "method": "POST",
+      "path": "/auth/logout",
+      "expected": 201,
+      "actual": 201,
+      "timeMs": 266,
+      "message": "Đăng xuất thành công",
+      "pass": true,
+      "failures": [],
+      "request": {},
+      "response": {
+        "statusCode": 201,
+        "success": true,
+        "message": "Đăng xuất thành công",
+        "data": {
+          "success": true,
+          "message": "Đăng xuất thành công"
+        },
+        "timestamp": "2026-10-20T08:31:16.290Z"
+      },
+      "group": "5. Thống kê, đăng xuất & khóa tài khoản"
+    },
+    {
+      "id": "TC37",
+      "name": "Dùng lại token sau khi đăng xuất",
+      "method": "GET",
+      "path": "/auth/me",
+      "expected": 401,
+      "actual": 200,
+      "timeMs": 273,
+      "message": "Thành công",
+      "pass": false,
+      "failures": [
+        "HTTP 200, mong đợi 401",
+        "success = true"
+      ],
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "id": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+          "email": "sv.test1792485062331@mail.com",
+          "fullName": "Sinh Viên Đã Cập Nhật",
+          "phone": "0987654321",
+          "avatar": null,
+          "role": "CUSTOMER",
+          "isActive": true,
+          "createdAt": "2026-10-20T08:31:05.310Z",
+          "avatarUrl": null,
+          "stats": {
+            "totalBookings": 1,
+            "activeBookings": 0,
+            "averageRating": 5
+          }
+        },
+        "timestamp": "2026-10-20T08:31:16.570Z"
+      },
+      "group": "5. Thống kê, đăng xuất & khóa tài khoản"
+    },
+    {
+      "id": "TC38",
+      "name": "Admin vô hiệu hóa tài khoản kiểm thử",
+      "method": "DELETE",
+      "path": "/users/{{customerId}}",
+      "expected": 200,
+      "actual": 200,
+      "timeMs": 263,
+      "message": "Thành công",
+      "pass": true,
+      "failures": [],
+      "response": {
+        "statusCode": 200,
+        "success": true,
+        "message": "Thành công",
+        "data": {
+          "id": "b600ec88-5c18-40fb-bc7b-23460c9902a3",
+          "email": "sv.test1792485062331@mail.com",
+          "fullName": "Sinh Viên Đã Cập Nhật",
+          "phone": "0987654321",
+          "avatar": null,
+          "role": "CUSTOMER",
+          "isActive": false,
+          "createdAt": "2026-10-20T08:31:05.310Z",
+          "updatedAt": "2026-10-20T08:31:16.828Z"
+        },
+        "timestamp": "2026-10-20T08:31:16.834Z"
+      },
+      "group": "5. Thống kê, đăng xuất & khóa tài khoản"
+    },
+    {
+      "id": "TC39",
+      "name": "Đăng nhập bằng tài khoản đã bị khóa",
+      "method": "POST",
+      "path": "/auth/login",
+      "expected": 401,
+      "actual": 401,
+      "timeMs": 271,
+      "message": "Tài khoản của bạn đã bị khóa",
+      "pass": true,
+      "failures": [],
+      "request": {
+        "email": "sv.test1792485062331@mail.com",
+        "password": "Test@123"
+      },
+      "response": {
+        "statusCode": 401,
+        "success": false,
+        "message": "Tài khoản của bạn đã bị khóa",
+        "error": "Unauthorized",
+        "timestamp": "2026-10-20T08:31:17.103Z",
+        "path": "/api/v1/auth/login"
+      },
+      "group": "5. Thống kê, đăng xuất & khóa tài khoản"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "baseUrl": "https://hotel-management-plsp.onrender.com/api/v1",
+  "runAt": "2026-10-20T08:45:51.745Z",
+  "requestsPerEndpoint": 200,
+  "concurrency": 10,
+  "load": [
+    {
+      "name": "Danh sách loại phòng",
+      "url": "/room-types",
+      "requests": 200,
+      "errors": 0,
+      "throughputPerSec": 28.3,
+      "avgMs": 349,
+      "p50Ms": 274,
+      "p95Ms": 905,
+      "maxMs": 1106
+    },
+    {
+      "name": "Danh sách phòng (phân trang)",
+      "url": "/rooms?page=1&limit=20",
+      "requests": 200,
+      "errors": 0,
+      "throughputPerSec": 9.5,
+      "avgMs": 1033,
+      "p50Ms": 921,
+      "p95Ms": 1999,
+      "maxMs": 2310
+    },
+    {
+      "name": "Tìm phòng trống theo ngày",
+      "url": "/rooms/available?checkInDate=2027-02-17&checkOutDate=2027-02-19&guestCount=1",
+      "requests": 200,
+      "errors": 0,
+      "throughputPerSec": 9.7,
+      "avgMs": 1027,
+      "p50Ms": 907,
+      "p95Ms": 1800,
+      "maxMs": 2201
+    },
+    {
+      "name": "Danh mục dịch vụ",
+      "url": "/services",
+      "requests": 200,
+      "errors": 0,
+      "throughputPerSec": 27.7,
+      "avgMs": 357,
+      "p50Ms": 306,
+      "p95Ms": 597,
+      "maxMs": 807
+    }
+  ],
+  "booking": {
+    "roomNumber": "101",
+    "checkIn": "2027-12-28",
+    "checkOut": "2027-12-30",
+    "parallelRequests": 10,
+    "statusCount": {
+      "201": 1,
+      "409": 9
+    },
+    "created": 1,
+    "activeBookingsInDb": 1,
+    "rejectMessages": [
+      "Phòng này đang được khách khác giữ chỗ để thanh toán, vui lòng thử lại sau giây lát!"
+    ]
+  }
+}

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Component Diagram - Luxe Grand Hotel</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@500;600;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background-color: #FFFFFF;
+      margin: 0;
+      padding: 0;
+      width: 2200px;
+      height: 1450px;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    svg {
+      display: block;
+      width: 2200px;
+      height: 1450px;
+    }
+  </style>
+</head>
+<body>
+  <svg width="2200" height="1450" viewBox="0 0 2200 1450" xmlns="http://www.w3.org/2000/svg">
+  
+  <defs>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B365D"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="fePackageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F0F7FF"/>
+    </linearGradient>
+    <linearGradient id="bePackageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F0FDF4"/>
+    </linearGradient>
+    <linearGradient id="extPackageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FFFBEB"/>
+    </linearGradient>
+
+    <!-- 3D Node Gradients -->
+    <linearGradient id="nodeTopGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F1F5F9"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+    <linearGradient id="nodeSideGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#CBD5E1"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+
+    <!-- Activation Bar Gradient -->
+    <linearGradient id="actGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EFF6FF"/>
+      <stop offset="100%" stop-color="#DBEAFE"/>
+    </linearGradient>
+
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.05"/>
+    </filter>
+
+    <!-- Component Icon Definition -->
+    <g id="compIcon">
+      <rect x="0" y="0" width="22" height="16" fill="#F8FAFC" stroke="#475569" stroke-width="1.5"/>
+      <rect x="-4" y="2" width="8" height="4" fill="#E2E8F0" stroke="#475569" stroke-width="1.2"/>
+      <rect x="-4" y="9" width="8" height="4" fill="#E2E8F0" stroke="#475569" stroke-width="1.2"/>
+    </g>
+
+    <!-- Artifact Corner Icon -->
+    <g id="artifactIcon">
+      <path d="M 0 0 L 16 0 L 22 6 L 22 26 L 0 26 Z" fill="#F1F5F9" stroke="#475569" stroke-width="1.5"/>
+      <path d="M 16 0 L 16 6 L 22 6 Z" fill="#CBD5E1" stroke="#475569" stroke-width="1.2"/>
+    </g>
+
+    <marker id="depArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706"/>
+    </marker>
+    <marker id="depArrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+    <marker id="depArrowEmerald" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="assocArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+    </marker>
+    <marker id="compDiamond" viewBox="0 0 16 10" refX="0" refY="5" markerWidth="14" markerHeight="9" orient="auto">
+      <polygon points="0,5 7,0 14,5 7,10" fill="#1E293B"/>
+    </marker>
+    <marker id="syncArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <polygon points="0,1 10,5 0,9" fill="#1E293B"/>
+    </marker>
+    <marker id="asyncArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <polyline points="0,1 10,5 0,9" fill="none" stroke="#D97706" stroke-width="2"/>
+    </marker>
+    <marker id="replyArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <polyline points="0,1 10,5 0,9" fill="none" stroke="#64748B" stroke-width="1.8"/>
+    </marker>
+  </defs>
+
+
+  <!-- Header Banner -->
+  <rect x="0" y="0" width="2200" height="90" rx="8" fill="url(#headerGrad)"/>
+  <text x="40" y="42" font-family="'Inter', sans-serif" font-size="26" font-weight="800" fill="#FFFFFF" letter-spacing="0.5">
+    UML COMPONENT DIAGRAM: HỆ THỐNG QUẢN LÝ KHÁCH SẠN LUXE GRAND HOTEL
+  </text>
+  <text x="40" y="72" font-family="'Inter', sans-serif" font-size="15" font-weight="500" fill="#38BDF8">
+    Mô hình hóa các thành phần phần mềm (Components), giao diện kết nối (Interfaces / Ports) và luồng liên lạc giữa Client - Server - Data
+  </text>
+
+  <!-- ==================== CLIENT SUBSYSTEM ==================== -->
+  <g transform="translate(40, 120)">
+    <rect x="0" y="0" width="600" height="1280" rx="8" fill="#F8FAFC" stroke="#0284C7" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="30" y="38" font-family="'Inter', sans-serif" font-size="17" font-weight="800" fill="#0369A1">
+      &lt;&lt;subsystem&gt;&gt; Mobile Client (Flutter Application)
+    </text>
+
+    <!-- Component 1: UI View -->
+    <g transform="translate(25, 60)">
+      <rect x="0" y="0" width="550" height="175" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.8"/>
+      <use href="#compIcon" x="510" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#0C4A6E">&lt;&lt;component&gt;&gt; UI Presentation Components</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Screens: RoomMatrixScreen (5 màu sắc), BookingWizard</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• InvoicesScreen, ShiftHandoverModal, AdminDashboard</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Reusable: AppCard, ShiftKpiStrip, FL Chart Bar Chart</text>
+      <text x="20" y="140" font-size="12" font-weight="600" fill="#0284C7">Cung cấp: View rendering, nhận tương tác người dùng</text>
+    </g>
+
+    <!-- Component 2: BLoC State Management -->
+    <g transform="translate(25, 255)">
+      <rect x="0" y="0" width="550" height="195" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.8"/>
+      <use href="#compIcon" x="510" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#0C4A6E">&lt;&lt;component&gt;&gt; State Management (BLoC / Cubit)</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• AuthBloc: Kiểm soát phiên đăng nhập, JWT expiry</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• RoomBloc: Quản lý ma trận phòng, tiếp nhận sự kiện SSE</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• BookingBloc, InvoiceBloc, ShiftBloc, ThemeCubit</text>
+      <text x="20" y="138" font-size="12" font-weight="600" fill="#0284C7">Cổng tiếp nhận: UI Events (Streams)</text>
+      <text x="20" y="162" font-size="12" font-weight="600" fill="#0284C7">Cổng phát ra: UI States (Loading, Loaded, Error)</text>
+    </g>
+
+    <!-- Component 3: Service Locator (GetIt) -->
+    <g transform="translate(25, 470)">
+      <rect x="0" y="0" width="550" height="120" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.8"/>
+      <use href="#compIcon" x="510" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#0C4A6E">&lt;&lt;component&gt;&gt; Service Locator (GetIt Container)</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Singleton &amp; Factory Dependency Injection</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Tiêm phụ thuộc Repositories, Blocs, DioClient, SSE</text>
+      <text x="20" y="102" font-size="12" font-weight="600" fill="#0284C7">Khởi tạo và định vị tài nguyên toàn cục</text>
+    </g>
+
+    <!-- Component 4: Repository Layer -->
+    <g transform="translate(25, 610)">
+      <rect x="0" y="0" width="550" height="190" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.8"/>
+      <use href="#compIcon" x="510" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#0C4A6E">&lt;&lt;component&gt;&gt; Repository Layer (Domain Gateways)</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• BookingRepository, RoomRepository, InvoiceRepository</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• ShiftRepository, UserRepository, ServiceRepository</text>
+      <text x="20" y="116" font-size="12" font-weight="600" fill="#0284C7">Trừu tượng hóa nguồn dữ liệu API, parse JSON sang Entity</text>
+      <text x="20" y="140" font-size="12" font-weight="600" fill="#0284C7">Quản lý định dạng lỗi ApiResult&lt;T&gt; (Success / Failure)</text>
+    </g>
+
+    <!-- Component 5: Network Adapters -->
+    <g transform="translate(25, 820)">
+      <rect x="0" y="0" width="550" height="210" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.8"/>
+      <use href="#compIcon" x="510" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#0C4A6E">&lt;&lt;component&gt;&gt; Network Adapters (Dio &amp; SSE)</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• DioClient: HTTP REST client, Bearer JWT Interceptor</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• SseClient: Server-Sent Events subscriber, Auto-reconnect</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• TokenStorage: Quản lý access_token trong KeyStore</text>
+      <text x="20" y="138" font-size="12" font-weight="600" fill="#0284C7">Giao diện cung cấp: IHttpClient, ISseStreamSubscriber</text>
+      <text x="20" y="162" font-size="12" font-weight="600" fill="#0284C7">Giao diện yêu cầu: OS Network Socket, SSL/TLS Handshake</text>
+    </g>
+
+    <!-- Component 6: Push Listener -->
+    <g transform="translate(25, 1050)">
+      <rect x="0" y="0" width="550" height="190" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.8"/>
+      <use href="#compIcon" x="510" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#0C4A6E">&lt;&lt;component&gt;&gt; FCM Notification Receiver</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• firebaseMessagingBackgroundHandler (Killed App state)</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• InAppNotificationBanner &amp; Local Notification Bridge</text>
+      <text x="20" y="116" font-size="12" font-weight="600" fill="#0284C7">Lắng nghe Push Token và hiển thị Heads-up notification</text>
+    </g>
+  </g>
+
+  <!-- ==================== MIDDLE NETWORK CHANNELS (LOLLIPOP & SOCKET) ==================== -->
+  <g transform="translate(640, 120)">
+    <!-- REST API Channel -->
+    <g transform="translate(0, 360)">
+      <path d="M 0 0 L 50 0" stroke="#0284C7" stroke-width="3"/>
+      <path d="M 50 -16 A 16 16 0 0 1 50 16" fill="none" stroke="#0284C7" stroke-width="3"/>
+      <circle cx="70" cy="0" r="10" fill="#FFFFFF" stroke="#D97706" stroke-width="3"/>
+      <path d="M 80 0 L 120 0" stroke="#D97706" stroke-width="3" marker-end="url(#depArrow)"/>
+      <rect x="10" y="-36" width="100" height="22" rx="4" fill="#FFFBEB" stroke="#FDE68A"/>
+      <text x="60" y="-21" font-size="11" font-weight="800" fill="#D97706" text-anchor="middle">I_REST_API</text>
+      <text x="60" y="32" font-size="10" fill="#B45309" text-anchor="middle" font-family="'Fira Code', monospace">JSON/HTTPS (Port 443)</text>
+    </g>
+
+    <!-- SSE Stream Channel -->
+    <g transform="translate(0, 540)">
+      <path d="M 0 0 L 50 0" stroke="#0284C7" stroke-width="3"/>
+      <circle cx="50" cy="0" r="10" fill="#FFFFFF" stroke="#059669" stroke-width="3"/>
+      <path d="M 70 -16 A 16 16 0 0 0 70 16" fill="none" stroke="#059669" stroke-width="3"/>
+      <path d="M 70 0 L 120 0" stroke="#059669" stroke-width="3"/>
+      <rect x="5" y="-36" width="110" height="22" rx="4" fill="#F0FDF4" stroke="#A7F3D0"/>
+      <text x="60" y="-21" font-size="11" font-weight="800" fill="#047857" text-anchor="middle">I_SSE_STREAM</text>
+      <text x="60" y="32" font-size="10" fill="#065F46" text-anchor="middle" font-family="'Fira Code', monospace">Realtime Push (HTTP/2)</text>
+    </g>
+
+    <!-- FCM Push Channel -->
+    <g transform="translate(0, 1140)">
+      <path d="M 0 0 L 50 0" stroke="#0284C7" stroke-width="3"/>
+      <path d="M 50 -16 A 16 16 0 0 1 50 16" fill="none" stroke="#0284C7" stroke-width="3"/>
+      <circle cx="70" cy="0" r="10" fill="#FFFFFF" stroke="#D97706" stroke-width="3"/>
+      <path d="M 80 0 L 120 0" stroke="#D97706" stroke-width="3" marker-end="url(#depArrow)"/>
+      <rect x="5" y="-36" width="110" height="22" rx="4" fill="#FFFBEB" stroke="#FDE68A"/>
+      <text x="60" y="-21" font-size="11" font-weight="800" fill="#D97706" text-anchor="middle">I_FCM_PUSH</text>
+      <text x="60" y="32" font-size="10" fill="#B45309" text-anchor="middle" font-family="'Fira Code', monospace">OTA Push Notifications</text>
+    </g>
+  </g>
+
+  <!-- ==================== BACKEND SUBSYSTEM ==================== -->
+  <g transform="translate(760, 120)">
+    <rect x="0" y="0" width="720" height="1280" rx="8" fill="#F8FAFC" stroke="#059669" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="30" y="38" font-family="'Inter', sans-serif" font-size="17" font-weight="800" fill="#047857">
+      &lt;&lt;subsystem&gt;&gt; API Server (NestJS Application)
+    </text>
+
+    <!-- Component: API Gateway & Guards -->
+    <g transform="translate(25, 60)">
+      <rect x="0" y="0" width="670" height="135" rx="6" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.8"/>
+      <use href="#compIcon" x="630" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#065F46">&lt;&lt;component&gt;&gt; Gateway, Pipeline &amp; Security Guards</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Global ValidationPipe (class-validator), AllExceptionsFilter</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• JwtAuthGuard: Giải mã Bearer Token, kiểm tra activeSessionId</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• RolesGuard: Kiểm soát quyền hạn (RBAC) trên từng Endpoint</text>
+    </g>
+
+    <!-- Component: Controllers -->
+    <g transform="translate(25, 215)">
+      <rect x="0" y="0" width="670" height="155" rx="6" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.8"/>
+      <use href="#compIcon" x="630" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#065F46">&lt;&lt;component&gt;&gt; REST API Controllers Layer</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• BookingsController (/api/v1/bookings): CRUD, Approve, Checkin</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• RoomsController (/api/v1/rooms): Matrix, Stream, ChangeRoom</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• InvoicesController, ShiftsController, AuthController, Users</text>
+      <text x="20" y="132" font-size="12" font-weight="600" fill="#059669">Tiếp nhận HTTP Request, giải nén DTO, chuyển giao Service</text>
+    </g>
+
+    <!-- Component: Domain Services -->
+    <g transform="translate(25, 390)">
+      <rect x="0" y="0" width="670" height="290" rx="6" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.8"/>
+      <use href="#compIcon" x="630" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#065F46">&lt;&lt;component&gt;&gt; Domain Business Logic Services</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• BookingsService: Thuật toán Interval Overlap kiểm tra trùng phòng</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• InvoicesService: Quản lý sổ thu tiền đa đợt (Payment &amp; Deposit)</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• ShiftsService: Quản lý ca trực lễ tân, kiểm soát sai lệch két tiền</text>
+      <text x="20" y="124" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• RoomTypesService, ServicesService, UsersService, AnalyticsService</text>
+      
+      <!-- Sub-box: Event Bus -->
+      <rect x="20" y="150" width="630" height="90" rx="6" fill="#F0FDF4" stroke="#86EFAC"/>
+      <text x="35" y="175" font-size="13" font-weight="700" fill="#047857">RoomEventsService &amp; UserEventsService (In-process Event Bus)</text>
+      <text x="35" y="198" font-size="11" fill="#065F46" font-family="'Fira Code', monospace">• RxJS Subject&lt;RoomEvent&gt; phát sự kiện 'room.status_changed'</text>
+      <text x="35" y="220" font-size="11" fill="#065F46" font-family="'Fira Code', monospace">• SSE Stream Handler: Phát luồng thông điệp thời gian thực về Client</text>
+      
+      <text x="20" y="268" font-size="12" font-weight="600" fill="#059669">Bảo vệ toàn vẹn quy tắc nghiệp vụ khách sạn (ACID / Domain Rules)</text>
+    </g>
+
+    <!-- Component: Cron Scheduler -->
+    <g transform="translate(25, 700)">
+      <rect x="0" y="0" width="670" height="95" rx="6" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.8"/>
+      <use href="#compIcon" x="630" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#065F46">&lt;&lt;component&gt;&gt; Automated Task Scheduler (Cron Engine)</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• CheckinReminderService: @Cron('0 9 * * *') chạy mỗi sáng 09:00</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Tự động quét đơn nhận phòng hôm nay &amp; kích hoạt gửi FCM / Email</text>
+    </g>
+
+    <!-- Component: Prisma ORM -->
+    <g transform="translate(25, 815)">
+      <rect x="0" y="0" width="670" height="155" rx="6" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.8"/>
+      <use href="#compIcon" x="630" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#065F46">&lt;&lt;component&gt;&gt; Data Access Layer (Prisma ORM Client)</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• PrismaService (Type-Safe Query Builder, Connection Pooling)</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• prisma.$transaction: Thực thi giao dịch nguyên tử (Atomic commit)</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Tự động tạo TypeScript Types 100% không null pointer lúc runtime</text>
+      <text x="20" y="132" font-size="12" font-weight="600" fill="#059669">Cung cấp interface: I_PrismaClient, TransactionManager</text>
+    </g>
+
+    <!-- Component: Infra Adapters -->
+    <g transform="translate(25, 990)">
+      <rect x="0" y="0" width="670" height="165" rx="6" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.8"/>
+      <use href="#compIcon" x="630" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#065F46">&lt;&lt;component&gt;&gt; External Integration Adapters</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• RedisService (ioredis): Đệm danh mục phòng, giảm 65% tải CSDL</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• ElasticsearchService: Đánh chỉ mục Lucene, tìm kiếm nâng cao &lt; 50ms</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• NotificationsService: Firebase Admin SDK (FCM Broadcast)</text>
+      <text x="20" y="124" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• MailService (Nodemailer) &amp; UploadModule (Cloudinary SDK)</text>
+    </g>
+  </g>
+
+  <!-- ==================== MIDDLE-RIGHT PROTOCOL BUS (BE -> DATA) ==================== -->
+  <g transform="translate(1480, 120)">
+    <!-- Bus line 1: PostgreSQL Port 5432 -->
+    <path d="M 0 890 L 120 170" fill="none" stroke="#059669" stroke-width="2.5" marker-end="url(#depArrowEmerald)"/>
+    <rect x="15" y="510" width="90" height="22" rx="4" fill="#F0FDF4" stroke="#86EFAC"/>
+    <text x="60" y="525" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">Port 5432 / TCP</text>
+
+    <!-- Bus line 2: Redis Port 6379 -->
+    <path d="M 0 1020 L 120 390" fill="none" stroke="#059669" stroke-width="2.5" marker-end="url(#depArrowEmerald)"/>
+    <rect x="15" y="685" width="90" height="22" rx="4" fill="#F0FDF4" stroke="#86EFAC"/>
+    <text x="60" y="700" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">Port 6379 / TCP</text>
+
+    <!-- Bus line 3: Elasticsearch Port 9200 -->
+    <path d="M 0 1050 L 120 590" fill="none" stroke="#059669" stroke-width="2.5" marker-end="url(#depArrowEmerald)"/>
+    <rect x="15" y="800" width="90" height="22" rx="4" fill="#F0FDF4" stroke="#86EFAC"/>
+    <text x="60" y="815" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">Port 9200 / HTTP</text>
+
+    <!-- Bus line 4: FCM Push -->
+    <path d="M 0 1080 L 120 780" fill="none" stroke="#059669" stroke-width="2.5" marker-end="url(#depArrowEmerald)"/>
+    <rect x="15" y="915" width="90" height="22" rx="4" fill="#F0FDF4" stroke="#86EFAC"/>
+    <text x="60" y="930" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">FCM Admin SDK</text>
+
+    <!-- Bus line 5: Cloudinary & SMTP -->
+    <path d="M 0 1110 L 120 970" fill="none" stroke="#059669" stroke-width="2.5" marker-end="url(#depArrowEmerald)"/>
+    <rect x="15" y="1030" width="90" height="22" rx="4" fill="#F0FDF4" stroke="#86EFAC"/>
+    <text x="60" y="1045" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">Port 587 &amp; HTTPS</text>
+  </g>
+
+  <!-- ==================== PERSISTENCE & DATA SUBSYSTEM ==================== -->
+  <g transform="translate(1600, 120)">
+    <rect x="0" y="0" width="560" height="1280" rx="8" fill="#F8FAFC" stroke="#D97706" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="30" y="38" font-family="'Inter', sans-serif" font-size="17" font-weight="800" fill="#B45309">
+      &lt;&lt;subsystem&gt;&gt; Persistence &amp; Cloud Platform
+    </text>
+
+    <!-- PostgreSQL -->
+    <g transform="translate(25, 60)">
+      <rect x="0" y="0" width="510" height="205" rx="6" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.8"/>
+      <use href="#compIcon" x="470" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#92400E">&lt;&lt;component&gt;&gt; PostgreSQL 16 DB Server</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Relational Storage with ACID Compliance</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• B-Tree Indexes &amp; Multi-statement Locking</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Tables: users, rooms, room_types, bookings,</text>
+      <text x="20" y="124" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">  invoices, payments, work_shifts, services...</text>
+      <text x="20" y="162" font-size="12" font-weight="600" fill="#D97706">Port kết nối: 5432 / TCP (Prisma Pool)</text>
+    </g>
+
+    <!-- Redis Cache -->
+    <g transform="translate(25, 285)">
+      <rect x="0" y="0" width="510" height="180" rx="6" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.8"/>
+      <use href="#compIcon" x="470" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#92400E">&lt;&lt;component&gt;&gt; Redis 7 In-Memory Engine</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• High-throughput In-Memory Caching (LRU)</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Cache danh mục phòng trống &amp; Minibar</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Tự động đồng bộ / xóa cache khi cập nhật</text>
+      <text x="20" y="140" font-size="12" font-weight="600" fill="#D97706">Port kết nối: 6379 / TCP (ioredis)</text>
+    </g>
+
+    <!-- Elasticsearch -->
+    <g transform="translate(25, 485)">
+      <rect x="0" y="0" width="510" height="180" rx="6" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.8"/>
+      <use href="#compIcon" x="470" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#92400E">&lt;&lt;component&gt;&gt; Elasticsearch 8 Cluster</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Lucene Distributed Full-text Search Engine</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Index: 'hotel_rooms', 'hotel_services'</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Fuzzy search, lọc tiện nghi (WiFi, Bể bơi...)</text>
+      <text x="20" y="140" font-size="12" font-weight="600" fill="#D97706">Port kết nối: 9200 / HTTP REST API</text>
+    </g>
+
+    <!-- Firebase FCM -->
+    <g transform="translate(25, 685)">
+      <rect x="0" y="0" width="510" height="165" rx="6" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.8"/>
+      <use href="#compIcon" x="470" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#92400E">&lt;&lt;component&gt;&gt; Firebase Cloud Messaging</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Google Cloud Push Notification Gateway</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Quản lý FCM Registration Tokens người dùng</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Chuyển phát tin ngầm (Data-only) &amp; Display Alerts</text>
+    </g>
+
+    <!-- Cloudinary & SMTP -->
+    <g transform="translate(25, 870)">
+      <rect x="0" y="0" width="510" height="165" rx="6" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.8"/>
+      <use href="#compIcon" x="470" y="15"/>
+      <text x="20" y="32" font-size="15" font-weight="700" fill="#92400E">&lt;&lt;component&gt;&gt; Cloudinary &amp; SMTP Mailer</text>
+      <text x="20" y="58" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Cloudinary CDN: Lưu trữ tối ưu ảnh phòng HD</text>
+      <text x="20" y="80" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• SMTP Server: Gửi thư xác thực OTP, thư chào đón</text>
+      <text x="20" y="102" font-size="12" fill="#64748B" font-family="'Fira Code', monospace">• Giao thức: HTTPS Multi-part upload &amp; SMTP TLS</text>
+    </g>
+  </g>
+</svg>
+</body>
+</html>

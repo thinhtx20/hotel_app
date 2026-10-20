@@ -974,8 +974,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     ),
                     Row(
                       children: [
-                        if (statusUpper == 'PENDING' ||
-                            statusUpper == 'CONFIRMED') ...[
+                        if (booking.canCancel ??
+                            (statusUpper == 'PENDING')) ...[
                           OutlinedButton(
                             onPressed: () => _cancelBooking(booking),
                             style: OutlinedButton.styleFrom(
@@ -1137,7 +1137,8 @@ class _BookingDetailsModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final statusUpper = booking.status.toUpperCase();
-    final canCancel = statusUpper == 'PENDING' || statusUpper == 'CONFIRMED';
+    final canCancel =
+        booking.canCancel ?? (statusUpper == 'PENDING');
     final remaining = (booking.totalAmount - booking.depositAmount);
 
     return AppBottomSheet(

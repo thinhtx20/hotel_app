@@ -21,11 +21,11 @@
 
 ## LỜI CAM ĐOAN
 
-Tôi xin cam đoan đây là công trình nghiên cứu khoa học và phát triển hệ thống phần mềm độc lập của bản thân dưới sự hướng dẫn khoa học của Giảng viên hướng dẫn. Các số liệu, nội dung khảo sát, kịch bản kiểm thử và kết quả thực nghiệm trình bày trong báo cáo khóa luận tốt nghiệp này là hoàn toàn trung thực, phản ánh chính xác kết quả xây dựng và triển khai thực tế của hệ thống **Luxe Grand Hotel Management**.
+Tôi xin cam đoan đây là công trình nghiên cứu và phát triển phần mềm của bản thân dưới sự hướng dẫn khoa học của Giảng viên hướng dẫn. Các số liệu khảo sát, kịch bản kiểm thử và kết quả đo lường trình bày trong báo cáo được ghi nhận từ việc chạy thực tế hệ thống **Luxe Grand Hotel Management**; những nội dung chưa thực hiện được nêu rõ ở phần hạn chế.
 
-Mọi tài liệu tham khảo, các framework, thư viện mã nguồn mở (NestJS, Flutter, PostgreSQL, Prisma ORM, Redis, Elasticsearch, Firebase Cloud Messaging, Nodemailer, FL Chart) đều được trích dẫn nguồn gốc đầy đủ, rõ ràng theo đúng quy chuẩn đạo đức học thuật.
+Mọi tài liệu tham khảo, framework và thư viện mã nguồn mở (NestJS, Flutter, PostgreSQL, Prisma ORM, Redis, Elasticsearch, Firebase Cloud Messaging, Nodemailer, FL Chart) đều được trích dẫn nguồn gốc đầy đủ theo đúng quy chuẩn đạo đức học thuật.
 
-*Hà Nội / TP. Hồ Chí Minh, ngày 21 tháng 09 năm 2026*  
+*Hà Nội, ngày ... tháng ... năm 2026*  
 **Sinh viên thực hiện**  
 *(Ký và ghi rõ họ tên)*  
 
@@ -35,13 +35,15 @@ Mọi tài liệu tham khảo, các framework, thư viện mã nguồn mở (Nes
 
 ## LỜI CẢM ƠN
 
-Để hoàn thành được đồ án tốt nghiệp này, trước hết em xin bày tỏ lòng biết ơn chân thành và sâu sắc nhất tới toàn thể quý Thầy, Cô giáo trong Khoa Công nghệ Thông tin - Trường Đại học [Tên Trường], những người đã tận tâm truyền đạt cho em những nền tảng tri thức vững chắc, phương pháp tư duy khoa học và đạo đức nghề nghiệp trong suốt những năm tháng học tập dưới mái trường.
+Để hoàn thành được đồ án tốt nghiệp này, trước hết em xin bày tỏ lòng biết ơn chân thành tới toàn thể quý Thầy, Cô giáo trong Khoa Công nghệ Thông tin – Trường Đại học [Tên Trường], những người đã tận tâm truyền đạt cho em nền tảng tri thức, phương pháp tư duy khoa học và đạo đức nghề nghiệp trong suốt những năm học tập.
 
-Đặc biệt, em xin gửi lời tri ân sâu sắc nhất tới Thầy/Cô [Họ tên GVHD], người đã luôn nhiệt tình định hướng, đóng góp những ý kiến chuyên môn xác đáng, gợi mở các giải pháp xử lý tranh chấp giao dịch và kiểm soát dòng tiền ca trực, đồng thời luôn động viên em vượt qua những thách thức trong suốt quá trình phân tích, thiết kế và hiện thực hóa hệ thống.
+Đặc biệt, em xin gửi lời tri ân sâu sắc tới Thầy/Cô [Họ tên GVHD], người đã định hướng, đóng góp những ý kiến chuyên môn xác đáng về các bài toán tranh chấp đặt phòng và kiểm soát dòng tiền ca trực, đồng thời luôn động viên em trong suốt quá trình phân tích, thiết kế và hiện thực hóa hệ thống.
 
-Cuối cùng, con xin gửi lời cảm ơn vô hạn tới gia đình, cha mẹ và bạn bè đã luôn là chỗ dựa tinh thần vững chắc, tiếp thêm niềm tin, nguồn động lực to lớn để em có thể hoàn thành tốt chương trình đào tạo đại học và khóa luận tốt nghiệp này.
+Em cũng xin cảm ơn các anh chị khách hàng, nhân viên lễ tân và quản lý khách sạn đã dành thời gian tham gia phỏng vấn khảo sát, giúp em hiểu đúng nhu cầu thực tế của nghiệp vụ.
 
-Mặc dù đã rất nỗ lực, song do giới hạn về thời gian và kinh nghiệm thực tế, cuốn báo cáo khó tránh khỏi những thiếu sót nhất định. Em rất mong nhận được những nhận xét, góp ý và chỉ dẫn quý báu từ quý Thầy Cô trong Hội đồng chấm khóa luận tốt nghiệp để đề tài được hoàn thiện hơn nữa.
+Cuối cùng, con xin gửi lời cảm ơn tới gia đình và bạn bè đã luôn là chỗ dựa tinh thần vững chắc để em hoàn thành chương trình đào tạo và khóa luận tốt nghiệp này.
+
+Mặc dù đã rất nỗ lực, do giới hạn về thời gian và kinh nghiệm thực tế, báo cáo khó tránh khỏi những thiếu sót. Em rất mong nhận được nhận xét, góp ý từ quý Thầy Cô trong Hội đồng để đề tài được hoàn thiện hơn.
 
 *Em xin chân thành cảm ơn!*  
 
@@ -51,195 +53,66 @@ Mặc dù đã rất nỗ lực, song do giới hạn về thời gian và kinh 
 
 ## TÓM TẮT ĐỀ TÀI (ABSTRACT)
 
-### Tóm tắt tiếng Việt:
-Trong bối cảnh bùng nổ của cuộc Cách mạng công nghiệp 4.0 và xu hướng chuyển đổi số mạnh mẽ trong ngành du lịch - dịch vụ lưu trú (Hospitality), việc tin học hóa toàn diện quy trình vận hành khách sạn không chỉ giúp tối ưu hóa chi phí nhân sự mà còn nâng cao chất lượng trải nghiệm của khách hàng. Đề tài **"Nghiên cứu và xây dựng hệ thống quản lý khách sạn toàn diện Luxe Grand Hotel trên nền tảng NestJS và Flutter"** được thực hiện nhằm cung cấp một giải pháp phần mềm khép kín, số hóa trọn vẹn toàn bộ chu trình nghiệp vụ khách sạn chuẩn 4-5 sao: từ khâu tìm kiếm phòng theo ngày, đặt phòng trực tuyến, phê duyệt đơn, quản lý sơ đồ ma trận phòng thời gian thực (Room Matrix), làm thủ tục nhận phòng (Check-in), đổi phòng (Change Room), gọi dịch vụ phòng gia tăng (Room Service), trả phòng (Check-out), quản lý sổ thu tiền đa đợt (Multi-entry Payments) đến quản lý ca trực lễ tân và đối soát tài chính bàn giao két tiền.
+### Tóm tắt tiếng Việt
 
-Hệ thống được thiết kế theo mô hình Client - Server phân tán hiện đại, tách biệt hoàn toàn giữa tầng xử lý nghiệp vụ máy chủ và tầng hiển thị ứng dụng di động:
-1. **Phân hệ Backend (Máy chủ API):** Được xây dựng trên nền tảng **Node.js/TypeScript** với Framework **NestJS** theo kiến trúc Modular Monolith chuẩn công nghiệp (Dependency Injection, Inversion of Control), kết hợp hệ quản trị cơ sở dữ liệu quan hệ **PostgreSQL 16** thông qua **Prisma ORM** type-safe 100%. Hệ thống tích hợp **Redis Caching** cho việc tăng tốc độ phản hồi danh mục phòng trống, **Elasticsearch** phục vụ tìm kiếm nâng cao full-text search, **Firebase Cloud Messaging (FCM)** gửi thông báo thời gian thực, **Nodemailer** tự động hóa thông báo qua email và **NestJS Schedule** chạy cronjob tự động nhắc lịch nhận phòng mỗi sáng lúc 09:00.
-2. **Phân hệ Mobile Frontend (Ứng dụng Di động):** Được phát triển bằng UI toolkit **Flutter (Dart)** đa nền tảng (iOS & Android) áp dụng kiến trúc phân lớp hướng tính năng (Feature-first Clean Architecture) và mẫu quản lý trạng thái luồng sự kiện **BLoC (Business Logic Component)**. Giao diện được thiết kế hiện đại, sang trọng (Palette Navy & Gold), tích hợp biểu đồ tương tác cao **FL Chart**, hiệu ứng Shimmer loading và hoạt ảnh mượt mà, phục vụ trọn vẹn 3 nhóm đối tượng: Khách hàng (Customer), Nhân viên lễ tân kiêm thu ngân (Receptionist/Cashier) và Quản trị viên (Admin/General Manager).
+Trong xu hướng chuyển đổi số của ngành dịch vụ lưu trú, việc tin học hóa quy trình vận hành khách sạn giúp giảm thao tác thủ công, hạn chế sai sót và nâng cao trải nghiệm của khách. Đề tài **"Nghiên cứu và xây dựng hệ thống quản lý khách sạn toàn diện Luxe Grand Hotel trên nền tảng NestJS và Flutter"** xây dựng một giải pháp phần mềm khép kín cho các nghiệp vụ chính của khách sạn: tìm kiếm và đặt phòng trực tuyến, phê duyệt đơn, sơ đồ trạng thái phòng thời gian thực (Room Matrix), nhận phòng (check-in), đổi phòng, gọi dịch vụ phòng, trả phòng (check-out) có quyết toán tự động, sổ thu tiền nhiều đợt, quản lý ca trực lễ tân với đối soát tiền mặt và báo cáo điều hành.
 
-Kết quả thử nghiệm thực tế cho thấy hệ thống hoạt động ổn định, độ trễ API trung bình dưới 150ms, giao diện đạt 60fps mượt mà, ngăn chặn 100% lỗi đặt trùng phòng và kiểm soát chặt chẽ sai lệch tiền két ca trực.
+Hệ thống được thiết kế theo mô hình Client – Server, tách biệt tầng nghiệp vụ máy chủ và tầng hiển thị di động:
 
-### English Abstract:
-In the digital transformation era of the hospitality industry, automating end-to-end hotel operations is crucial for maximizing staff efficiency, minimizing operational leaks, and enhancing guest satisfaction. The capstone project **"Research and Development of Luxe Grand Hotel Management System powered by NestJS and Flutter Multi-platform"** delivers an enterprise-grade solution covering room search, online reservations, booking approvals, real-time room matrix visualization, seamless check-in/check-out processing, room relocation, room-service ordering, multi-entry invoice billing, deposit handling, and staff shift handover reconciliation.
+1. **Backend (máy chủ RESTful API):** xây dựng bằng **NestJS (Node.js/TypeScript)** theo kiến trúc Modular Monolith với Dependency Injection; cơ sở dữ liệu **PostgreSQL 16** thông qua **Prisma ORM**; **Redis** cho bộ đệm và khóa phân tán chống đặt trùng phòng; **Elasticsearch** cho tìm kiếm toàn văn; **Firebase Cloud Messaging (FCM)** cho thông báo đẩy; **Nodemailer** gửi mã OTP; **NestJS Schedule** chạy tác vụ nhắc lịch nhận phòng hằng ngày. Hệ thống có 11 controller với 95 đường dẫn API, xác thực JWT và phân quyền theo 3 vai trò.
+2. **Ứng dụng di động:** phát triển bằng **Flutter (Dart)** theo kiến trúc phân lớp hướng tính năng (feature-first) với mẫu quản lý trạng thái **BLoC**, biểu đồ **FL Chart**, phục vụ 3 nhóm người dùng: Khách hàng, Lễ tân – Thu ngân và Quản trị viên.
 
-The system is architected as a decoupled Client-Server model:
-- **Backend Service:** Implemented with **NestJS (Node.js/TypeScript)** using modular architecture (DI, IoC), **PostgreSQL 16** relational database with **Prisma ORM**, **Redis** for in-memory caching, **Elasticsearch** for full-text search, **Firebase Cloud Messaging (FCM)** for push notifications, **Nodemailer** for email delivery, and **NestJS Schedule** for automated cron reminders.
-- **Mobile Client:** Developed with **Flutter (Dart)** targeting cross-platform mobile devices (iOS & Android), structured with Feature-first Clean Architecture and **BLoC (Business Logic Component)** state management. The user interface features luxury design aesthetics, interactive charts (**FL Chart**), and fluid micro-animations tailored for three primary user personas: Customers, Front-desk Receptionists/Cashiers, and Hotel Administrators.
+Kết quả kiểm thử thực tế trên máy chủ triển khai (Render): 38/39 ca kiểm thử API đạt, 275/275 test tự động phía ứng dụng đạt; khi gửi đồng thời 10 yêu cầu đặt cùng một phòng, chỉ đúng 1 đơn được tạo. Kiểm thử cũng phát hiện một lỗi bảo mật (token chưa bị thu hồi sau đăng xuất khi máy chủ không có Redis) và được phân tích kèm hướng khắc phục.
 
-Evaluation results confirm the system achieves high reliability, sub-150ms API latency, robust transaction integrity, zero double-booking occurrences, and seamless operational flow.
+### English Abstract
 
----
+The capstone project **"Research and Development of the Luxe Grand Hotel Management System powered by NestJS and Flutter"** delivers an end-to-end solution for core hotel operations: room search and online reservation, booking approval, real-time room matrix, check-in, room change, room-service ordering, check-out with automatic settlement, a multi-entry payment ledger, front-desk shift reconciliation and management reports.
 
-\newpage
+- **Backend:** a RESTful API built with **NestJS (TypeScript)** as a modular monolith, **PostgreSQL 16** with **Prisma ORM**, **Redis** for caching and distributed locking against double-booking, **Elasticsearch** for full-text search, **Firebase Cloud Messaging** for push notifications, **Nodemailer** for OTP e-mails and **NestJS Schedule** for daily check-in reminders. It exposes 95 endpoints across 11 controllers secured by JWT and role-based access control.
+- **Mobile client:** a **Flutter (Dart)** application organised by feature with **BLoC** state management and **FL Chart** reports, serving customers, receptionists/cashiers and administrators.
 
-## MỤC LỤC TỔNG QUAN
-
-- **LỜI CAM ĐOAN**
-- **LỜI CẢM ƠN**
-- **TÓM TẮT ĐỀ TÀI (ABSTRACT)**
-- **MỤC LỤC TỔNG QUAN**
-- **DANH MỤC THUẬT NGỮ & TỪ VIẾT TẮT**
-- **DANH MỤC BẢNG BIỂU**
-- **DANH MỤC HÌNH VẼ & KHUNG CHÈN ẢNH THỰC TẾ**
-- **CHƯƠNG 1: TỔNG QUAN ĐỀ TÀI VÀ PHÂN TÍCH HIỆN TRẠNG**
-  - 1.1. Lý do chọn đề tài và tính cấp thiết
-  - 1.2. Mục tiêu nghiên cứu và phạm vi đề tài
-  - 1.3. Khảo sát hiện trạng và so sánh các giải pháp quản lý khách sạn
-  - 1.4. Đối tượng sử dụng và vai trò trong hệ thống
-  - 1.5. Phương pháp luận phát triển phần mềm (Agile/Scrum)
-  - 1.6. Bố cục của đồ án
-- **CHƯƠNG 2: CƠ SỞ LÝ THUYẾT VÀ CÔNG NGHỆ ÁP DỤNG**
-  - 2.1. Kiến trúc tổng thể Client - Server và RESTful API
-  - 2.2. Công nghệ phát triển phía Backend (NestJS Ecosystem)
-    - 2.2.1. Ngôn ngữ TypeScript và Framework NestJS
-    - 2.2.2. Cơ sở dữ liệu quan hệ PostgreSQL và Prisma ORM Type-Safe
-    - 2.2.3. Cơ chế bộ đệm Redis và máy chủ tìm kiếm Elasticsearch
-    - 2.2.4. Xác thực, bảo mật (JWT, RBAC) và Tác vụ tự động hóa (NestJS Cronjob)
-  - 2.3. Công nghệ phát triển phía Frontend Mobile (Flutter & Dart)
-    - 2.3.1. Framework Flutter và ưu điểm biên dịch Cross-Platform
-    - 2.3.2. Mô hình quản lý trạng thái BLoC (Business Logic Component)
-    - 2.3.3. Thư viện mạng Dio, Dependency Injection (GetIt) và Routing (GoRouter)
-    - 2.3.4. Thiết kế giao diện UI/UX và trực quan hóa số liệu với FL Chart
-- **CHƯƠNG 3: PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG**
-  - 3.1. Đặc tả 27 Yêu cầu chức năng chi tiết (Functional Requirements FR-01 đến FR-27)
-  - 3.2. Phân tích yêu cầu phi chức năng (Non-Functional Requirements)
-  - 3.3. Bảng Ma trận truy vết yêu cầu toàn diện (Full Traceability Matrix)
-  - 3.4. Sơ đồ Use Case tổng thể và phân rã các tác nhân
-  - 3.5. Thiết kế Sơ đồ tuần tự (Sequence Diagrams) và thuật toán nghiệp vụ lõi
-    - 3.5.1. Quy trình Đặt phòng trực tuyến và Duyệt đơn
-    - 3.5.2. Quy trình Check-in, Đổi phòng (Change Room) và Check-out
-    - 3.5.3. Quy trình Đặt dịch vụ phòng và ghi nợ hóa đơn
-    - 3.5.4. Quy trình Quản lý ca trực (WorkShift) và đối soát tài chính bàn giao ca
-    - 3.5.5. Thuật toán kiểm tra lịch phòng trống & Chống tranh chấp đặt phòng
-  - 3.6. Thiết kế Cơ sở dữ liệu quan hệ (Database Design & ERD)
-    - 3.6.1. Sơ đồ quan hệ thực thể (Entity Relationship Diagram - ERD)
-    - 3.6.2. Bảng tổng hợp liên kết Khóa chính (PK) - Khóa ngoại (FK) và Ràng buộc toàn vẹn
-    - 3.6.3. Từ điển dữ liệu chi tiết 8 bảng (Data Dictionary chuẩn 3NF)
-  - 3.7. Thiết kế chuẩn giao tiếp RESTful API Spec (40+ Endpoints)
-- **CHƯƠNG 4: HIỆN THỰC HÓA VÀ GIAO DIỆN HỆ THỐNG (IMPLEMENTATION & UI)**
-  - 4.1. Hiện thực hóa Backend (NestJS Server)
-    - 4.1.1. Cấu trúc mã nguồn Modular Monolith
-    - 4.1.2. Hiện thực module Xác thực, Phân quyền (Auth & Guards)
-    - 4.1.3. Hiện thực module Đặt phòng & Thuật toán Interval Overlap
-    - 4.1.4. Hiện thực module Hóa đơn đa khoản thu & Quản lý Ca trực
-    - 4.1.5. Hiện thực hệ thống Tác vụ định kỳ nhắc Check-in (Cronjob)
-  - 4.2. Hiện thực hóa Mobile App (Flutter Client) & Hướng dẫn Chụp ảnh màn hình
-    - 4.2.1. Phân hệ Chung & Xác thực tài khoản (Splash, Login, Register, Forgot Password OTP, Profile, Notification Center)
-    - 4.2.2. Phân hệ Khách hàng (Home, Room Search, Room Detail, Online Booking, My Bookings, My Invoices, Service Order)
-    - 4.2.3. Phân hệ Lễ tân & Thu ngân (Room Matrix, Walk-in Check-in, Today Check-ins/Check-outs, Change Room, Shift Management, Shift Close)
-    - 4.2.4. Phân hệ Quản trị viên (Admin Dashboard KPI, Reports FL Chart, Occupancy Detail, Room & Catalog Management, Staff Management)
-- **CHƯƠNG 5: KIỂM THỬ VÀ ĐÁNH GIÁ KẾT QUẢ**
-  - 5.1. Kế hoạch và phương pháp kiểm thử (Tiêu chuẩn IEEE 829)
-  - 5.2. Bảng 42 Kịch bản kiểm thử chi tiết (Test Cases Matrix - 100% PASS)
-  - 5.3. Đánh giá hiệu năng chịu tải (Apache Benchmark / k6)
-  - 5.4. Đánh giá an toàn và bảo mật hệ thống
-- **CHƯƠNG 6: QUẢN LÝ DỰ ÁN VÀ QUY TRÌNH DEVOPS (SCRUM & DEPLOYMENT)**
-  - 6.1. Tiến độ phát triển dự án Agile/Scrum qua 5 Sprints
-  - 6.2. Cơ cấu phân rã công việc (Work Breakdown Structure - WBS)
-  - 6.3. Ma trận phân tích và kiểm soát rủi ro (Risk Management Matrix)
-  - 6.4. Hướng dẫn đóng gói Docker Compose và Triển khai Đám mây
-  - 6.5. Quy trình sao lưu và phục hồi dữ liệu cơ sở dữ liệu
-- **CHƯƠNG 7: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN**
-  - 7.1. Những kết quả đạt được của đồ án
-  - 7.2. Các mặt hạn chế tồn đọng
-  - 7.3. Hướng phát triển và mở rộng trong tương lai
-- **TÀI LIỆU THAM KHẢO**
+Testing against the deployed server passed 38 of 39 API test cases and all 275 client-side automated tests; ten simultaneous booking requests for the same room produced exactly one booking. The single failing case revealed a security defect (access tokens remain valid after logout when Redis is unavailable), which is analysed together with a proposed fix.
 
 ---
 
 \newpage
 
-## DANH MỤC THUẬT NGỮ & TỪ VIẾT TẮT
+## MỤC LỤC
 
-| STT | Từ viết tắt | Thuật ngữ đầy đủ (Tiếng Anh) | Ý nghĩa nghiệp vụ trong hệ thống |
-| :---: | :--- | :--- | :--- |
-| **1** | **API** | Application Programming Interface | Giao diện lập trình ứng dụng cho phép Client và Server trao đổi dữ liệu |
-| **2** | **BE** | Backend | Phân hệ máy chủ xử lý dữ liệu và logic nghiệp vụ lưu trữ |
-| **3** | **FE** | Frontend | Phân hệ giao diện tương tác người dùng trên thiết bị di động |
-| **4** | **BLoC** | Business Logic Component | Mẫu kiến trúc quản lý trạng thái dựa trên luồng sự kiện (Streams/Reactive) trong Flutter |
-| **5** | **CRUD** | Create, Read, Update, Delete | Các thao tác cơ bản trên cơ sở dữ liệu: Tạo, Đọc, Cập nhật, Xóa |
-| **6** | **DI / IoC** | Dependency Injection / Inversion of Control | Tiêm phụ thuộc và đảo ngược quyền điều khiển giúp giảm sự phụ thuộc cứng giữa các class |
-| **7** | **DTO** | Data Transfer Object | Đối tượng vận chuyển và kiểm định dữ liệu truyền nhận qua mạng |
-| **8** | **ERD** | Entity Relationship Diagram | Sơ đồ quan hệ thực thể mô tả cấu trúc logic của cơ sở dữ liệu quan hệ |
-| **9** | **FCM** | Firebase Cloud Messaging | Dịch vụ gửi thông báo đẩy đám mây thời gian thực của Google |
-| **10**| **JWT** | JSON Web Token | Chuẩn mã hóa truyền tải thông tin an toàn dưới dạng chuỗi JSON có chữ ký số |
-| **11**| **ORM** | Object-Relational Mapping | Kỹ thuật ánh xạ giữa đối tượng lập trình và các bảng trong cơ sở dữ liệu quan hệ |
-| **12**| **PK / FK** | Primary Key / Foreign Key | Khóa chính định danh duy nhất / Khóa ngoại liên kết bảng trong CSDL |
-| **13**| **RBAC** | Role-Based Access Control | Cơ chế kiểm soát quyền truy cập tài nguyên dựa trên vai trò người dùng |
-| **14**| **REST** | Representational State Transfer | Phong cách kiến trúc thiết kế dịch vụ web phi trạng thái (Stateless) |
-| **15**| **UAT** | User Acceptance Testing | Kiểm thử chấp nhận từ người dùng thực tế theo kịch bản sử dụng thực |
+<!-- MUC_LUC -->
 
----
+\newpage
+
+## DANH MỤC HÌNH VẼ
+
+<!-- DANH_MUC_HINH -->
 
 \newpage
 
 ## DANH MỤC BẢNG BIỂU
 
-| Ký hiệu bảng | Tên bảng biểu chi tiết | Trang / Vị trí |
-| :--- | :--- | :--- |
-| **Bảng 1.1** | So sánh giải pháp Luxe Grand Hotel với các phần mềm truyền thống | Chương 1 |
-| **Bảng 3.1** | Bảng Ma trận truy vết yêu cầu toàn diện (Full Traceability Matrix 27 FRs) | Chương 3 |
-| **Bảng 3.2** | Tổng hợp liên kết Khóa chính (PK) - Khóa ngoại (FK) giữa các bảng trong CSDL | Chương 3 |
-| **Bảng 3.3** | Từ điển dữ liệu chi tiết Bảng `users` (Người dùng & Nhân sự) | Chương 3 |
-| **Bảng 3.4** | Từ điển dữ liệu chi tiết Bảng `room_types` (Hạng phòng & Bảng giá) | Chương 3 |
-| **Bảng 3.5** | Từ điển dữ liệu chi tiết Bảng `rooms` (Danh mục phòng vật lý) | Chương 3 |
-| **Bảng 3.6** | Từ điển dữ liệu chi tiết Bảng `bookings` (Đơn đặt phòng lưu trú) | Chương 3 |
-| **Bảng 3.7** | Từ điển dữ liệu chi tiết Bảng `invoices` (Hóa đơn tài chính) | Chương 3 |
-| **Bảng 3.8** | Từ điển dữ liệu chi tiết Bảng `payments` (Sổ thu tiền chi tiết từng đợt) | Chương 3 |
-| **Bảng 3.9** | Từ điển dữ liệu chi tiết Bảng `work_shifts` (Quản lý ca trực & Đối soát tiền két) | Chương 3 |
-| **Bảng 3.10**| Từ điển dữ liệu chi tiết Bảng `extra_service_orders` & `hotel_services` | Chương 3 |
-| **Bảng 3.11**| Đặc tả các API RESTful Endpoints cốt lõi của hệ thống Backend | Chương 3 |
-| **Bảng 5.1** | Bảng 42 Kịch bản kiểm thử (Test Cases) chi tiết bao phủ toàn diện 10 phân hệ | Chương 5 |
-| **Bảng 5.2** | Kết quả đo lường hiệu năng và độ trễ phản hồi API hệ thống | Chương 5 |
-| **Bảng 6.1** | Báo cáo phân bổ công việc theo 5 Sprint phát triển Agile/Scrum | Chương 6 |
-| **Bảng 6.2** | Ma trận đánh giá và kiểm soát rủi ro kỹ thuật dự án | Chương 6 |
-
----
+<!-- DANH_MUC_BANG -->
 
 \newpage
 
-## DANH MỤC HÌNH VẼ & KHUNG CHÈN ẢNH THỰC TẾ
-*(Sinh viên sử dụng danh mục này để đối chiếu khi chụp ảnh màn hình điện thoại dán vào báo cáo)*
+## DANH MỤC THUẬT NGỮ & TỪ VIẾT TẮT
 
-| Mã hình | Tên hình ảnh / Sơ đồ kỹ thuật | Phân hệ / Nguồn gốc | Vị trí chèn |
-| :--- | :--- | :--- | :--- |
-| **Hình 2.1** | Sơ đồ Kiến trúc phân tầng kỹ thuật hệ thống (Client - Gateway - Server - Data) | SAD / Kiến trúc | Chương 2 |
-| **Hình 2.2** | Mô hình luồng dữ liệu quản lý trạng thái BLoC trong Flutter | Client / BLoC | Chương 2 |
-| **Hình 3.1** | Sơ đồ Use Case tổng thể toàn hệ thống Luxe Grand Hotel | Use Case Analysis | Chương 3 |
-| **Hình 3.2** | Sơ đồ tuần tự Quy trình Đặt phòng trực tuyến và Duyệt đơn | Sequence Diagram | Chương 3 |
-| **Hình 3.3** | Sơ đồ tuần tự Quy trình Nhận phòng (Check-in), Đổi phòng và Trả phòng (Check-out) | Sequence Diagram | Chương 3 |
-| **Hình 3.4** | Sơ đồ trạng thái Quy trình Mở ca, Ghi nhận thu tiền và Chốt ca lễ tân | State Diagram | Chương 3 |
-| **Hình 3.5** | Sơ đồ quan hệ thực thể (ERD) hoàn chỉnh 8 bảng chuẩn 3NF | Database Design | Chương 3 |
-| **Hình 4.1** | 📸 Giao diện Màn hình Chào (Splash Screen) khởi động ứng dụng | Chung / Khởi động | Chương 4 |
-| **Hình 4.2** | 📸 Giao diện Đăng nhập và Đăng ký tài khoản khách hàng | Xác thực (Auth) | Chương 4 |
-| **Hình 4.3** | 📸 Giao diện Quên mật khẩu và Nhập mã xác thực OTP gửi qua Email | Xác thực (Auth) | Chương 4 |
-| **Hình 4.4** | 📸 Giao diện Quản lý Hồ sơ cá nhân và Cập nhật ảnh đại diện (Avatar) | Hồ sơ (Profile) | Chương 4 |
-| **Hình 4.5** | 📸 Giao diện Hộp thư Thông báo đẩy (FCM Push Notifications) & Cài đặt nhận tin | Thông báo | Chương 4 |
-| **Hình 4.6** | 📸 Giao diện Trang chủ Khách hàng và Bộ lọc tìm kiếm phòng trống theo ngày | Khách hàng | Chương 4 |
-| **Hình 4.7** | 📸 Giao diện Xem chi tiết hạng phòng, Tiện nghi và Thư viện ảnh phòng | Khách hàng | Chương 4 |
-| **Hình 4.8** | 📸 Giao diện Xác nhận Đặt phòng trực tuyến và Nhập yêu cầu đặc biệt | Khách hàng | Chương 4 |
-| **Hình 4.9** | 📸 Giao diện Danh sách đơn đặt phòng của tôi (My Bookings) và Tiến trình đơn | Khách hàng | Chương 4 |
-| **Hình 4.10**| 📸 Giao diện Chi tiết hóa đơn và Quét mã QR chuyển khoản thanh toán | Khách hàng | Chương 4 |
-| **Hình 4.11**| 📸 Giao diện Gọi dịch vụ phòng (Room Service: Minibar, Ẩm thực, Giặt là) | Khách hàng | Chương 4 |
-| **Hình 4.12**| 📸 Giao diện Sơ đồ Ma trận phòng theo tầng (Room Matrix) với 5 mã màu trực quan | Lễ tân | Chương 4 |
-| **Hình 4.13**| 📸 Giao diện Thao tác nhanh trên thẻ phòng (Quick Actions Menu) | Lễ tân | Chương 4 |
-| **Hình 4.14**| 📸 Giao diện Tiếp nhận khách vãng lai và Nhận phòng nhanh tại quầy (Walk-in) | Lễ tân | Chương 4 |
-| **Hình 4.15**| 📸 Giao diện Danh sách khách nhận phòng (Check-ins) và trả phòng (Check-outs) hôm nay | Lễ tân | Chương 4 |
-| **Hình 4.16**| 📸 Giao diện Thực hiện thủ tục Đổi phòng lưu trú (Change Room) | Lễ tân | Chương 4 |
-| **Hình 4.17**| 📸 Giao diện Xem trước bảng kê chi phí trả phòng (Checkout Preview) & Trả phòng | Lễ tân / Thu ngân | Chương 4 |
-| **Hình 4.18**| 📸 Giao diện Duyệt và Từ chối đơn đặt phòng trực tuyến chờ xử lý | Lễ tân / Admin | Chương 4 |
-| **Hình 4.19**| 📸 Giao diện Danh sách yêu cầu chuyển khoản cần đối soát và Duyệt/Từ chối | Thu ngân | Chương 4 |
-| **Hình 4.20**| 📸 Giao diện Mở ca trực lễ tân (Khai báo số tiền mặt ban đầu) | Lễ tân / Thu ngân | Chương 4 |
-| **Hình 4.21**| 📸 Giao diện Chốt ca trực lễ tân, Kiểm đếm tiền két và Giải trình chênh lệch | Lễ tân / Thu ngân | Chương 4 |
-| **Hình 4.22**| 📸 Giao diện Dashboard Tổng quan Quản trị viên (Admin KPI Cards) | Quản trị viên | Chương 4 |
-| **Hình 4.23**| 📸 Giao diện Báo cáo Biểu đồ Doanh thu tương tác 12 tháng theo năm (FL Chart) | Quản trị viên | Chương 4 |
-| **Hình 4.24**| 📸 Giao diện Phân tích chi tiết tỷ lệ lấp đầy theo hạng phòng (Occupancy Detail) | Quản trị viên | Chương 4 |
-| **Hình 4.25**| 📸 Giao diện Quản lý danh mục phòng, Hạng phòng và Dịch vụ khách sạn | Quản trị viên | Chương 4 |
-| **Hình 4.26**| 📸 Giao diện Quản lý tài khoản nhân sự và Phân quyền vai trò RBAC | Quản trị viên | Chương 4 |
-| **Hình 4.27**| 📸 Giao diện Sổ giám sát lịch sử ca trực của toàn bộ nhân viên lễ tân | Quản trị viên | Chương 4 |
-| **Hình 5.1** | 📸 Ảnh chụp màn hình Kết quả thực thi bộ kịch bản kiểm thử API trên Postman Runner | Kiểm thử | Chương 5 |
-| **Hình 6.1** | 📸 Ảnh chụp màn hình Triển khai hạ tầng Docker Compose & Dashboard Render Cloud | Vận hành DevOps | Chương 6 |
+| STT | Từ viết tắt | Thuật ngữ đầy đủ | Ý nghĩa trong hệ thống |
+| :---: | :--- | :--- | :--- |
+| 1 | API | Application Programming Interface | Giao diện lập trình để ứng dụng và máy chủ trao đổi dữ liệu |
+| 2 | BLoC | Business Logic Component | Mẫu quản lý trạng thái dựa trên luồng sự kiện trong Flutter |
+| 3 | CRUD | Create, Read, Update, Delete | Các thao tác cơ bản: tạo, đọc, cập nhật, xóa dữ liệu |
+| 4 | DI | Dependency Injection | Tiêm phụ thuộc, giảm sự phụ thuộc cứng giữa các lớp |
+| 5 | DTO | Data Transfer Object | Đối tượng mô tả và kiểm tra dữ liệu vào của API |
+| 6 | ERD | Entity Relationship Diagram | Sơ đồ quan hệ thực thể của cơ sở dữ liệu |
+| 7 | FCM | Firebase Cloud Messaging | Dịch vụ gửi thông báo đẩy của Google |
+| 8 | JWT | JSON Web Token | Chuỗi token có chữ ký số dùng để xác thực |
+| 9 | ORM | Object-Relational Mapping | Ánh xạ giữa đối tượng lập trình và bảng dữ liệu |
+| 10 | OTP | One-Time Password | Mã xác thực dùng một lần khi đặt lại mật khẩu |
+| 11 | PK / FK | Primary Key / Foreign Key | Khóa chính / khóa ngoại trong cơ sở dữ liệu |
+| 12 | RBAC | Role-Based Access Control | Phân quyền theo vai trò người dùng |
+| 13 | REST | Representational State Transfer | Phong cách thiết kế API phi trạng thái dựa trên tài nguyên |
+| 14 | SSE | Server-Sent Events | Kênh máy chủ đẩy sự kiện thời gian thực tới ứng dụng |
 
 ---
 
@@ -248,96 +121,97 @@ Evaluation results confirm the system achieves high reliability, sub-150ms API l
 # CHƯƠNG 1: TỔNG QUAN ĐỀ TÀI VÀ PHÂN TÍCH HIỆN TRẠNG
 
 ## 1.1. Lý do chọn đề tài và tính cấp thiết
-Ngành du lịch và khách sạn (Hospitality) là một trong những ngành kinh tế dịch vụ mũi nhọn, đóng góp tỷ trọng đáng kể vào tổng sản phẩm quốc nội (GDP) của Việt Nam và toàn thế giới. Sau giai đoạn biến động của đại dịch Covid-19, ngành dịch vụ lưu trú đã phục hồi mạnh mẽ cùng với sự thay đổi căn bản trong hành vi tiêu dùng của khách hàng:
-- Khách lưu trú ngày nay là những công dân số (Digital Natives), luôn kỳ vọng quy trình tìm kiếm phòng, tham khảo hình ảnh thực tế, đặt cọc và yêu cầu các dịch vụ phát sinh được thực hiện nhanh chóng, tức thì ngay trên chiếc điện thoại thông minh của mình.
-- Khách hàng không còn kiên nhẫn xếp hàng chờ đợi làm thủ tục thủ công tại quầy lễ tân vào các mùa cao điểm du lịch.
 
-Tuy nhiên, qua khảo sát thực tế tại nhiều khách sạn quy mô vừa và nhỏ (Boutique hotels, khách sạn tiêu chuẩn 3 đến 4 sao) tại Việt Nam, công tác quản lý và vận hành vẫn còn bộc lộ nhiều điểm nghẽn nghiêm trọng:
-1. **Rời rạc thông tin giữa các bộ phận:** Nhân viên lễ tân, nhân viên buồng phòng và nhân viên thu ngân thường trao đổi thông tin qua sổ tay giấy tờ hoặc các nhóm chat mạng xã hội rời rạc (Zalo, Messenger). Điều này dẫn đến sự chậm trễ trong việc cập nhật trạng thái dọn phòng: phòng đã dọn sạch nhưng trên hệ thống vẫn hiển thị đang bẩn, làm giảm công suất khai thác phòng trống.
-2. **Nguy cơ trùng lịch đặt phòng (Overbooking / Double-booking):** Khách sạn thường xuyên đối mặt với sự cố khách đặt trước qua điện thoại trùng với khách vãng lai (Walk-in) tại quầy do dữ liệu không được đồng bộ thời gian thực, gây bức xúc cho khách hàng và tổn hại nghiêm trọng đến uy tín thương hiệu.
-3. **Thất thoát tài chính và khó khăn đối soát ca:** Mỗi ca trực lễ tân (Ca sáng, Ca chiều, Ca đêm) diễn ra sự luân chuyển liên tục của nhiều nguồn tiền: tiền mặt, tiền cọc, tiền chuyển khoản quét mã QR và quẹt thẻ ngân hàng POS. Nếu không có cơ chế Mở ca/Chốt ca nghiêm ngặt và đối soát chênh lệch tự động giữa lý thuyết và tiền đếm thực tế, nguy cơ thất thoát doanh thu là rất lớn.
-4. **Thiếu vắng ứng dụng di động chuẩn 5 sao:** Hầu hết các phần mềm quản lý hiện tại chỉ tập trung vào phiên bản máy tính để bàn (Desktop PC) cho nhân viên mà bỏ quên việc cung cấp một ứng dụng di động sang trọng, tiện ích cho chính khách hàng tự phục vụ.
+Ngành du lịch và dịch vụ lưu trú đã phục hồi mạnh sau đại dịch cùng với sự thay đổi trong hành vi của khách hàng: khách quen tự tìm phòng, xem ảnh thực tế, đặt và theo dõi đơn ngay trên điện thoại, và không muốn chờ đợi lâu ở quầy lễ tân vào giờ cao điểm.
 
-Xuất phát từ các yêu cầu thực tiễn cấp bách nêu trên, đề tài **"Nghiên cứu và xây dựng hệ thống quản lý khách sạn toàn diện Luxe Grand Hotel trên nền tảng NestJS và Flutter"** được lựa chọn nhằm cung cấp một hệ sinh thái phần mềm hoàn chỉnh, hiện đại, đáp ứng đồng thời nhu cầu trải nghiệm số cao cấp của khách hàng và tối ưu hóa năng suất vận hành, kỷ luật tài chính cho đội ngũ quản lý khách sạn.
+Để hiểu đúng bài toán, đề tài thực hiện phỏng vấn bán cấu trúc ba nhóm người dùng của khách sạn Luxe Grand Hotel: khách hàng, lễ tân – thu ngân và quản lý (kết quả chi tiết trong báo cáo Thiết kế UI/UX của dự án). Các vấn đề chính được ghi nhận:
+
+1. **Trạng thái phòng cập nhật chậm và rời rạc:** nhân viên buồng phòng báo phòng đã dọn xong qua bộ đàm, trạng thái trên hệ thống không được cập nhật kịp, làm giảm số phòng có thể bán và khiến số liệu phòng trống của quản lý không chính xác.
+2. **Nguy cơ đặt trùng phòng:** khi khách đặt trực tuyến và khách vãng lai tại quầy cùng nhắm tới một phòng, dữ liệu không đồng bộ tức thời dẫn đến xếp trùng phòng.
+3. **Sai lệch tiền và hóa đơn:** dịch vụ khách sử dụng thường bị ghi thiếu vào hóa đơn; khi chốt ca, lễ tân phải tự đối chiếu tiền mặt, chuyển khoản và doanh thu nên khó phát hiện chênh lệch.
+4. **Khách hàng thiếu công cụ tự phục vụ:** khách muốn xem lại mã đặt phòng, thời gian nhận phòng, trạng thái đơn và chi tiết tiền phải trả mà không cần liên hệ khách sạn.
+5. **Quản lý tổng hợp báo cáo thủ công:** công suất phòng, doanh thu theo ngày/tháng/loại phòng phải tổng hợp tay, không có số liệu kịp thời để ra quyết định.
+
+![Khách sạn Luxe Grand Hotel](docs/bai_tap_lon_ktpm/hinh/khach_san_luxe_grand.png)
+
+*Hình 1.1: Khách sạn Luxe Grand Hotel – đối tượng khảo sát của đề tài*
+
+Xuất phát từ các vấn đề trên, đề tài **"Nghiên cứu và xây dựng hệ thống quản lý khách sạn toàn diện Luxe Grand Hotel trên nền tảng NestJS và Flutter"** được lựa chọn nhằm cung cấp một hệ thống tập trung, đồng bộ dữ liệu giữa các bộ phận, tự động hóa tính toán tiền và hỗ trợ cả khách hàng lẫn nhân viên vận hành.
 
 ## 1.2. Mục tiêu nghiên cứu và phạm vi đề tài
 
 ### 1.2.1. Mục tiêu nghiên cứu
-- **Về mặt học thuật và công nghệ:**
-  + Làm chủ và ứng dụng thành công kiến trúc Backend doanh nghiệp hướng Module (Modular Monolith) với **NestJS Framework**, kết hợp cơ sở dữ liệu quan hệ **PostgreSQL** và công nghệ **Prisma ORM** type-safe.
-  + Nghiên cứu kỹ thuật tối ưu hóa hiệu năng truy vấn thông qua bộ nhớ đệm **Redis Caching** và công cụ tìm kiếm phân tán toàn văn **Elasticsearch**.
-  + Làm chủ công nghệ phát triển ứng dụng di động đa nền tảng **Flutter (Dart)** áp dụng kiến trúc sạch hướng tính năng (Feature-first Clean Architecture) và mô hình quản lý trạng thái **BLoC (Business Logic Component)**.
-- **Về mặt ứng dụng thực tiễn:**
-  + Xây dựng một hệ thống phần mềm có khả năng đưa vào vận hành thực tế tại các khách sạn tiêu chuẩn 4-5 sao.
-  + Giải quyết triệt để bài toán chống trùng lịch phòng, tự động hóa tính toán hóa đơn đa khoản thu, minh bạch hóa dòng tiền theo ca trực lễ tân và cung cấp các báo cáo biểu đồ trực quan hỗ trợ ban giám đốc ra quyết định kinh doanh.
+
+- **Về mặt công nghệ:**
+  - Nghiên cứu và áp dụng kiến trúc backend hướng module (Modular Monolith) với **NestJS**, cơ sở dữ liệu quan hệ **PostgreSQL** và **Prisma ORM**.
+  - Áp dụng **Redis** cho bộ đệm và khóa phân tán, **Elasticsearch** cho tìm kiếm toàn văn.
+  - Phát triển ứng dụng di động đa nền tảng **Flutter** với kiến trúc hướng tính năng và mẫu quản lý trạng thái **BLoC**.
+- **Về mặt ứng dụng:**
+  - Xây dựng hệ thống chạy được trên môi trường đám mây, phục vụ đầy đủ vòng đời lưu trú của khách.
+  - Giải quyết bài toán chống đặt trùng phòng, tự động tính hóa đơn nhiều khoản thu, minh bạch dòng tiền theo ca trực và cung cấp báo cáo trực quan cho quản lý.
 
 ### 1.2.2. Phạm vi đề tài
-- **Phạm vi nghiệp vụ:** Bao quát toàn bộ vòng đời lưu trú:
-  + Khách hàng: Đăng ký/đăng nhập, tìm kiếm phòng trống theo ngày, đặt phòng trực tuyến, theo dõi tiến độ đơn, gửi yêu cầu thanh toán chuyển khoản, gọi dịch vụ phòng (minibar, ẩm thực, spa), quản lý hồ sơ cá nhân.
-  + Tiền sảnh & Lễ tân: Quản lý ca trực cá nhân, xem sơ đồ Ma trận phòng theo tầng, tiếp nhận khách Walk-in, Check-in, Đổi phòng lưu trú, Check-out kiểm kê dịch vụ, duyệt đơn đặt phòng trực tuyến, xác nhận giao dịch chuyển khoản.
-  + Quản trị viên (Admin): Giám sát Dashboard thời gian thực, xem biểu đồ doanh thu theo năm/tháng, báo cáo tỷ lệ lấp đầy, quản lý danh mục phòng và bảng giá, quản lý tài khoản nhân sự và giám sát ca trực.
+
+- **Phạm vi nghiệp vụ:**
+  - Khách hàng: đăng ký, đăng nhập, khôi phục mật khẩu; tìm phòng trống theo ngày; đặt và hủy phòng; theo dõi đơn; gửi yêu cầu thanh toán chuyển khoản; gọi dịch vụ phòng; quản lý hồ sơ cá nhân.
+  - Lễ tân – Thu ngân: mở và chốt ca trực; sơ đồ phòng theo tầng; duyệt hoặc từ chối đơn; check-in và nhận khách vãng lai; đổi phòng; ghi dịch vụ; xem trước quyết toán và check-out; xác nhận hoặc từ chối thanh toán; hoàn tiền.
+  - Quản trị viên: dashboard KPI; báo cáo doanh thu, công suất theo loại phòng, hiệu suất nhân viên; quản lý loại phòng, phòng, dịch vụ, tài khoản và giám sát ca trực.
 - **Phạm vi công nghệ:**
-  + Phía Server: Node.js v20+, NestJS 10.4, TypeScript, PostgreSQL 16, Prisma ORM, Redis 7, Elasticsearch 8, Nodemailer, Firebase Admin SDK (FCM), Docker.
-  + Phía Client: Flutter SDK 3.x, Dart 3.x, flutter_bloc, dio, get_it, go_router, fl_chart.
+  - Máy chủ: Node.js 20, NestJS 10.4, TypeScript 5.7, PostgreSQL 16, Prisma 5.22, Redis 7, Elasticsearch 8.11, Nodemailer, Firebase Admin SDK, Docker.
+  - Ứng dụng: Flutter 3.x, Dart 3.x, flutter_bloc, dio, get_it, go_router, flutter_secure_storage, fl_chart, firebase_messaging.
+- **Ngoài phạm vi:** tích hợp cổng thanh toán trực tuyến tự động, kết nối khóa cửa thông minh và các kênh bán phòng trực tuyến (OTA).
 
 ## 1.3. Khảo sát hiện trạng và so sánh các giải pháp quản lý khách sạn
 
-Trên thị trường hiện nay có một số giải pháp phần mềm quản lý khách sạn (PMS - Property Management System) tiêu biểu:
-- **Hệ thống quốc tế (như Opera PMS, Cloudbeds):** Rất mạnh mẽ và chuyên sâu nhưng chi phí bản quyền cực kỳ đắt đỏ (hàng ngàn USD/năm), quy trình đào tạo và triển khai rất phức tạp, cồng kềnh, không tối ưu riêng cho thói quen thanh toán mã QR và nghiệp vụ kiểm két theo ca tại Việt Nam.
-- **Phần mềm nội địa truyền thống (như EzCloud, KiotViet Khách sạn):** Chủ yếu tập trung vào phiên bản Web trên máy tính để bàn cho lễ tân quầy, giao diện thường mang tính kỹ thuật khô cứng, thiếu ứng dụng di động dành riêng cho khách hàng trải nghiệm và tương tác dịch vụ phòng.
+Trên thị trường có một số nhóm giải pháp quản lý khách sạn (PMS – Property Management System):
 
-Bảng so sánh chi tiết giải pháp **Luxe Grand Hotel** với các giải pháp khác:
+- **Hệ thống quốc tế (như Opera PMS, Cloudbeds):** đầy đủ tính năng nhưng chi phí bản quyền cao, triển khai và đào tạo phức tạp, chưa tối ưu cho thói quen thanh toán chuyển khoản/QR và nghiệp vụ kiểm két theo ca phổ biến tại Việt Nam.
+- **Phần mềm trong nước (như ezCloud, KiotViet Khách sạn):** tập trung vào giao diện web cho quầy lễ tân; khách hàng thường không có ứng dụng riêng để tự đặt phòng và theo dõi đơn.
 
-### Bảng 1.1: So sánh giải pháp Luxe Grand Hotel với các phần mềm truyền thống
-| Tiêu chí so sánh | Quản lý Sổ sách / Excel | PMS Desktop Cổ điển | Giải pháp Luxe Grand Hotel |
+*Bảng 1.1: So sánh giải pháp Luxe Grand Hotel với cách quản lý truyền thống*
+
+| Tiêu chí | Sổ sách / Excel | PMS chạy trên máy tính quầy | Luxe Grand Hotel |
 | :--- | :--- | :--- | :--- |
-| **Tính cơ động & Đa nền tảng** | Rất thấp (chỉ tại bàn làm việc) | Thấp (cố định trên máy tính quầy lễ tân) | **Rất cao:** Ứng dụng di động Flutter mượt mà trên cả iOS & Android |
-| **Trải nghiệm khách hàng** | Khách gọi điện/nhắn tin thụ động | Khách không có app tương tác | **Chủ động 100%:** App riêng tìm phòng, đặt cọc, quét mã QR, order dịch vụ |
-| **Sơ đồ phòng (Room Matrix)** | Kẻ bảng giấy, rất dễ nhầm lẫn | Lưới ô vuông đơn điệu | **Ma trận phân tầng trực quan:** 5 mã màu trạng thái cập nhật thời gian thực |
-| **Quản lý ca trực & Tiền két** | Cộng sổ tay cuối ngày, dễ thất thoát | Báo cáo doanh thu chung toàn ngày | **Kiểm soát chặt chẽ:** Mở/Chốt ca, đối soát tiền mặt tự động, bắt buộc giải trình lệch |
-| **Khả năng tìm kiếm phòng** | Tra cứu thủ công mất thời gian | Query SQL cơ bản, chậm khi đông khách | **Tức thì (<50ms):** Tích hợp Redis Caching & Elasticsearch Engine |
-| **Chi phí đầu tư hạ tầng** | Rẻ nhưng tổn thất rủi ro cao | Chi phí bản quyền và máy chủ đắt đỏ | **Tối ưu:** Nền tảng mã nguồn mở, hỗ trợ Cloud Server và Containerization |
+| Tính cơ động | Chỉ tại bàn làm việc | Cố định ở quầy lễ tân | Ứng dụng di động Android/iOS cho cả khách và nhân viên |
+| Trải nghiệm khách hàng | Gọi điện, nhắn tin, chờ phản hồi | Không có ứng dụng cho khách | Khách tự tìm phòng, đặt phòng, theo dõi đơn, xem hóa đơn |
+| Sơ đồ phòng | Kẻ bảng, dễ nhầm | Lưới phòng, cập nhật thủ công | Sơ đồ theo tầng, trạng thái đẩy realtime qua SSE |
+| Chống đặt trùng | Phụ thuộc người ghi sổ | Kiểm tra khi lưu | Khóa phân tán + kiểm tra giao lịch phía máy chủ |
+| Quản lý ca & tiền két | Cộng sổ cuối ngày | Báo cáo doanh thu chung | Mở/chốt ca, tự tính tiền sổ sách, bắt buộc giải trình chênh lệch |
+| Chi phí | Thấp nhưng rủi ro cao | Bản quyền và máy chủ riêng | Mã nguồn mở, đóng gói Docker, chạy trên dịch vụ đám mây |
 
 ## 1.4. Đối tượng sử dụng và vai trò trong hệ thống (RBAC)
 
-Hệ thống được thiết kế với cơ chế kiểm soát truy cập dựa trên vai trò (Role-Based Access Control - RBAC) nghiêm ngặt gồm 3 nhóm tác nhân chính:
+Hệ thống phân quyền theo vai trò với 3 vai trò lưu trong CSDL (`ADMIN`, `RECEPTIONIST`, `CUSTOMER`), cộng với khách vãng lai chưa đăng nhập:
 
-1. **Khách hàng (Customer):**
-   - Đăng ký tài khoản, đăng nhập, khôi phục mật khẩu qua mã xác thực OTP gửi về Email.
-   - Tìm kiếm phòng trống theo khoảng thời gian lưu trú và số lượng khách.
-   - Xem hình ảnh sắc nét, danh sách tiện nghi và giá niêm yết của từng hạng phòng.
-   - Tạo đơn đặt phòng trực tuyến, theo dõi trạng thái đơn (`PENDING` ➔ `CONFIRMED` ➔ `CHECKED_IN` ➔ `CHECKED_OUT`).
-   - Quản lý hóa đơn cá nhân, thanh toán chuyển khoản ngân hàng qua mã QR.
-   - Gọi các dịch vụ phòng phát sinh (minibar, ẩm thực, giặt là nhanh) trong thời gian lưu trú.
-   - Cập nhật thông tin hồ sơ cá nhân, ảnh đại diện và thay đổi mật khẩu an toàn.
+1. **Khách hàng (CUSTOMER):**
+   - Đăng ký, đăng nhập, khôi phục mật khẩu bằng mã OTP gửi qua email.
+   - Tìm phòng trống theo khoảng ngày và số khách; xem ảnh, tiện nghi, giá từng hạng phòng.
+   - Đặt phòng (đơn ở trạng thái `PENDING` chờ lễ tân duyệt), tự hủy khi đơn còn chờ duyệt, theo dõi đơn qua các trạng thái `PENDING → CONFIRMED → CHECKED_IN → CHECKED_OUT`.
+   - Xem hóa đơn, gửi yêu cầu thanh toán chuyển khoản (kèm mã giao dịch), gọi dịch vụ phòng trong thời gian lưu trú, cập nhật hồ sơ cá nhân.
+   - Mỗi tài khoản khách hàng chỉ đăng nhập trên một thiết bị tại một thời điểm.
+2. **Lễ tân – Thu ngân (RECEPTIONIST):** (vai trò thu ngân đã được gộp vào lễ tân để một nhân viên quầy xử lý trọn quy trình)
+   - Mở ca với tiền mặt đầu ca, theo dõi khoản thu trong ca và chốt ca có đối chiếu tiền thực tế.
+   - Theo dõi sơ đồ phòng theo tầng; duyệt hoặc từ chối đơn; check-in, nhận khách vãng lai; đổi phòng; ghi dịch vụ; cập nhật trạng thái phòng.
+   - Xem trước bảng quyết toán, check-out, thu tiền, xác nhận hoặc từ chối yêu cầu chuyển khoản, hoàn tiền.
+3. **Quản trị viên (ADMIN):** có toàn bộ quyền của lễ tân, ngoài ra:
+   - Xem dashboard KPI, báo cáo doanh thu theo năm, xuất CSV, công suất theo loại phòng, hiệu suất nhân viên.
+   - Quản lý loại phòng, phòng, danh mục dịch vụ; tạo tài khoản nhân viên, đổi vai trò, đặt lại mật khẩu, vô hiệu hóa tài khoản; chốt hộ ca trực.
 
-2. **Lễ tân & Thu ngân (Receptionist / Cashier):**
-   - Quản lý ca trực cá nhân: Khai báo số tiền mặt bàn giao đầu ca, theo dõi các khoản thu phát sinh trong ca, kiểm đếm tiền két và chốt ca đối soát cuối buổi làm việc.
-   - Giám sát Ma trận phòng (Room Matrix) theo từng tầng tòa nhà với các mã màu biểu thị trạng thái thời gian thực.
-   - Thao tác nhanh trên phòng: Xem thông tin khách đang ở, nhận phòng Walk-in, Check-out, Đổi phòng, chuyển trạng thái dọn dẹp buồng phòng.
-   - Tiếp nhận và phê duyệt hoặc từ chối các đơn đặt phòng trực tuyến của khách.
-   - Tiếp nhận và xác nhận/từ chối các giao dịch chuyển khoản ngân hàng của khách vào hóa đơn.
-   - Xem trước bảng kê chi phí trả phòng (Checkout Preview) trước khi thu tiền dứt điểm.
+## 1.5. Phương pháp phát triển phần mềm
 
-3. **Quản trị viên (Admin / General Manager):**
-   - Giám sát toàn bộ hoạt động khách sạn thông qua Dashboard điều hành thời gian thực với 4 thẻ chỉ số KPI quan trọng.
-   - Xem báo cáo biểu đồ doanh thu 12 tháng tương tác cao (FL Chart), phân tách rõ doanh thu tiền phòng và doanh thu dịch vụ gia tăng.
-   - Xem báo cáo phân tích chi tiết tỷ lệ lấp đầy phòng (Occupancy Rate) theo từng hạng phòng.
-   - Quản lý danh mục hạng phòng (Standard, Superior, Deluxe, Suite), phòng vật lý và danh mục dịch vụ khách sạn.
-   - Quản lý tài khoản nhân viên, phân quyền vai trò và giám sát lịch sử ca trực của toàn bộ đội ngũ lễ tân.
-
-## 1.5. Phương pháp luận phát triển phần mềm (Agile/Scrum)
-Đồ án được triển khai theo mô hình phát triển phần mềm linh hoạt **Agile/Scrum** qua 5 Sprint liên tục (mỗi Sprint kéo dài từ 1 đến 2 tuần). Phương pháp này giúp nhóm phát triển liên tục kiểm thử, tích hợp và điều chỉnh các tính năng nghiệp vụ sát với yêu cầu thực tế của ngành khách sạn.
+Đồ án được phát triển theo mô hình **lặp và tăng dần (iterative & incremental)**: mỗi vòng lặp hoàn thiện trọn một nhóm nghiệp vụ ở cả backend và ứng dụng, chạy thử, rồi điều chỉnh hợp đồng API giữa hai bên. Lịch sử phát triển thực tế được ghi nhận qua Git (51 commit ở kho backend, 15 commit ở kho ứng dụng, từ 03/09/2026 đến 21/09/2026) và được trình bày ở Chương 6.
 
 ## 1.6. Bố cục của đồ án
-Cuốn báo cáo khóa luận tốt nghiệp được cấu trúc thành 7 chương rõ ràng:
-- **Chương 1: Tổng quan đề tài và phân tích hiện trạng:** Trình bày lý do chọn đề tài, mục tiêu, phạm vi nghiên cứu, khảo sát so sánh giải pháp và xác định các nhóm tác nhân người dùng.
-- **Chương 2: Cơ sở lý thuyết và công nghệ áp dụng:** Giới thiệu chi tiết nền tảng công nghệ Backend (NestJS, TypeScript, PostgreSQL, Prisma, Redis, Elasticsearch) và Frontend Mobile (Flutter, Dart, BLoC, Dio, FL Chart).
-- **Chương 3: Phân tích và thiết kế hệ thống:** Đặc tả trọn vẹn 27 yêu cầu chức năng (FR-01 đến FR-27), ma trận truy vết yêu cầu, sơ đồ Use Case, 5 sơ đồ tuần tự các quy trình lõi, thiết kế CSDL quan hệ chuẩn 3NF (ERD, bảng liên kết PK-FK, từ điển dữ liệu 8 bảng) và đặc tả API RESTful.
-- **Chương 4: Hiện thực hóa và giao diện hệ thống:** Mô tả cấu trúc mã nguồn, code mẫu các thuật toán cốt lõi và chi tiết toàn bộ các màn hình giao diện thực tế kèm khung chèn ảnh chụp màn hình cho sinh viên.
-- **Chương 5: Kiểm thử và đánh giá kết quả:** Trình bày kế hoạch kiểm thử chuẩn IEEE 829, ma trận 42 kịch bản kiểm thử chi tiết đạt 100% PASS, đánh giá hiệu năng chịu tải và bảo mật.
-- **Chương 6: Quản lý dự án và quy trình DevOps:** Báo cáo tiến độ 5 Sprints Scrum, bảng WBS, ma trận quản lý rủi ro và quy trình đóng gói Docker, triển khai Cloud.
-- **Chương 7: Kết luận và hướng phát triển:** Đánh giá các kết quả đạt được, chỉ ra các mặt hạn chế và đề xuất hướng nghiên cứu nâng cấp trong tương lai.
+
+Báo cáo gồm 7 chương:
+
+- **Chương 1 – Tổng quan đề tài và phân tích hiện trạng:** lý do chọn đề tài, mục tiêu, phạm vi, so sánh giải pháp và các nhóm người dùng.
+- **Chương 2 – Cơ sở lý thuyết và công nghệ áp dụng:** kiến trúc tổng thể và các công nghệ backend, mobile.
+- **Chương 3 – Phân tích và thiết kế hệ thống:** 27 yêu cầu chức năng, yêu cầu phi chức năng, ma trận truy vết, sơ đồ Use Case, sơ đồ tuần tự/hoạt động, thiết kế cơ sở dữ liệu và đặc tả API.
+- **Chương 4 – Hiện thực hóa và giao diện hệ thống:** cấu trúc mã nguồn, mã nguồn các nghiệp vụ lõi và giao diện ứng dụng.
+- **Chương 5 – Kiểm thử và đánh giá kết quả:** kiểm thử API trên máy chủ thật, kiểm thử đặt phòng đồng thời, đo hiệu năng, kiểm thử ứng dụng và đánh giá bảo mật.
+- **Chương 6 – Quản lý dự án và triển khai:** tiến độ thực tế theo lịch sử Git, phân rã công việc, rủi ro, đóng gói Docker và triển khai.
+- **Chương 7 – Kết luận và hướng phát triển.**
 
 ---
 
@@ -345,78 +219,102 @@ Cuốn báo cáo khóa luận tốt nghiệp được cấu trúc thành 7 chư�
 
 # CHƯƠNG 2: CƠ SỞ LÝ THUYẾT VÀ CÔNG NGHỆ ÁP DỤNG
 
-## 2.1. Kiến trúc tổng thể Client - Server và RESTful API
-Hệ thống **Luxe Grand Hotel** được kiến trúc theo mô hình phân tán hiện đại (Decoupled Client-Server Architecture), phân tách độc lập giữa tầng hiển thị di động và tầng ứng dụng máy chủ:
+## 2.1. Kiến trúc tổng thể Client – Server và RESTful API
 
-> ----------------------------------------------------------------------
-> 📸 **[VỊ TRÍ CHÈN HÌNH 2.1]**: *Sơ đồ Kiến trúc phân tầng kỹ thuật hệ thống*  
-> **Nội dung sơ đồ:** Thể hiện 4 tầng: (1) Client Tier (Flutter UI, BLoC, Dio); (2) Network Gateway (SSL/TLS, HTTPS, Bearer Token); (3) Backend Server (NestJS Guards, Interceptors, Controllers, Services, Cron); (4) Data & External Services (PostgreSQL via Prisma ORM, Redis Cache, Elasticsearch, FCM, Nodemailer).  
-> *(Sinh viên chèn ảnh sơ đồ kiến trúc hệ thống vào vị trí này)*  
-> ----------------------------------------------------------------------
-*Hình 2.1: Sơ đồ kiến trúc phân tầng kỹ thuật hệ thống Luxe Grand Hotel*
+Hệ thống được kiến trúc theo mô hình **client – server ba tầng**: tầng trình bày là ứng dụng Flutter, tầng ứng dụng là máy chủ NestJS, tầng dữ liệu gồm PostgreSQL, Redis và Elasticsearch. Hai phía chỉ giao tiếp qua giao diện REST (JSON qua HTTPS) và luồng Server-Sent Events.
 
-### Ưu điểm vượt trội của kiến trúc phân tán:
-- **Độc lập công nghệ (Decoupling):** Đội ngũ phát triển Backend và Mobile Client có thể làm việc song song, độc lập hoàn toàn về mặt công nghệ, chỉ cần thống nhất với nhau qua bản đặc tả giao tiếp API Spec.
-- **Khả năng mở rộng (Scalability):** Dễ dàng mở rộng thêm các nền tảng mới trong tương lai (ví dụ: Website Lễ tân, Kiosk tự check-in tại sảnh, Ứng dụng tablet cho buồng phòng) mà không cần phải thay đổi cấu trúc lõi của Backend.
-- **Bảo mật và toàn vẹn dữ liệu:** Mọi quy tắc nghiệp vụ, tính toán hóa đơn, kiểm tra phòng trống và đối soát ca trực đều được kiểm soát tuyệt đối tại Backend, triệt tiêu nguy cơ người dùng can thiệp gian lận từ phía Client.
+![Kiến trúc 3 tầng và phân lớp](docs/uml_diagrams/layers_diagram.png)
 
-## 2.2. Công nghệ phát triển phía Backend (NestJS Ecosystem)
+*Hình 2.1: Kiến trúc 3 tầng và phân lớp N-tầng của hệ thống*
 
-### 2.2.1. Ngôn ngữ TypeScript và Framework NestJS
-- **TypeScript:** Ngôn ngữ lập trình mã nguồn mở phát triển bởi Microsoft, bổ sung hệ thống định kiểu tĩnh (Static Type System) mạnh mẽ cho JavaScript. TypeScript giúp phát hiện các lỗi sai kiểu dữ liệu ngay trong quá trình biên dịch (Compile-time), mang lại tính ổn định cao cho các hệ thống phần mềm quản lý khách sạn phức tạp.
-- **NestJS Framework:** Là framework Node.js tiến bộ hàng đầu thế giới được xây dựng trên nền tảng Express/Fastify. NestJS mang kiến trúc hướng module chặt chẽ lấy cảm hứng từ Angular:
-  + **Modular Architecture:** Toàn bộ hệ thống được chia thành các Module độc lập (AuthModule, BookingsModule, InvoicesModule, ShiftsModule...). Mỗi module quản lý Controller, Service và DTO riêng biệt, tạo tính gắn kết cao (High Cohesion) và mức độ phụ thuộc thấp (Loose Coupling).
-  + **Dependency Injection (DI) & Inversion of Control (IoC):** Bộ chứa DI tự động quản lý vòng đời và tiêm các phụ thuộc giữa các tầng, giúp mã nguồn sạch sẽ và thuận lợi cho việc viết Unit Test.
-  + **Decorators:** Cú pháp khai báo tường minh (`@Controller`, `@Post`, `@UseGuards`, `@Roles`) giúp mã nguồn ngắn gọn, trực quan.
+Ở tầng ứng dụng, máy chủ được tổ chức thành bốn lớp: **API** (Controller, Guard, ValidationPipe), **Business** (Service chứa nghiệp vụ), **Data Access** (PrismaService, RedisService, ElasticsearchService) và **Integration** (Mail, Upload, Notifications). Ứng dụng di động cũng chia lớp tương tự: Presentation → State Management (BLoC) → Data Access (Repository) → Infrastructure (DioClient, SseClient).
 
-### 2.2.2. Cơ sở dữ liệu quan hệ PostgreSQL và Prisma ORM Type-Safe
-- **PostgreSQL 16:** Hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở mạnh mẽ nhất hiện nay, hỗ trợ hoàn hảo chuẩn ACID, chỉ mục tối ưu (B-Tree, GIN index) và giao dịch phức tạp (Multi-statement Transactions) với độ tin cậy tuyệt đối.
-- **Prisma ORM (Next-Generation ORM):** Thay thế các ORM truyền thống, Prisma mang lại những ưu điểm đột phá:
-  + **Prisma Schema (`schema.prisma`):** Định nghĩa mô hình thực thể dữ liệu rõ ràng, hỗ trợ quản lý di chuyển lược đồ tự động (`prisma migrate`).
-  + **Type-Safety 100%:** Trình biên dịch TypeScript tự động nhận diện chính xác kiểu dữ liệu trả về từ mỗi câu truy vấn cơ sở dữ liệu, loại bỏ hoàn toàn các lỗi `null` hoặc `undefined` lúc thực thi (Runtime).
-  + **Transaction API (`prisma.$transaction`):** Cung cấp cơ chế thực thi giao dịch nguyên tử, đảm bảo tính toàn vẹn khi đồng thời tạo booking, cập nhật trạng thái phòng và sinh hóa đơn đối ứng.
+### 2.1.1. Biểu đồ gói
 
-### 2.2.3. Cơ chế bộ đệm Redis và máy chủ tìm kiếm Elasticsearch
-- **Redis (Remote Dictionary Server):** Hệ thống lưu trữ khóa - giá trị In-Memory với tốc độ đọc ghi cực nhanh tính bằng micro-giây. Trong hệ thống Luxe Grand Hotel, Redis đóng vai trò tầng đệm dữ liệu:
-  + Đệm danh mục phòng trống và danh mục dịch vụ ăn uống minibar.
-  + Giảm thiểu hơn 65% tải truy vấn lặp lại tới cơ sở dữ liệu PostgreSQL đối với các dữ liệu tĩnh.
-- **Elasticsearch Engine:** Máy chủ tìm kiếm phân tán toàn văn chuẩn doanh nghiệp dựa trên Apache Lucene. Elasticsearch đánh chỉ mục (indexing) toàn bộ thông tin mô tả phòng, tiện nghi và dịch vụ, hỗ trợ khách hàng tìm kiếm phòng siêu tốc với thời gian phản hồi dưới 50ms.
+![Biểu đồ gói](docs/uml_diagrams/package_diagram.png)
 
-### 2.2.4. Xác thực, bảo mật (JWT, RBAC) và Tác vụ tự động hóa (NestJS Cronjob)
-- **JSON Web Token (JWT):** Sau khi đăng nhập thành công, máy chủ cấp phát Access Token có chữ ký số bí mật (HS256) chứa thông tin nhận dạng (`userId`, `email`, `role`). Token này được gửi kèm trong Header `Authorization: Bearer <token>` ở mọi request tiếp theo.
-- **Role-Based Access Control (RBAC):** Kết hợp giữa Custom Decorator `@Roles()` và `RolesGuard` để kiểm soát thẩm quyền truy cập nghiêm ngặt tại từng hàm điều khiển (Controller endpoint).
-- **NestJS Schedule (@Cron):** Tự động hóa tác vụ chạy ngầm định kỳ mỗi sáng lúc 09:00:
-  + Quét cơ sở dữ liệu tìm các đơn phòng có lịch nhận phòng trong ngày hôm nay.
-  + Tự động kích hoạt dịch vụ gửi Push Notification qua FCM và gửi email chào đón khách.
+*Hình 2.2: Biểu đồ gói phân rã hệ thống*
 
-## 2.3. Công nghệ phát triển phía Frontend Mobile (Flutter & Dart)
+Phía máy chủ `Hotel-Management::src` gồm ba nhóm gói phụ thuộc một chiều: **common** (decorators, dto, filters, guards, interceptors, utils) → **Feature Modules** (auth, users, room-types, rooms, bookings, invoices, services, shifts, analytics) → **Infrastructure Modules** (prisma, redis, elasticsearch, notifications, mail, upload). Phía ứng dụng `hotel_app::lib` tổ chức theo tính năng (auth, customer, receptionist, cashier, admin, notifications, profile, splash), dùng chung `shared` (models, repositories, widgets) và `core` (network, router, session, storage, theme…).
 
-### 2.3.1. Framework Flutter và ưu điểm biên dịch Cross-Platform
-- **Flutter** là bộ công cụ phát triển giao diện người dùng mã nguồn mở do Google sáng lập, cho phép lập trình viên chỉ viết một cơ sở mã nguồn duy nhất bằng ngôn ngữ **Dart** nhưng có thể biên dịch ra mã máy gốc (Native Machine Code ARM/x86) chạy mượt mà trên cả hệ điều hành Android và iOS.
-- Khác với các nền tảng lai (Hybrid) dùng Webview hoặc cầu nối JavaScript Bridge, Flutter tự vẽ toàn bộ pixel trên màn hình bằng công cụ đồ họa Skia / Impeller, đạt tốc độ khung hình chuẩn 60fps - 120fps mượt mà, không phụ thuộc vào widget gốc của hệ điều hành.
+### 2.1.2. Biểu đồ thành phần
 
-### 2.3.2. Mô hình quản lý trạng thái BLoC (Business Logic Component)
-Ứng dụng sử dụng thư viện `flutter_bloc` để tách biệt hoàn toàn giữa giao diện hiển thị (UI) và logic nghiệp vụ:
+![Biểu đồ thành phần](docs/uml_diagrams/component_diagram.png)
 
-> ----------------------------------------------------------------------
-> 📸 **[VỊ TRÍ CHÈN HÌNH 2.2]**: *Mô hình luồng dữ liệu quản lý trạng thái BLoC trong Flutter*  
-> **Nội dung sơ đồ:** Luồng tuần hoàn 6 bước: (1) UI dispatch Event; (2) Bloc nhận Event và gọi Repositories; (3) Repositories gọi HTTP Request qua Dio; (4) Backend trả JSON; (5) Repository trả Entity về BLoC; (6) BLoC phát ra State mới để UI render lại màn hình.  
-> *(Sinh viên chèn ảnh sơ đồ BLoC vào vị trí này)*  
-> ----------------------------------------------------------------------
-*Hình 2.2: Mô hình luồng dữ liệu quản lý trạng thái BLoC trong Flutter*
+*Hình 2.3: Biểu đồ thành phần*
 
-- **Event:** Hành động tương tác từ người dùng (ví dụ: `FetchRoomMatrixEvent`, `CloseShiftEvent`, `ApproveBookingEvent`).
-- **BLoC:** Thành phần xử lý trung gian, tiếp nhận Event, gọi Repository thực thi nghiệp vụ và phát ra (emit) State mới.
-- **State:** Trạng thái phản ánh dữ liệu hiện hành của giao diện (`Initial`, `Loading`, `Success`, `Failure`). Giao diện sử dụng `BlocBuilder` hoặc `BlocConsumer` để tự động cập nhật lại màn hình mà không cần gọi `setState()` thủ công.
+Hệ con **Hotel Management API** cung cấp hai giao diện cho ứng dụng: `IRestApi` (REST/JSON) và `IRoomEventStream` (SSE); ứng dụng nhận thông báo đẩy qua `IPushMessaging` (FCM). Bên trong, thành phần Security & Pipeline bao quanh REST Controllers; Controllers gọi Domain Services; Domain Services dùng các thành phần hạ tầng và phát sự kiện qua Realtime Event Bus (RoomEventsService, UserEventsService dựa trên RxJS Subject); Scheduler chạy tác vụ định kỳ.
 
-### 2.3.3. Thư viện mạng Dio, Dependency Injection (GetIt) và Routing (GoRouter)
-- **Dio Client:** Thư viện mạng HTTP cao cấp trong Flutter, hỗ trợ Interceptor tự động gắn JWT Token, tự động parse JSON và ghi log chi tiết phục vụ kiểm thử.
-- **GetIt (Service Locator):** Bộ điều phối phụ thuộc siêu nhẹ, hỗ trợ khởi tạo Singleton cho các Repository, Bloc và dịch vụ lưu trữ an toàn `FlutterSecureStorage`.
-- **GoRouter:** Bộ định tuyến khai báo (Declarative Routing) chính thức từ Flutter Team, hỗ trợ Deep Linking, truyền tham số động và bảo vệ chuyển hướng màn hình (Route Guarding).
+**Ưu điểm của kiến trúc tách biệt:**
 
-### 2.3.4. Thiết kế giao diện UI/UX và trực quan hóa số liệu với FL Chart
-- **FL Chart:** Thư viện vẽ biểu đồ tương tác cao số 1 trong hệ sinh thái Flutter. Trong đồ án, FL Chart được sử dụng để vẽ biểu đồ cột (Bar Chart) thể hiện doanh thu 12 tháng trong năm, hỗ trợ chạm cảm ứng hiển thị tooltip chi tiết doanh thu tiền phòng và dịch vụ.
-- **Phong cách Luxury Hotel Palette:** Tông màu xanh biển sâu (`#1B365D`), vàng kim hoàng gia (`#D4AF37`) và nền kem thanh lịch (`#F8F9FA`), kết hợp font chữ hiện đại Google Fonts Inter tạo cảm giác sang trọng chuẩn khách sạn 5 sao.
+- **Độc lập phát triển:** backend và ứng dụng phát triển song song, chỉ cần thống nhất hợp đồng API (tài liệu Swagger và `API-CONTRACT.md`).
+- **Dễ mở rộng:** có thể bổ sung web quản trị, kiosk tự check-in hay ứng dụng buồng phòng mà không thay đổi lõi backend.
+- **Toàn vẹn dữ liệu:** mọi quy tắc nghiệp vụ – tính tiền, kiểm tra phòng trống, đối soát ca – nằm ở máy chủ; ứng dụng không thể bỏ qua các ràng buộc này.
+
+## 2.2. Công nghệ phát triển phía Backend
+
+### 2.2.1. TypeScript và NestJS
+
+- **TypeScript:** bổ sung hệ thống kiểu tĩnh cho JavaScript, giúp phát hiện lỗi kiểu dữ liệu ngay khi biên dịch – đặc biệt hữu ích với các phép tính tiền và chuyển trạng thái phức tạp.
+- **NestJS:** framework Node.js tổ chức mã nguồn theo module, lấy cảm hứng từ Angular:
+  - **Module:** mỗi nghiệp vụ là một module độc lập (AuthModule, BookingsModule, InvoicesModule, ShiftsModule…) chứa Controller, Service, DTO riêng.
+  - **Dependency Injection:** bộ chứa DI quản lý vòng đời và tiêm phụ thuộc giữa các lớp (ví dụ `BookingsService` nhận `PrismaService`, `RedisService`, `RoomEventsService`).
+  - **Decorator, Guard, Pipe, Interceptor, Filter:** khai báo route (`@Get`, `@Post`), phân quyền (`@Roles`), kiểm tra dữ liệu vào (`ValidationPipe`), chuẩn hóa phản hồi (`TransformInterceptor`) và xử lý lỗi tập trung (`AllExceptionsFilter`).
+
+### 2.2.2. PostgreSQL và Prisma ORM
+
+- **PostgreSQL 16:** hệ quản trị CSDL quan hệ mã nguồn mở, hỗ trợ đầy đủ ACID, chỉ mục B-Tree và giao dịch nhiều câu lệnh.
+- **Prisma ORM:**
+  - **`schema.prisma`:** khai báo mô hình dữ liệu (10 model, 9 enum), quan hệ, chỉ mục; sinh client có kiểu tĩnh.
+  - **Truy vấn có kiểu:** trình biên dịch TypeScript biết chính xác kiểu dữ liệu trả về của từng truy vấn.
+  - **`prisma.$transaction`:** thực thi nguyên tử nhiều thao tác – ví dụ cập nhật đơn, đổi trạng thái phòng và ghi sổ thu tiền khi check-out.
+  - **Truy vấn tham số hóa:** giá trị đầu vào không được ghép chuỗi vào câu SQL, tránh lỗi SQL Injection.
+
+### 2.2.3. Redis và Elasticsearch
+
+- **Redis:** kho khóa – giá trị trong bộ nhớ, được dùng cho:
+  - **Khóa phân tán** `lock:booking:room:{roomId}` khi đặt phòng, giải phóng bằng Lua script – bảo đảm tại một thời điểm chỉ một yêu cầu được xử lý cho một phòng.
+  - **Bộ đệm** danh sách phòng trống (60 giây) và thông tin người dùng đã xác thực (30 giây); blacklist token khi đăng xuất; lưu thông báo trong ứng dụng.
+  - Khi không kết nối được Redis, `RedisService` tự chuyển sang bộ nhớ trong tiến trình (in-memory fallback) để hệ thống vẫn chạy.
+- **Elasticsearch:** đánh chỉ mục thông tin phòng (loại phòng, tiện nghi, giá) phục vụ tìm kiếm toàn văn có so khớp gần đúng (`GET /rooms/search`).
+
+### 2.2.4. Xác thực, phân quyền và tác vụ định kỳ
+
+- **JWT:** khi đăng nhập, máy chủ cấp **access token** (HS256, thời hạn cấu hình qua `JWT_EXPIRES_IN`, trên máy chủ triển khai là 1 ngày) chứa `sub`, `email`, `role`, `sid` và **refresh token** (7 ngày). Mỗi lần làm mới, refresh token cũ bị thu hồi và cấp cặp token mới (token rotation).
+- **Một thiết bị cho mỗi khách hàng:** mã phiên `sid` trong token phải khớp `users.activeSessionId`; đăng nhập ở máy mới sẽ làm phiên máy cũ hết hiệu lực.
+- **RBAC:** decorator `@Roles()` kết hợp `JwtAuthGuard` và `RolesGuard` kiểm tra quyền tại từng endpoint; `@Public()` đánh dấu API công khai.
+- **NestJS Schedule:** `CheckinReminderService` chạy theo biểu thức cron `0 1 * * *` (múi giờ Asia/Ho_Chi_Minh), quét các đơn `CONFIRMED` có ngày nhận phòng hôm nay hoặc ngày mai và gửi thông báo nhắc lịch cho khách.
+
+## 2.3. Công nghệ phát triển ứng dụng di động
+
+### 2.3.1. Flutter và Dart
+
+**Flutter** cho phép viết một mã nguồn Dart duy nhất và biên dịch ra mã máy cho cả Android và iOS. Flutter tự vẽ giao diện bằng engine đồ họa riêng (Skia/Impeller) thay vì dùng WebView, nên giao diện đồng nhất trên các nền tảng.
+
+### 2.3.2. Quản lý trạng thái BLoC
+
+Ứng dụng dùng thư viện `flutter_bloc` để tách giao diện khỏi logic nghiệp vụ. Hình 2.4 minh họa luồng dữ liệu của màn hình hóa đơn:
+
+![Luồng dữ liệu BLoC](docs/uml_diagrams/bloc_diagram.png)
+
+*Hình 2.4: Luồng dữ liệu BLoC trong ứng dụng Flutter (màn hình hóa đơn)*
+
+- **Event:** hành động của người dùng, ví dụ `InvoiceFetchRequested`, `InvoiceSearchChanged`, `InvoicePaymentRecorded`.
+- **BLoC:** nhận event, gọi Repository và phát ra State mới (`InvoiceBloc`, `AuthBloc`, `UserBloc`, `TodayCheckOutsBloc`).
+- **State:** đối tượng bất biến (`Equatable`) mô tả dữ liệu đang hiển thị; giao diện dùng `BlocBuilder`/`BlocListener` để tự vẽ lại.
+
+### 2.3.3. Dio, GetIt và GoRouter
+
+- **Dio (`DioClient`):** gửi HTTP, interceptor tự gắn JWT, chuẩn hóa lỗi API thành `ApiError`; `SseClient` giữ kết nối SSE và tự kết nối lại.
+- **GetIt:** đăng ký tập trung Repository, BLoC và các dịch vụ trong `di/injection_container.dart`.
+- **GoRouter:** điều hướng khai báo, chuyển màn hình theo vai trò sau khi đăng nhập.
+- **flutter_secure_storage:** lưu access/refresh token an toàn trên thiết bị.
+
+### 2.3.4. Giao diện và trực quan hóa số liệu
+
+- **FL Chart:** vẽ biểu đồ doanh thu và biểu đồ công suất ở màn hình báo cáo quản trị.
+- **Bảng màu:** xanh navy đậm `#0F172A` làm nền điều hướng, vàng gold `#D97706` làm điểm nhấn thương hiệu, nền sáng `#F8FAFC` cho nội dung – theo định hướng “sang trọng, tin cậy, rõ ràng” từ nghiên cứu UI/UX.
+- **Shimmer, flutter_animate:** hiệu ứng khung chờ tải và chuyển động nhẹ khi danh sách xuất hiện.
 
 ---
 
@@ -424,618 +322,435 @@ Hệ thống **Luxe Grand Hotel** được kiến trúc theo mô hình phân tá
 
 # CHƯƠNG 3: PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG
 
-## 3.1. Đặc tả 27 Yêu cầu chức năng chi tiết (Functional Requirements FR-01 đến FR-27)
-Hệ thống Luxe Grand Hotel được phân tích và đặc tả trọn vẹn 27 yêu cầu chức năng (tuân thủ tiêu chuẩn IEEE 830) chia thành 14 phân hệ nghiệp vụ:
+## 3.1. Đặc tả 27 yêu cầu chức năng (FR-01 đến FR-27)
 
-### Phân hệ 1: Xác thực & Quản lý Tài khoản (Authentication)
-- **[FR-01] Đăng ký tài khoản Khách hàng:** Khách nhập Email, Mật khẩu (tối thiểu 6 ký tự), Họ tên, Số điện thoại. Hệ thống kiểm tra email duy nhất, băm mật khẩu bằng Bcrypt (10 vòng) và cấp tài khoản quyền `CUSTOMER`.
-- **[FR-02] Đăng nhập & Cấp phát Token:** Xác thực email và mật khẩu, cấp phát JSON Web Token (JWT) có chữ ký số chứa thông tin `userId`, `email`, `role`.
-- **[FR-03] Khôi phục Mật khẩu qua Email OTP:** Khách quên mật khẩu nhập email -> Hệ thống sinh mã OTP 6 số (hiệu lực 10 phút), gửi qua hòm thư điện tử -> Khách nhập OTP và mật khẩu mới để đặt lại mật khẩu.
+Các yêu cầu chức năng được xác định từ kết quả khảo sát người dùng và chia thành 7 phân hệ.
 
-### Phân hệ 2: Danh mục Phòng & Ma trận Sơ đồ phòng (Rooms & Matrix)
-- **[FR-04] Quản lý Danh mục Hạng phòng (Room Types):** Quản trị viên thêm/sửa/xóa các hạng phòng: Tên hạng, mô tả, đơn giá niêm yết (`basePrice`), số khách tối đa (`maxOccupancy`), tiện nghi (`amenities`) và album ảnh (`images`).
-- **[FR-05] Quản lý Phòng vật lý (Physical Rooms):** Quản lý số phòng (`roomNumber`), vị trí tầng (`floor`), liên kết hạng phòng và trạng thái khởi tạo (`status = AVAILABLE`).
-- **[FR-06] Ma trận Sơ đồ phòng thời gian thực (Room Matrix):** Màn hình trực quan theo từng tầng tòa nhà, thể hiện trạng thái phòng bằng 5 mã màu chuẩn: Xanh lá (`AVAILABLE`), Đỏ (`OCCUPIED`), Xanh dương (`RESERVED`), Vàng cam (`CLEANING`), Xám (`MAINTENANCE`). Hỗ trợ chạm nhanh vào thẻ phòng để hiển thị menu thao tác.
+### 3.1.1. Phân hệ Xác thực và tài khoản
 
-### Phân hệ 3: Nghiệp vụ Đặt phòng & Tiền sảnh (Bookings Lifecycle)
-- **[FR-07] Tra cứu phòng trống (Available Rooms Search):** Khách chọn ngày nhận, ngày trả, số khách. Hệ thống áp dụng thuật toán Interval Overlap loại trừ tất cả các phòng đã có đơn `CONFIRMED` hoặc `CHECKED_IN` giao nhau với khoảng thời gian tìm kiếm.
-- **[FR-08] Tạo đơn đặt phòng trực tuyến (Online Booking):** Khách chọn phòng, nhập yêu cầu đặc biệt. Hệ thống tạo đơn `Booking` trạng thái `PENDING` và tự động sinh `Invoice` trạng thái `UNPAID`.
-- **[FR-09] Phê duyệt & Từ chối đơn đặt phòng:** Lễ tân/Admin duyệt đơn (`status = CONFIRMED`, phòng sang `RESERVED`, gửi thông báo đẩy FCM cho khách) hoặc từ chối đơn kèm lý do giải thích rõ ràng.
-- **[FR-10] Thủ tục Nhận phòng (Check-in) & Khách vãng lai (Walk-in):** Lễ tân đối chiếu CCCD khách có lịch hẹn và bấm Check-in (`actualCheckIn = now()`, phòng sang `OCCUPIED`). Hỗ trợ tiếp nhận khách vãng lai (Walk-in) nhận phòng nhanh tại quầy.
-- **[FR-11] Đổi phòng lưu trú linh hoạt (Change Room):** Hỗ trợ chuyển khách đang ở sang một phòng trống khác tương đương khi phát sinh sự cố kỹ thuật. Phòng cũ chuyển sang `CLEANING`, phòng mới chuyển sang `OCCUPIED`.
-- **[FR-12] Thủ tục Trả phòng (Check-out) & Kiểm kê dịch vụ:** Lễ tân kiểm tra chi phí phát sinh minibar, đối soát số tiền còn thiếu (`remainingAmount = finalAmount - paidAmount`). Yêu cầu thanh toán dứt điểm trước khi hoàn tất trả phòng (`room.status = CLEANING`).
+- **[FR-01] Đăng ký tài khoản khách hàng:** khách nhập email, mật khẩu (tối thiểu 6 ký tự), họ tên, số điện thoại. Hệ thống kiểm tra email chưa tồn tại, băm mật khẩu bằng bcrypt (salt 10) và luôn gán vai trò `CUSTOMER` – trường `role` do client gửi lên bị bỏ qua.
+- **[FR-02] Đăng nhập và cấp token:** xác thực email/mật khẩu, cấp access token và refresh token. Tài khoản khách hàng chỉ được đăng nhập trên một thiết bị; tài khoản bị vô hiệu hóa không đăng nhập được.
+- **[FR-03] Khôi phục mật khẩu bằng OTP:** khách nhập email → hệ thống gửi mã OTP qua email (hiệu lực 15 phút) → khách xác thực OTP để nhận `resetToken` → đặt mật khẩu mới.
 
-### Phân hệ 4: Dịch vụ Phòng Khách sạn (Hotel Extra Services)
-- **[FR-13] Quản lý Danh mục Dịch vụ:** Quản lý danh mục Ẩm thực (F&B), Đồ uống minibar, Giặt là nhanh, Spa & Massage, Đơn giá và Trạng thái khả dụng.
-- **[FR-14] Đặt dịch vụ gia tăng theo phòng:** Khách hàng hoặc lễ tân order dịch vụ phòng; hệ thống tạo bản ghi `ExtraServiceOrder` và tự động cộng dồn chi phí vào `servicesAmount` của hóa đơn.
+### 3.1.2. Phân hệ Danh mục phòng và sơ đồ phòng
 
-### Phân hệ 5: Tài chính, Hóa đơn & Quản lý Ca trực (Cashier & Shifts)
-- **[FR-15] Sổ thu tiền chi tiết đa đợt (Multi-Entry Payments):** Mỗi hóa đơn gồm nhiều lần thu (`DEPOSIT`, `PAYMENT`, `REFUND`). Tiền thực thu `paidAmount` của hóa đơn luôn được tính động bằng tổng các khoản thu có trạng thái `CONFIRMED`. Khoản chuyển khoản của khách ở trạng thái `PENDING` chỉ được tính sau khi thu ngân đối soát và duyệt.
-- **[FR-16] Quản lý Ca trực Lễ tân (WorkShift Management):**
-  + Mở ca: Khai báo ca trực (Sáng/Chiều/Đêm) và tiền mặt ban đầu trong két (`initialCash`).
-  + Trong ca: Mọi giao dịch thu tiền mặt, quẹt thẻ, chuyển khoản đều gắn mã ca `shiftId`.
-  + Chốt ca: Nhân viên kiểm đếm tiền két thực tế (`actualCash`). Hệ thống tính tiền lý thuyết `expectedCash = initialCash + tongTienMatThuTrongCa` và tính chênh lệch `cashDifference`. Bắt buộc nhập lý do giải trình nếu có sai lệch.
+- **[FR-04] Quản lý loại phòng:** quản trị viên thêm, sửa, xóa loại phòng gồm tên, mã, mô tả, giá cơ bản/đêm (`basePrice`), số người lớn và trẻ em tối đa, diện tích, tiện nghi và ảnh.
+- **[FR-05] Quản lý phòng:** số phòng (duy nhất), tầng, loại phòng, ghi chú. Phòng do quản trị viên tạo được kích hoạt ngay; phòng do vai trò khác tạo ở trạng thái `PENDING_APPROVAL` chờ duyệt.
+- **[FR-06] Sơ đồ phòng thời gian thực:** hiển thị phòng theo tầng với các trạng thái `AVAILABLE`, `RESERVED`, `OCCUPIED`, `CLEANING`, `MAINTENANCE`; mọi thay đổi trạng thái được đẩy tức thì tới các máy lễ tân qua luồng SSE `/rooms/stream`.
 
-### Phân hệ 6: Báo cáo Thống kê & Tự động hóa (Analytics & Automation)
-- **[FR-17] Dashboard Điều hành thời gian thực:** Cung cấp 4 thẻ KPI nhanh cho ban quản lý: Tỷ lệ lấp đầy hôm nay, Số lượt nhận phòng trong ngày, Số lượt trả phòng trong ngày, Số đơn chờ duyệt.
-- **[FR-18] Báo cáo Doanh thu 12 tháng & Cơ cấu Doanh thu:** Trực quan hóa doanh thu 12 tháng trong năm qua biểu đồ cột tương tác FL Chart, tách bạch doanh thu tiền phòng và tiền dịch vụ, hỗ trợ lọc theo năm.
-- **[FR-19] Tác vụ Nhắc lịch Check-in tự động (Cronjob):** Chạy tự động lúc 09:00 sáng mỗi ngày, quét các đơn phòng nhận hôm nay và gửi thông báo đẩy FCM kèm email chào đón khách.
+### 3.1.3. Phân hệ Đặt phòng và lưu trú
 
-### Phân hệ 7 đến 14: Các chức năng Quản trị & Nghiệp vụ Mở rộng
-- **[FR-20] Quản lý Tài khoản Nhân viên & Phân quyền RBAC:** Admin thêm mới nhân viên, cập nhật thông tin, phân quyền (`RECEPTIONIST`, `ADMIN`), khóa tài khoản hoặc đặt lại mật khẩu nhân viên.
-- **[FR-21] Quản lý Hồ sơ Cá nhân & Đổi Mật khẩu:** Người dùng xem hồ sơ, cập nhật số điện thoại, đổi avatar lên Cloudinary và đổi mật khẩu an toàn.
-- **[FR-22] Trung tâm Thông báo Đa kênh & Token FCM:** Hộp thư thông báo trong app, đánh dấu đã đọc từng thông báo hoặc tất cả, tự động đồng bộ mã Token FCM của điện thoại để nhận thông báo đẩy.
-- **[FR-23] Báo cáo Hiệu suất Nhân sự & Doanh thu theo Ngày:** Thống kê số lượt Check-in/Check-out và doanh số thu ngân của từng nhân viên; biểu đồ doanh thu theo chu kỳ 7, 14 hoặc 30 ngày gần nhất.
-- **[FR-24] Xem trước Bảng kê Quyết toán Chi phí (Checkout Preview):** Trích xuất toàn bộ bảng kê chi phí tiền phòng, minibar, phụ thu và số dư còn thiếu mà không thay đổi trạng thái đơn.
-- **[FR-25] Sổ Lịch sử Ca trực & Quyền Admin Cưỡng chế Chốt ca:** Tra cứu biên bản bàn giao của toàn bộ các ca trực trong quá khứ; quyền Admin cưỡng chế đóng ca khi nhân viên gặp sự cố đột xuất.
-- **[FR-26] Từ chối Giao dịch Chuyển khoản Nghi vấn:** Thu ngân từ chối giao dịch chuyển khoản không có tiền vào tài khoản kèm lý do bắt buộc để khách chuyển lại.
-- **[FR-27] Tự động Đồng bộ Trạng thái Phòng & Upload File:** API rà soát đồng bộ logic phòng với lịch đặt hiện hành; dịch vụ upload ảnh đơn và album ảnh phòng lên máy chủ/Cloudinary.
+- **[FR-07] Tra cứu phòng trống:** khách chọn ngày nhận, ngày trả, số khách, loại phòng; hệ thống loại trừ các phòng có đơn `PENDING`, `CONFIRMED` hoặc `CHECKED_IN` giao với khoảng ngày cần đặt. Ngoài ra hỗ trợ tìm kiếm toàn văn theo tên, tiện nghi, khoảng giá.
+- **[FR-08] Đặt phòng:** hệ thống chuẩn hóa giờ nhận phòng 14:00 và trả phòng 12:00, giữ khóa phân tán trên phòng, kiểm tra trùng lịch, tính tiền bằng số đêm × giá loại phòng và tạo đơn `PENDING` (khách đặt) hoặc `CONFIRMED` (lễ tân đặt hộ). Khách được tự hủy đơn khi đơn còn `PENDING`.
+- **[FR-09] Phê duyệt và từ chối đơn:** lễ tân duyệt đơn (`CONFIRMED`), có thể ghi nhận tiền cọc (khi đó sinh hóa đơn kèm dòng thu loại `DEPOSIT`) và có thể xếp sang phòng khác nếu không trùng lịch; hoặc từ chối đơn (`CANCELLED`) kèm lý do. Khách nhận thông báo kết quả.
+- **[FR-10] Nhận phòng (check-in) và khách vãng lai:** chỉ check-in đơn `CONFIRMED`; đơn chuyển `CHECKED_IN`, ghi `actualCheckIn`, phòng chuyển `OCCUPIED`. Khách vãng lai được lễ tân tạo đơn `CONFIRMED` rồi check-in ngay tại quầy.
+- **[FR-11] Đổi phòng:** chỉ áp dụng cho đơn đang `CHECKED_IN`; phòng mới không được đang bảo trì, đang dọn, chờ duyệt hay trùng lịch. Phòng cũ chuyển `CLEANING`, phòng mới chuyển `OCCUPIED`.
+- **[FR-12] Trả phòng (check-out):** tính bảng quyết toán (số đêm thực tế, phát hiện trả phòng trước hạn, tiền phòng, dịch vụ đã xác nhận, số đã thu, số còn phải thu); chỉ cho trả phòng khi thu đủ; ghi hóa đơn, dòng thu và dòng hoàn tiền (nếu trả sớm) trong một giao dịch; phòng chuyển `CLEANING`.
 
----
+### 3.1.4. Phân hệ Dịch vụ khách sạn
 
-## 3.2. Phân tích yêu cầu phi chức năng (Non-Functional Requirements)
-1. **Hiệu năng & Khả năng chịu tải (Performance):**
-   - Độ trễ trung bình của các API nghiệp vụ chính < 150ms.
-   - Hệ thống chịu tải trên 1.200 requests/phút trong điều kiện đồng thời.
-   - Ứng dụng di động khởi động nhanh dưới 2 giây, duy trì tốc độ vẽ 60fps mượt mà.
-2. **Tính toàn vẹn & Nhất quán dữ liệu (Data Integrity):**
-   - Triệt tiêu hoàn toàn sự cố đặt trùng phòng (Double-booking) thông qua cơ chế kiểm tra khoảng giao nhau và giao dịch cơ sở dữ liệu khóa mức dòng.
-   - Số tiền thực thu và số nợ còn lại luôn khớp 100% với dữ liệu chi tiết các khoản thu.
-3. **An toàn & Bảo mật (Security):**
-   - Mật khẩu được băm một chiều an toàn bằng thuật toán chuẩn công nghiệp Bcrypt (salt = 10).
-   - Truyền tải thông tin mã hóa qua mạng bắt buộc sử dụng HTTPS (TLS 1.3).
-   - Sử dụng Prisma Parameterized Queries ngăn chặn 100% nguy cơ tấn công SQL Injection.
-4. **Tính khả dụng & Trải nghiệm người dùng (Usability):**
-   - Giao diện thiết kế theo phong cách Luxury Hotel Palette sang trọng, trực quan, hỗ trợ tiếng Việt toàn diện.
-   - Thao tác lễ tân tối ưu không quá 3 lần chạm màn hình để hoàn tất một thủ tục nghiệp vụ.
+- **[FR-13] Quản lý danh mục dịch vụ:** mã, tên, nhóm (ăn uống, chăm sóc sức khỏe, di chuyển, tiện ích, dịch vụ phòng), đơn giá, đơn vị, trạng thái khả dụng.
+- **[FR-14] Dịch vụ phát sinh theo đơn:** lễ tân ghi nhận dịch vụ trực tiếp (trạng thái `CONFIRMED`), hoặc khách gửi yêu cầu gọi dịch vụ (`REQUESTED`) để lễ tân duyệt/từ chối. Đơn giá được sao chép vào đơn dịch vụ tại thời điểm gọi và được cộng vào quyết toán khi check-out.
 
----
+### 3.1.5. Phân hệ Tài chính và ca trực
 
-## 3.3. Bảng Ma trận truy vết yêu cầu toàn diện (Full Traceability Matrix)
+- **[FR-15] Sổ thu tiền nhiều đợt:** mỗi hóa đơn có nhiều dòng thu (`PAYMENT`, `DEPOSIT`, `REFUND`). `paidAmount` của hóa đơn luôn được tính lại bằng tổng các dòng `CONFIRMED` (thu cộng, hoàn trừ). Khách gửi yêu cầu chuyển khoản kèm mã giao dịch ở trạng thái `PENDING`; chỉ được cộng vào hóa đơn sau khi thu ngân xác nhận.
+- **[FR-16] Quản lý ca trực:** mở ca với tiền mặt đầu ca (mỗi nhân viên tối đa một ca đang mở); mọi khoản thu/hoàn trong ca được gắn mã ca. Khi chốt ca, hệ thống tính `expectedCash` = tiền đầu ca + tiền mặt thu − tiền mặt hoàn, so với số tiền thực đếm `actualCash`; nếu lệch bắt buộc nhập lý do giải trình.
 
-### Bảng 3.1: Bảng Ma trận truy vết yêu cầu toàn diện (Full Traceability Matrix 27 FRs)
-| Mã YC | Tên yêu cầu chức năng | Phân hệ | Vai trò | API Endpoint liên quan | Bảng CSDL chính |
-| :---: | :--- | :--- | :--- | :--- | :--- |
-| **FR-01** | Đăng ký tài khoản Khách hàng | Auth | Customer | `POST /auth/register` | `users` |
-| **FR-02** | Đăng nhập & Cấp phát JWT | Auth | All | `POST /auth/login` | `users` |
-| **FR-03** | Khôi phục mật khẩu qua Email OTP | Auth | Customer | `POST /auth/forgot-password` | `password_resets` |
-| **FR-04** | Quản lý Hạng phòng & Bảng giá | Catalog | Admin | `GET,POST,PATCH,DELETE /room-types` | `room_types` |
-| **FR-05** | Quản lý Danh mục Phòng vật lý | Catalog | Admin/Staff | `GET,POST,PATCH,DELETE /rooms` | `rooms` |
-| **FR-06** | Sơ đồ Ma trận phòng thời gian thực | Front-desk | Staff/Admin | `GET /rooms/matrix` | `rooms`, `bookings` |
-| **FR-07** | Tra cứu phòng trống theo ngày | Booking | Customer/Staff | `GET /rooms/available` | `rooms`, `bookings` |
-| **FR-08** | Tạo đơn đặt phòng trực tuyến | Booking | Customer | `POST /bookings` | `bookings`, `invoices` |
-| **FR-09** | Phê duyệt & Từ chối đơn đặt phòng | Booking | Staff/Admin | `PUT /bookings/{id}/approve`, `/reject` | `bookings`, `rooms` |
-| **FR-10** | Check-in & Tiếp nhận khách Walk-in | Front-desk | Staff/Admin | `POST /bookings/{id}/check-in` | `bookings`, `rooms` |
-| **FR-11** | Đổi phòng lưu trú linh hoạt | Front-desk | Staff/Admin | `POST /bookings/{id}/change-room` | `bookings`, `rooms` |
-| **FR-12** | Check-out trả phòng & Kiểm kê minibar| Front-desk | Staff/Admin | `POST /bookings/{id}/check-out` | `bookings`, `invoices` |
-| **FR-13** | Quản lý Danh mục Dịch vụ KS | Catalog | Admin | `GET,POST,PATCH,DELETE /services` | `hotel_services` |
-| **FR-14** | Đặt dịch vụ gia tăng theo phòng | Services | Customer/Staff | `POST /bookings/{id}/services` | `extra_service_orders` |
-| **FR-15** | Sổ thu tiền đa đợt & Đối soát | Cashier | Customer/Staff | `POST /invoices/{id}/pay`, `/payments` | `invoices`, `payments` |
-| **FR-16** | Quản lý Ca trực lễ tân & Đối soát két| Cashier | Receptionist | `POST /shifts/open`, `/close` | `work_shifts`, `payments` |
-| **FR-17** | Dashboard điều hành thời gian thực | Analytics | Admin | `GET /analytics/dashboard` | `rooms`, `bookings` |
-| **FR-18** | Báo cáo Biểu đồ Doanh thu 12 tháng | Analytics | Admin | `GET /analytics/revenue` | `invoices`, `payments` |
-| **FR-19** | Tác vụ Nhắc lịch Check-in (Cron) | Notification | System | Cron `@EveryDayAt9AM` | `bookings`, `users` |
-| **FR-20** | Quản trị Nhân sự & Phân quyền RBAC | Staff | Admin | `GET,POST,PATCH,DELETE /users` | `users` |
-| **FR-21** | Quản lý Hồ sơ cá nhân & Đổi mật khẩu| Security | All | `GET /auth/me`, `POST /change-password` | `users` |
-| **FR-22** | Trung tâm Thông báo FCM đa kênh | Notification | All | `GET /notifications`, `PATCH /fcm-token`| `notifications` |
-| **FR-23** | Hiệu suất Nhân viên & Doanh thu Ngày | Analytics | Admin/Staff | `GET /analytics/staff-performance` | `work_shifts`, `invoices` |
-| **FR-24** | Xem trước Hóa đơn Check-out Preview | Front-desk | Staff/Admin | `GET /bookings/{id}/checkout-preview` | `bookings`, `invoices` |
-| **FR-25** | Sổ Lịch sử Ca & Cưỡng chế Chốt ca | Cashier | Admin/Staff | `GET /shifts`, `POST /shifts/{id}/close`| `work_shifts`, `payments` |
-| **FR-26** | Từ chối Giao dịch Chuyển khoản nghi vấn| Cashier | Staff/Admin | `POST /payments/{id}/reject` | `payments`, `invoices` |
-| **FR-27** | Đồng bộ Trạng thái Phòng & Upload File| System/Media | Admin/Staff | `POST /rooms/sync-status`, `/upload/*` | `rooms`, `upload` |
+### 3.1.6. Phân hệ Báo cáo và tự động hóa
 
----
+- **[FR-17] Dashboard điều hành:** tỷ lệ lấp đầy, số phòng theo trạng thái, doanh thu hôm nay so với hôm qua, lượt nhận và trả phòng hôm nay, số đơn chờ duyệt, số hóa đơn chưa thanh toán, doanh thu theo ngày.
+- **[FR-18] Báo cáo doanh thu theo năm:** doanh thu 12 tháng tách tiền phòng và tiền dịch vụ, danh sách các năm có doanh thu, xuất báo cáo CSV.
+- **[FR-19] Nhắc lịch nhận phòng tự động:** tác vụ định kỳ chạy hằng ngày, quét các đơn `CONFIRMED` nhận phòng hôm nay hoặc ngày mai và gửi thông báo cho khách.
 
-## 3.4. Sơ đồ Use Case tổng thể toàn hệ thống
+### 3.1.7. Các chức năng quản trị và mở rộng
 
-> ----------------------------------------------------------------------
-> 📸 **[VỊ TRÍ CHÈN HÌNH 3.1]**: *Sơ đồ Use Case tổng thể toàn hệ thống*  
-> **Nội dung sơ đồ:** Thể hiện 3 tác nhân chính (Khách hàng, Lễ tân/Thu ngân, Quản trị viên) cùng ranh giới hệ thống phân chia rõ các Use Case tương ứng.  
-> *(Sinh viên chèn ảnh sơ đồ Use Case tổng thể vào vị trí này)*  
-> ----------------------------------------------------------------------
-*Hình 3.1: Sơ đồ Use Case tổng thể toàn hệ thống Luxe Grand Hotel*
+- **[FR-20] Quản lý tài khoản và phân quyền:** quản trị viên tạo tài khoản nhân viên, cập nhật thông tin và vai trò, đặt lại mật khẩu, vô hiệu hóa tài khoản (xóa mềm); danh sách tài khoản cập nhật realtime qua SSE.
+- **[FR-21] Hồ sơ cá nhân:** xem và cập nhật họ tên, số điện thoại, ảnh đại diện; đổi mật khẩu.
+- **[FR-22] Thông báo:** danh sách thông báo trong ứng dụng, đánh dấu đã đọc từng thông báo hoặc tất cả; lưu FCM token của thiết bị để nhận thông báo đẩy.
+- **[FR-23] Hiệu suất nhân viên và doanh thu theo ngày:** thống kê theo nhân viên; doanh thu theo các khoảng 7/30/90/365 ngày.
+- **[FR-24] Xem trước quyết toán:** trả bảng quyết toán của đơn đang lưu trú mà không thay đổi dữ liệu, dùng chung công thức với check-out.
+- **[FR-25] Lịch sử ca trực:** tra cứu các ca đã chốt (lọc, phân trang), xem chi tiết từng ca; quản trị viên chốt hộ ca của nhân viên.
+- **[FR-26] Từ chối thanh toán:** thu ngân từ chối yêu cầu chuyển khoản chưa thấy tiền về, kèm lý do; khoản này không bao giờ được tính tiền.
+- **[FR-27] Đồng bộ trạng thái phòng và tải ảnh:** API rà soát lại trạng thái phòng theo lịch đặt hiện hành; tải ảnh đại diện, ảnh phòng lên Cloudinary/Supabase (dự phòng lưu cục bộ).
 
-```mermaid
-graph TD
-    actorGuest((Khách Hàng))
-    actorStaff((Lễ Tân / Thu Ngân))
-    actorAdmin((Quản Trị Viên))
+## 3.2. Yêu cầu phi chức năng
 
-    subgraph System [HỆ THỐNG QUẢN LÝ KHÁCH SẠN LUXE GRAND HOTEL]
-        UC_Auth[Đăng nhập / Đăng ký / Quên MK OTP]
-        UC_Search[Tìm kiếm & Xem chi tiết phòng]
-        UC_Book[Đặt phòng trực tuyến]
-        UC_ViewInvoice[Xem hóa đơn & Lịch sử chi tiêu]
-        UC_OrderService[Yêu cầu dịch vụ phòng]
-        UC_Pay[Chuyển khoản thanh toán / Nộp cọc]
+1. **Hiệu năng:**
+   - Phân trang phía máy chủ cho mọi danh sách (tối đa 100 bản ghi/trang); chỉ mục trên các cột lọc thường dùng; bộ đệm cho danh sách phòng trống và thông tin xác thực; nén gzip phản hồi.
+   - Kết quả đo thực tế được trình bày ở mục 5.4.
+2. **Toàn vẹn dữ liệu:**
+   - Không để hai đơn còn hiệu lực trùng lịch trên cùng một phòng, kể cả khi nhiều người đặt cùng lúc (khóa phân tán + kiểm tra giao lịch).
+   - Thao tác nhiều bảng (check-in, check-out, duyệt đơn có cọc, chốt ca) thực hiện trong giao dịch CSDL.
+   - Số đã thu và số còn nợ của hóa đơn luôn được tính từ sổ thu tiền.
+3. **Bảo mật:**
+   - Mật khẩu băm bcrypt; xác thực JWT; phân quyền theo vai trò ở từng API; dữ liệu đầu vào được kiểm tra bằng DTO và loại bỏ trường lạ.
+   - Truyền tải qua HTTPS (máy chủ triển khai trên Render cung cấp TLS).
+4. **Tính dễ dùng:**
+   - Giao diện tiếng Việt, thông báo lỗi tiếng Việt rõ nguyên nhân; các thao tác lễ tân thường dùng có nút thao tác nhanh trên sơ đồ phòng.
+5. **Khả năng bảo trì và triển khai:**
+   - Mã nguồn phân module, phân tầng; tài liệu API Swagger tại `/api/docs`; đóng gói Docker, cấu hình qua biến môi trường.
 
-        UC_Matrix[Xem Ma trận phòng Room Matrix]
-        UC_ApproveBook[Duyệt / Từ chối đơn đặt phòng]
-        UC_CheckIn[Làm thủ tục Check-in & Walk-in]
-        UC_CheckOut[Làm thủ tục Check-out & Minibar]
-        UC_ChangeRoom[Hoán đổi phòng lưu trú]
-        UC_Shift[Mở ca / Chốt ca / Bàn giao tiền két]
-        UC_ConfirmPay[Xác nhận khoản thanh toán của khách]
+## 3.3. Ma trận truy vết yêu cầu
 
-        UC_Dashboard[Xem Dashboard điều hành & KPI]
-        UC_RevReport[Báo cáo biểu đồ doanh thu theo năm]
-        UC_Occupancy[Phân tích tỷ lệ lấp đầy phòng]
-        UC_ManageRoom[Quản lý danh mục phòng & loại phòng]
-        UC_ManageStaff[Quản lý nhân sự & Giám sát ca trực]
-    end
+*Bảng 3.1: Ma trận truy vết 27 yêu cầu chức năng*
 
-    actorGuest --> UC_Auth
-    actorGuest --> UC_Search
-    actorGuest --> UC_Book
-    actorGuest --> UC_ViewInvoice
-    actorGuest --> UC_OrderService
-    actorGuest --> UC_Pay
+| Mã YC | Yêu cầu | Vai trò | API chính | Bảng CSDL |
+| :---: | :--- | :--- | :--- | :--- |
+| FR-01 | Đăng ký tài khoản | Khách vãng lai | `POST /auth/register` | `users` |
+| FR-02 | Đăng nhập, cấp token | Tất cả | `POST /auth/login`, `POST /auth/refresh-token`, `POST /auth/logout` | `users` |
+| FR-03 | Khôi phục mật khẩu OTP | Tất cả | `POST /auth/forgot-password`, `/verify-reset-otp`, `/reset-password` | `password_resets` |
+| FR-04 | Quản lý loại phòng | Admin | `GET, POST, PATCH, DELETE /room-types` | `room_types` |
+| FR-05 | Quản lý phòng | Admin, Lễ tân | `POST /rooms`, `PATCH /rooms/{id}/approve`, `/reject`, `PUT, PATCH, DELETE /rooms/{id}` | `rooms` |
+| FR-06 | Sơ đồ phòng realtime | Lễ tân, Admin | `GET /rooms`, `GET /rooms/stream` (SSE) | `rooms`, `bookings` |
+| FR-07 | Tra cứu phòng trống | Tất cả | `GET /rooms/available`, `GET /rooms/search` | `rooms`, `bookings` |
+| FR-08 | Đặt phòng, hủy đơn | Khách hàng, Lễ tân | `POST /bookings`, `PATCH /bookings/{id}/cancel` | `bookings` |
+| FR-09 | Duyệt / từ chối đơn | Lễ tân, Admin | `PATCH /bookings/{id}/approve`, `PATCH /bookings/{id}/reject` | `bookings`, `invoices`, `payments` |
+| FR-10 | Check-in, khách vãng lai | Lễ tân, Admin | `POST /bookings`, `POST /bookings/{id}/check-in` | `bookings`, `rooms` |
+| FR-11 | Đổi phòng | Lễ tân, Admin | `POST /bookings/{id}/change-room` | `bookings`, `rooms` |
+| FR-12 | Check-out, quyết toán | Lễ tân, Admin | `POST /bookings/{id}/check-out` | `bookings`, `invoices`, `payments` |
+| FR-13 | Danh mục dịch vụ | Admin | `GET, POST, PATCH, DELETE /services` | `hotel_services` |
+| FR-14 | Dịch vụ phát sinh | Khách hàng, Lễ tân | `POST /bookings/{id}/services`, `POST /bookings/{id}/service-requests`, `PATCH /bookings/{id}/services/{orderId}` | `extra_service_orders` |
+| FR-15 | Sổ thu tiền nhiều đợt | Khách hàng, Lễ tân | `POST /invoices/{id}/pay`, `POST /invoices/{id}/payment-requests`, `POST /invoices/payments/{id}/confirm` | `invoices`, `payments` |
+| FR-16 | Ca trực, đối soát tiền két | Lễ tân | `POST /shifts/open`, `GET /shifts/current`, `POST /shifts/close` | `work_shifts`, `payments` |
+| FR-17 | Dashboard điều hành | Admin, Lễ tân | `GET /analytics/dashboard` | `rooms`, `bookings`, `invoices` |
+| FR-18 | Doanh thu theo năm | Admin | `GET /analytics/revenue`, `/revenue/years`, `/revenue/export` | `invoices`, `payments` |
+| FR-19 | Nhắc lịch nhận phòng | Bộ lập lịch | Cron `0 1 * * *` (`CheckinReminderService`) | `bookings`, `users` |
+| FR-20 | Quản lý tài khoản | Admin | `GET, POST /users`, `PATCH, DELETE /users/{id}`, `GET /users/stream` | `users` |
+| FR-21 | Hồ sơ cá nhân | Tất cả | `GET /auth/me`, `PATCH /users/me`, `POST /auth/change-password`, `POST /upload/avatar` | `users` |
+| FR-22 | Thông báo | Tất cả | `GET /notifications`, `PATCH /notifications/{id}/read`, `PATCH /users/fcm-token` | Redis (danh sách thông báo), `users.fcmToken` |
+| FR-23 | Hiệu suất nhân viên, doanh thu ngày | Admin, Lễ tân | `GET /analytics/staff-performance`, `GET /analytics/revenue/daily` | `payments`, `work_shifts` |
+| FR-24 | Xem trước quyết toán | Lễ tân, Admin | `GET /bookings/{id}/checkout-preview` | `bookings`, `invoices` |
+| FR-25 | Lịch sử ca, chốt hộ ca | Admin, Lễ tân | `GET /shifts`, `GET /shifts/{id}`, `POST /shifts/{id}/close` | `work_shifts`, `payments` |
+| FR-26 | Từ chối thanh toán | Lễ tân, Admin | `POST /invoices/payments/{id}/reject` | `payments`, `invoices` |
+| FR-27 | Đồng bộ trạng thái phòng, tải ảnh | Lễ tân, Admin | `POST /rooms/sync-status`, `POST /upload/*` | `rooms` |
 
-    actorStaff --> UC_Auth
-    actorStaff --> UC_Matrix
-    actorStaff --> UC_ApproveBook
-    actorStaff --> UC_CheckIn
-    actorStaff --> UC_CheckOut
-    actorStaff --> UC_ChangeRoom
-    actorStaff --> UC_Shift
-    actorStaff --> UC_ConfirmPay
+## 3.4. Sơ đồ Use Case tổng thể
 
-    actorAdmin --> UC_Auth
-    actorAdmin --> UC_Dashboard
-    actorAdmin --> UC_RevReport
-    actorAdmin --> UC_Occupancy
-    actorAdmin --> UC_ManageRoom
-    actorAdmin --> UC_ManageStaff
-    actorAdmin --> UC_ApproveBook
-```
+![Sơ đồ Use Case tổng thể](docs/uml_diagrams/usecase_diagram.png)
 
----
+*Hình 3.1: Sơ đồ Use Case tổng thể của hệ thống*
 
-## 3.5. Thiết kế Sơ đồ tuần tự và thuật toán nghiệp vụ lõi
+Sơ đồ gồm 5 tác nhân. **Khách hàng** kế thừa các use case của **Khách vãng lai** (tìm phòng, xem chi tiết, đăng ký); **Quản trị viên** kế thừa toàn bộ use case của **Lễ tân – Thu ngân** và có thêm các use case quản trị danh mục, tài khoản, báo cáo. **Bộ lập lịch (Cron)** là tác nhân hệ thống thực hiện nhắc lịch nhận phòng.
 
-### 3.5.1. Quy trình Đặt phòng trực tuyến và Duyệt đơn
+## 3.5. Thiết kế sơ đồ tuần tự, sơ đồ hoạt động và thuật toán nghiệp vụ lõi
 
-> ----------------------------------------------------------------------
-> 📸 **[VỊ TRÍ CHÈN HÌNH 3.2]**: *Sơ đồ tuần tự Quy trình Đặt phòng trực tuyến và Duyệt đơn*  
-> **Nội dung sơ đồ:** Tương tác giữa Khách hàng, Flutter App, NestJS Backend, PostgreSQL Database và Lễ tân khi gửi yêu cầu đặt phòng, kiểm tra trùng lịch và phê duyệt.  
-> *(Sinh viên chèn ảnh sơ đồ tuần tự đặt phòng vào vị trí này)*  
-> ----------------------------------------------------------------------
-*Hình 3.2: Sơ đồ tuần tự Quy trình Đặt phòng trực tuyến và Duyệt đơn*
+### 3.5.1. Quy trình đặt phòng, phê duyệt và check-in
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Guest as Khách hàng
-    participant App as Flutter Mobile App
-    participant BE as NestJS Backend
-    participant DB as PostgreSQL Database
-    actor Staff as Lễ tân / Admin
+![Sơ đồ tuần tự đặt phòng, phê duyệt và check-in](docs/uml_diagrams/sequence_diagram.png)
 
-    Guest->>App: Chọn ngày đến, ngày đi, loại phòng
-    App->>BE: POST /bookings (roomId, checkInDate, checkOutDate, guestCount)
-    BE->>DB: Kiểm tra lịch trùng phòng (overlap query)
-    alt Phòng đã bị đặt trong khoảng thời gian này
-        DB-->>BE: Tồn tại Booking trùng
-        BE-->>App: 409 Conflict (ERR_ROOM_OCCUPIED)
-        App-->>Guest: Thông báo phòng đã có người đặt
-    else Phòng còn trống
-        DB-->>BE: Phòng hợp lệ
-        BE->>DB: Tạo Booking (status: PENDING), Tạo Invoice tự động (status: UNPAID)
-        DB-->>BE: Booking & Invoice đã lưu
-        BE-->>App: 201 Created (Thông tin đơn đặt phòng)
-        App-->>Guest: Hiển thị Đơn đặt phòng thành công, chờ khách sạn duyệt
-    end
+*Hình 3.2: Sơ đồ tuần tự quy trình đặt phòng, phê duyệt và check-in*
 
-    Staff->>App: Mở màn hình "Đơn chờ duyệt"
-    App->>BE: GET /bookings/pending
-    BE->>DB: Query các đơn status = PENDING
-    DB-->>BE: Danh sách booking chờ
-    BE-->>App: Trả về danh sách
-    Staff->>App: Nhấn nút "Duyệt đơn" (hoặc từ chối)
-    App->>BE: PUT /bookings/{id}/approve
-    BE->>DB: Cập nhật booking.status = CONFIRMED, room.status = RESERVED
-    DB-->>BE: Cập nhật hoàn tất
-    BE-->>App: 200 OK (Đã phê duyệt thành công)
-    BE--)Guest: Gửi Push Notification FCM: Đơn phòng đã được xác nhận!
-```
+Sơ đồ mô tả ba giai đoạn đi qua tất cả các lớp của hệ thống:
 
-### 3.5.2. Quy trình Check-in, Đổi phòng (Change Room) và Check-out
+1. **Khách đặt phòng:** `CreateBookingModal` → `BookingRepository` → `DioClient` gửi `POST /api/v1/bookings`. `BookingsController` chuyển cho `BookingsService`; Service giữ khóa Redis trên phòng, kiểm tra trùng lịch, tạo đơn `PENDING`, nhả khóa và trả `201 Created`. Nếu không giữ được khóa hoặc trùng lịch, trả `409 Conflict`.
+2. **Lễ tân duyệt đơn:** `PATCH /bookings/{id}/approve` đi qua `JwtAuthGuard`, `RolesGuard`; trong một giao dịch đơn chuyển `CONFIRMED` và ghi tiền cọc; trạng thái phòng được đồng bộ và đẩy qua SSE tới sơ đồ phòng của mọi máy lễ tân.
+3. **Check-in:** `POST /bookings/{id}/check-in`; nếu đơn `CONFIRMED` thì trong một giao dịch đơn chuyển `CHECKED_IN` và phòng chuyển `OCCUPIED`; ngược lại trả `400 Bad Request`.
 
-> ----------------------------------------------------------------------
-> 📸 **[VỊ TRÍ CHÈN HÌNH 3.3]**: *Sơ đồ tuần tự Quy trình Check-in, Đổi phòng và Check-out*  
-> **Nội dung sơ đồ:** Thể hiện tương tác giữa Lễ tân, Flutter App và Backend qua các khâu nhận phòng, hoán đổi phòng khi xảy ra sự cố kỹ thuật và trả phòng kiểm kê minibar.  
-> *(Sinh viên chèn ảnh sơ đồ tuần tự lễ tân vào vị trí này)*  
-> ----------------------------------------------------------------------
-*Hình 3.3: Sơ đồ tuần tự Quy trình Check-in, Đổi phòng và Check-out*
+### 3.5.2. Quy trình check-in, đổi phòng và check-out
 
-### 3.5.3. Quy trình Quản lý ca trực (WorkShift) và đối soát tài chính bàn giao ca
+![Sơ đồ hoạt động check-in, đổi phòng, check-out](docs/bai_tap_lon_ktpm/hinh/userflow_2_luu_tru.png)
 
-> ----------------------------------------------------------------------
-> 📸 **[VỊ TRÍ CHÈN HÌNH 3.4]**: *Sơ đồ trạng thái Quy trình Mở ca, Ghi nhận thu tiền và Chốt ca lễ tân*  
-> **Nội dung sơ đồ:** Vòng đời ca trực từ lúc `OPEN` (khai báo `initialCash`), ghi nhận các giao dịch thu trong ca, đến `CLOSING` (kiểm đếm két, tính `expectedCash`, bắt buộc giải trình nếu chênh lệch) và `CLOSED`.  
-> *(Sinh viên chèn ảnh sơ đồ trạng thái ca trực vào vị trí này)*  
-> ----------------------------------------------------------------------
-*Hình 3.4: Sơ đồ trạng thái Quy trình Mở ca, Ghi nhận thu tiền và Chốt ca lễ tân*
+*Hình 3.3: Sơ đồ hoạt động quy trình check-in, đổi phòng và check-out của lễ tân*
 
-```mermaid
-stateDiagram-v2
-    [*] --> OPEN : Lễ tân mở ca (Khai báo tiền mặt ban đầu - initialCash)
-    state OPEN {
-        [*] --> GiaoDichTrongCa
-        GiaoDichTrongCa --> ThuTienMat : Thu tiền phòng / cọc tại quầy
-        GiaoDichTrongCa --> XacNhanChuyenKhoan : Duyệt giao dịch QR ngân hàng
-        GiaoDichTrongCa --> QuetThe : Thu qua máy POS
-    }
-    OPEN --> CLOSING : Lễ tân nhấn "Chốt ca"
-    state CLOSING {
-        KiemDemTienMat : Kiểm đếm thực tế tiền trong két (actualCash)
-        HeThongTinhToan : Hệ thống tính: expectedCash = initialCash + tongTienMatThu
-        SoSanh : Tính chênh lệch: cashDifference = actualCash - expectedCash
-    }
-    CLOSING --> CLOSED : Xác nhận chốt ca (Kèm lý do giải trình nếu chênh lệch != 0)
-    CLOSED --> [*] : Bàn giao cho ca trực tiếp theo
-```
+*Bảng 3.2: Ánh xạ các bước của quy trình lưu trú sang API*
 
-### 3.5.4. Thuật toán kiểm tra lịch phòng trống & Chống tranh chấp đặt trùng phòng
-Để ngăn chặn hoàn toàn hiện tượng Double-booking, điều kiện xung đột giữa khoảng thời gian đặt mới $[	ext{checkInDate}, 	ext{checkOutDate}]$ và lịch đặt cũ $[C_{in}, C_{out}]$ được mô hình hóa bằng thuật toán giao thoa khoảng thời gian (Interval Overlapping Theorem):
-$$	ext{Xung đột (Conflict)} iff (	ext{checkInDate} < C_{out}) land (	ext{checkOutDate} > C_{in})$$
+| Bước | API | Ràng buộc phía máy chủ |
+| :--- | :--- | :--- |
+| Mở sơ đồ phòng / tìm booking | `GET /rooms` + SSE `/rooms/stream`; `GET /bookings?search=` | Trạng thái phòng đẩy realtime |
+| Không thấy booking → tạo walk-in | `POST /bookings` (lễ tân tạo đơn `CONFIRMED`) | Vẫn kiểm tra trùng lịch |
+| Check-in | `POST /bookings/{id}/check-in` | Chỉ đơn `CONFIRMED`; phòng → `OCCUPIED` |
+| Đổi phòng | `POST /bookings/{id}/change-room` | Phòng mới hợp lệ; phòng cũ → `CLEANING` |
+| Kiểm tra dịch vụ / bill | `POST /bookings/{id}/services`, `GET /bookings/{id}/checkout-preview` | Cùng công thức với check-out |
+| Thanh toán và check-out | `POST /bookings/{id}/check-out` | Phải thu đủ; phòng → `CLEANING` |
 
-Trong câu truy vấn Prisma ORM:
+### 3.5.3. Quy trình quản lý ca trực và đối soát tiền két
+
+![Sơ đồ trạng thái ca trực](docs/bai_tap_lon_ktpm/hinh/userflow_3_ca_truc.png)
+
+*Hình 3.4: Sơ đồ trạng thái quy trình mở ca, thu tiền trong ca và chốt ca*
+
+Sơ đồ chia vòng đời ca trực thành bốn giai đoạn OPEN → giao dịch thu tiền → CLOSING → CLOSED. Ở máy chủ, ca trực lưu hai trạng thái bền vững `OPEN` và `CLOSED`: giai đoạn thu tiền tương ứng các dòng `payments` được gắn `shiftId` của ca đang mở; giai đoạn CLOSING là bước đối chiếu trên giao diện (`GET /shifts/current` trả về `expectedCash`) trước khi gọi `POST /shifts/close`.
+
+### 3.5.4. Thuật toán chống đặt trùng phòng
+
+Hai khoảng lưu trú `[checkIn, checkOut)` của đơn mới và `[C_in, C_out)` của một đơn đã có trên cùng phòng **xung đột** khi và chỉ khi:
+
+> checkIn < C_out **và** checkOut > C_in
+
+Điều kiện này chỉ áp dụng cho các đơn còn hiệu lực (`PENDING`, `CONFIRMED`, `CHECKED_IN`). Vì giờ nhận phòng được chuẩn hóa 14:00 và giờ trả 12:00, khách trả phòng sáng nay và khách mới nhận phòng chiều nay không bị coi là trùng.
+
+Kiểm tra giao lịch đơn thuần vẫn có thể sai khi hai yêu cầu đến cùng lúc: cả hai cùng đọc thấy “chưa có đơn” rồi cùng tạo đơn. Hệ thống vì vậy bọc toàn bộ thao tác trong một **khóa phân tán theo phòng**:
+
 ```typescript
-const conflict = await this.prisma.booking.findFirst({
-  where: {
-    roomId: dto.roomId,
-    status: { in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN] },
-    AND: [
-      { checkInDate: { lt: new Date(dto.checkOutDate) } },
-      { checkOutDate: { gt: new Date(dto.checkInDate) } },
-    ],
-  },
-});
-if (conflict) {
-  throw new ConflictException('Phòng đã có khách đặt trong khoảng thời gian được chọn!');
+const lockKey = `lock:booking:room:${dto.roomId}`;
+const lockToken = await this.redis.acquireLock(lockKey, 6000); // SET NX PX 6000
+if (!lockToken) {
+  throw new ConflictException('Phòng này đang được khách khác giữ chỗ để thanh toán, vui lòng thử lại sau giây lát!');
+}
+try {
+  const conflictBooking = await this.prisma.booking.findFirst({
+    where: {
+      roomId: dto.roomId,
+      status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN] },
+      checkOutDate: { gt: now },
+      AND: [{ checkInDate: { lt: checkOut } }, { checkOutDate: { gt: checkIn } }],
+    },
+  });
+  if (conflictBooking) {
+    throw new ConflictException('Phòng này đã có khách đặt hoặc đang ở trong khoảng thời gian được chọn');
+  }
+  // ... tính tiền, tạo đơn
+} finally {
+  await this.redis.releaseLock(lockKey, lockToken); // Lua script: chỉ xóa khóa nếu đúng token
 }
 ```
 
----
+Hiệu quả của cơ chế này được kiểm chứng bằng kiểm thử đặt phòng đồng thời ở mục 5.3.
 
-## 3.6. Thiết kế Cơ sở dữ liệu quan hệ (Database Design & ERD)
+### 3.5.5. Máy trạng thái của đơn đặt phòng và phòng
 
-### 3.6.1. Sơ đồ quan hệ thực thể (ERD)
+*Bảng 3.3: Chuyển trạng thái đơn đặt phòng*
 
-> ----------------------------------------------------------------------
-> 📸 **[VỊ TRÍ CHÈN HÌNH 3.5]**: *Sơ đồ quan hệ thực thể (ERD) hoàn chỉnh 8 bảng chuẩn 3NF*  
-> **Nội dung sơ đồ:** Thể hiện 8 thực thể chính: `users`, `room_types`, `rooms`, `bookings`, `invoices`, `payments`, `work_shifts`, `extra_service_orders`.  
-> *(Sinh viên chèn ảnh sơ đồ ERD cơ sở dữ liệu vào vị trí này)*  
-> ----------------------------------------------------------------------
-*Hình 3.5: Sơ đồ quan hệ thực thể (ERD) hoàn chỉnh 8 bảng chuẩn 3NF*
+| Từ | Sang | Sự kiện / API | Tác động lên phòng |
+| :--- | :--- | :--- | :--- |
+| — | PENDING | Khách `POST /bookings` | Không chiếm phòng |
+| — | CONFIRMED | Lễ tân đặt hộ `POST /bookings` | RESERVED nếu nhận phòng trong hôm nay |
+| PENDING | CONFIRMED | `PATCH /bookings/{id}/approve` hoặc `/confirm` | RESERVED nếu nhận phòng trong hôm nay |
+| PENDING, CONFIRMED | CANCELLED | `PATCH /bookings/{id}/reject` hoặc `/cancel` | Suy diễn lại theo các đơn còn lại |
+| CONFIRMED | CHECKED_IN | `POST /bookings/{id}/check-in` | OCCUPIED |
+| CHECKED_IN | CHECKED_OUT | `POST /bookings/{id}/check-out` | CLEANING |
 
-```mermaid
-erDiagram
-    User ||--o{ Booking : "creates"
-    User ||--o{ WorkShift : "operates"
-    User ||--o{ Payment : "creates / confirms"
-    User ||--o{ Invoice : "issues"
+*Bảng 3.4: Chuyển trạng thái phòng*
 
-    RoomType ||--o{ Room : "categorizes"
-    Room ||--o{ Booking : "is_booked"
+| Từ | Sang | Sự kiện / API |
+| :--- | :--- | :--- |
+| PENDING_APPROVAL | AVAILABLE / REJECTED | `PATCH /rooms/{id}/approve` hoặc `/reject` |
+| AVAILABLE | RESERVED | Có đơn CONFIRMED nhận phòng trong hôm nay |
+| AVAILABLE, RESERVED | OCCUPIED | Check-in |
+| OCCUPIED | CLEANING | Check-out; phòng cũ khi đổi phòng |
+| CLEANING | AVAILABLE | `PATCH /rooms/{id}/status` khi buồng phòng dọn xong |
+| Bất kỳ (không có khách đang ở) | MAINTENANCE | `PATCH /rooms/{id}/status` |
 
-    Booking ||--|| Invoice : "generates"
-    Booking ||--o{ ExtraServiceOrder : "includes"
-    HotelService ||--o{ ExtraServiceOrder : "ordered_in"
+## 3.6. Thiết kế cơ sở dữ liệu
 
-    Invoice ||--o{ Payment : "has_payments"
-    WorkShift ||--o{ Payment : "tracks_cashflow"
+### 3.6.1. Biểu đồ lớp và quan hệ thực thể
 
-    User {
-        string id PK
-        string email UK
-        string password
-        string fullName
-        string phone
-        string role "ADMIN | RECEPTIONIST | CUSTOMER"
-        string avatar
-        string fcmToken
-    }
+![Biểu đồ lớp mô hình miền](docs/uml_diagrams/class_diagram.png)
 
-    RoomType {
-        string id PK
-        string name
-        string description
-        float basePrice
-        int maxOccupancy
-        string[] amenities
-        string[] images
-    }
+*Hình 3.5: Biểu đồ lớp mô hình miền (tương ứng sơ đồ quan hệ thực thể)*
 
-    Room {
-        string id PK
-        string roomNumber UK
-        int floor
-        string status "AVAILABLE | OCCUPIED | RESERVED | CLEANING | MAINTENANCE"
-        string roomTypeId FK
-    }
+Cơ sở dữ liệu gồm **10 bảng** sinh từ `prisma/schema.prisma`: `users`, `room_types`, `rooms`, `bookings`, `invoices`, `payments`, `extra_service_orders`, `hotel_services`, `work_shifts`, `password_resets`. Khóa chính dạng UUID; các cột dùng để lọc (trạng thái, ngày, khóa ngoại) đều có chỉ mục. Thông báo trong ứng dụng không lưu bảng riêng mà lưu trong Redis (hết hạn sau 7 ngày) và được tổng hợp từ đơn đặt phòng, hóa đơn.
 
-    Booking {
-        string id PK
-        string bookingCode UK
-        string customerId FK
-        string roomId FK
-        datetime checkInDate
-        datetime checkOutDate
-        datetime actualCheckIn
-        datetime actualCheckOut
-        int guestCount
-        float totalAmount
-        float depositAmount
-        string status "PENDING | CONFIRMED | CHECKED_IN | CHECKED_OUT | CANCELLED"
-    }
+### 3.6.2. Liên kết khóa chính – khóa ngoại
 
-    Invoice {
-        string id PK
-        string invoiceCode UK
-        string bookingId FK,UK
-        float roomAmount
-        float servicesAmount
-        float discount
-        float finalAmount
-        float paidAmount
-        string paymentStatus "UNPAID | PARTIAL | PAID | REFUNDED"
-    }
+*Bảng 3.5: Liên kết khóa chính – khóa ngoại và ràng buộc toàn vẹn*
 
-    Payment {
-        string id PK
-        string invoiceId FK
-        float amount
-        string method "CASH | CREDIT_CARD | BANK_TRANSFER"
-        string type "PAYMENT | DEPOSIT | REFUND"
-        string status "PENDING | CONFIRMED | REJECTED"
-        string shiftId FK
-        string confirmedById FK
-    }
+| STT | Bảng con | Khóa ngoại | Bảng cha | Quan hệ | Khi xóa bản ghi cha | Ý nghĩa |
+| :---: | :--- | :--- | :--- | :---: | :--- | :--- |
+| 1 | `rooms` | `roomTypeId` | `room_types` | N – 1 | RESTRICT | Mỗi phòng thuộc một loại phòng |
+| 2 | `bookings` | `customerId` | `users` | N – 1 | RESTRICT | Khách hàng sở hữu đơn |
+| 3 | `bookings` | `roomId` | `rooms` | N – 1 | RESTRICT | Phòng được xếp cho đơn |
+| 4 | `bookings` | `confirmedById` | `users` | N – 0..1 | SET NULL | Nhân viên duyệt đơn |
+| 5 | `bookings` | `cancelledById` | `users` | N – 0..1 | SET NULL | Người hủy / từ chối đơn |
+| 6 | `invoices` | `bookingId` (duy nhất) | `bookings` | 1 – 1 | CASCADE | Mỗi đơn có tối đa một hóa đơn |
+| 7 | `invoices` | `issuedById` | `users` | N – 0..1 | SET NULL | Thu ngân lập hóa đơn |
+| 8 | `payments` | `invoiceId` | `invoices` | N – 1 | CASCADE | Các dòng thu / cọc / hoàn của hóa đơn |
+| 9 | `payments` | `createdById` | `users` | N – 0..1 | SET NULL | Người tạo dòng thu |
+| 10 | `payments` | `confirmedById` | `users` | N – 0..1 | SET NULL | Thu ngân xác nhận đã nhận tiền |
+| 11 | `payments` | `shiftId` | `work_shifts` | N – 0..1 | SET NULL | Ca trực ghi nhận khoản thu |
+| 12 | `work_shifts` | `staffId` | `users` | N – 1 | RESTRICT | Nhân viên trực ca |
+| 13 | `work_shifts` | `handoverStaffId` | `users` | N – 0..1 | SET NULL | Nhân viên nhận bàn giao |
+| 14 | `extra_service_orders` | `bookingId` | `bookings` | N – 1 | CASCADE | Dịch vụ phát sinh của đơn |
+| 15 | `extra_service_orders` | `requestedById` | `users` | N – 0..1 | SET NULL | Người yêu cầu dịch vụ |
 
-    WorkShift {
-        string id PK
-        string shiftCode UK
-        string staffId FK
-        string shiftType "MORNING | AFTERNOON | NIGHT"
-        string status "OPEN | CLOSED"
-        float initialCash
-        float actualCash
-        float expectedCash
-        float cashDifference
-        string differenceReason
-    }
+### 3.6.3. Từ điển dữ liệu
 
-    ExtraServiceOrder {
-        string id PK
-        string bookingId FK
-        string serviceName
-        float unitPrice
-        int quantity
-        float totalPrice
-        string status "REQUESTED | CONFIRMED | REJECTED"
-    }
-```
+*Bảng 3.6: Bảng `users`*
 
-### 3.6.2. Bảng tổng hợp liên kết Khóa chính (PK) - Khóa ngoại (FK) giữa các bảng
+| Trường | Kiểu | Khóa / Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | PK | Mã người dùng |
+| `email` | String | Unique | Email đăng nhập |
+| `password` | String | | Mật khẩu đã băm bcrypt |
+| `fullName`, `phone`, `avatar` | String | `phone`, `avatar` có thể null | Thông tin cá nhân, URL ảnh đại diện |
+| `role` | Enum `Role` | Index, mặc định `CUSTOMER` | `ADMIN`, `RECEPTIONIST`, `CUSTOMER` |
+| `isActive` | Boolean | Index, mặc định `true` | `false` khi tài khoản bị vô hiệu hóa |
+| `activeSessionId`, `activeDevice` | String | Có thể null | Phiên đăng nhập đang hiệu lực (một thiết bị cho khách hàng) |
+| `fcmToken`, `lastLoginAt` | String, DateTime | Có thể null | Token nhận thông báo đẩy, lần đăng nhập gần nhất |
+| `createdAt`, `updatedAt` | DateTime | | Thời điểm tạo / cập nhật |
 
-### Bảng 3.2: Tổng hợp liên kết Khóa chính (PK) - Khóa ngoại (FK) và Ràng buộc toàn vẹn
-| STT | Bảng con (Child Table) | Khóa ngoại (FK) | Bảng cha (Parent Table) | Khóa chính (PK) | Bản chất quan hệ | Ràng buộc On Delete | Ý nghĩa nghiệp vụ liên kết |
-| :---: | :--- | :--- | :--- | :--- | :---: | :--- | :--- |
-| **1** | `rooms` | `roomTypeId` | `room_types` | `id` | 1 - N | `RESTRICT` | Mỗi phòng vật lý bắt buộc thuộc duy nhất một hạng phòng xác định |
-| **2** | `bookings` | `customerId` | `users` | `id` | 1 - N | `RESTRICT` | Khách hàng sở hữu và tạo đơn đặt phòng lưu trú |
-| **3** | `bookings` | `roomId` | `rooms` | `id` | 1 - N | `RESTRICT` | Đơn đặt phòng được gắn phân bổ cho một phòng vật lý cụ thể |
-| **4** | `bookings` | `confirmedById` | `users` | `id` | 1 - N | `SET NULL` | Nhân viên lễ tân hoặc quản trị viên phê duyệt đơn phòng |
-| **5** | `bookings` | `cancelledById` | `users` | `id` | 1 - N | `SET NULL` | Nhân viên thực hiện thao tác từ chối hoặc hủy đơn phòng |
-| **6** | `invoices` | `bookingId` | `bookings` | `id` | 1 - 1 | `CASCADE` | Mỗi đơn đặt phòng có duy nhất một hóa đơn tài chính đối ứng |
-| **7** | `invoices` | `issuedById` | `users` | `id` | 1 - N | `SET NULL` | Thu ngân chịu trách nhiệm lập và phát hành hóa đơn |
-| **8** | `payments` | `invoiceId` | `invoices` | `id` | 1 - N | `CASCADE` | Hóa đơn gồm nhiều dòng thu tiền chi tiết (cọc, trả nợ, hoàn trả) |
-| **9** | `payments` | `createdById` | `users` | `id` | 1 - N | `SET NULL` | Người tạo giao dịch thu (khách chuyển khoản hoặc thu ngân quầy) |
-| **10**| `payments` | `confirmedById` | `users` | `id` | 1 - N | `SET NULL` | Thu ngân kiểm tra sao kê ngân hàng và bấm duyệt nhận tiền |
-| **11**| `payments` | `shiftId` | `work_shifts` | `id` | 1 - N | `SET NULL` | Khoản thu tiền được gắn liền với ca trực của nhân viên thu ngân |
-| **12**| `work_shifts` | `staffId` | `users` | `id` | 1 - N | `RESTRICT` | Nhân viên lễ tân chịu trách nhiệm chính về ca trực |
-| **13**| `work_shifts` | `handoverStaffId`| `users` | `id` | 1 - N | `SET NULL` | Nhân viên tiếp nhận bàn giao ca trực tiếp theo |
-| **14**| `extra_service_orders`| `bookingId` | `bookings` | `id` | 1 - N | `CASCADE` | Các order dịch vụ phát sinh (minibar, ẩm thực) gắn với đơn phòng |
-| **15**| `extra_service_orders`| `requestedById` | `users` | `id` | 1 - N | `SET NULL` | Người gửi yêu cầu dịch vụ (khách hàng hoặc lễ tân) |
+*Bảng 3.7: Bảng `room_types`*
 
----
+| Trường | Kiểu | Khóa / Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | PK | Mã loại phòng |
+| `name`, `code` | String | Unique | Tên và mã loại phòng (ví dụ `STD-S`) |
+| `description` | String | Có thể null | Mô tả |
+| `basePrice` | Float | | Giá cơ bản một đêm (VND) |
+| `capacityAdults`, `capacityChildren` | Int | Mặc định 2 và 1 | Số người lớn / trẻ em tối đa |
+| `sizeSqM` | Float | Có thể null | Diện tích (m²) |
+| `amenities`, `images` | String[] | | Danh sách tiện nghi, URL ảnh |
 
-### 3.6.3. Từ điển dữ liệu chi tiết 8 bảng trong hệ thống (Data Dictionary)
+*Bảng 3.8: Bảng `rooms`*
 
-#### 1. Bảng `users` (Người dùng và Nhân sự)
-### Bảng 3.3: Từ điển dữ liệu Bảng `users`
-| Tên trường (Field) | Kiểu dữ liệu | Khóa | Null | Mặc định | Mô tả ý nghĩa nghiệp vụ |
-| :--- | :--- | :---: | :---: | :--- | :--- |
-| `id` | String (UUID) | **PK** | Không | `uuid()` | Mã định danh duy nhất của người dùng |
-| `email` | String (Varchar) | **Unique** | Không | | Email đăng nhập hệ thống duy nhất |
-| `password` | String | | Không | | Mật khẩu đã được băm an toàn bằng Bcrypt |
-| `fullName` | String | | Không | | Họ và tên đầy đủ của người dùng / nhân viên |
-| `phone` | String | | Có | `null` | Số điện thoại liên hệ |
-| `role` | Enum `Role` | | Không | `CUSTOMER` | Vai trò: `ADMIN`, `RECEPTIONIST`, `CUSTOMER` |
-| `avatar` | String | | Có | `null` | Đường dẫn URL ảnh đại diện lưu trên Cloudinary |
-| `fcmToken` | String | | Có | `null` | Mã Token thiết bị di động gửi Push Notification FCM |
-| `createdAt` | DateTime | | Không | `now()` | Thời điểm khởi tạo tài khoản |
-| `updatedAt` | DateTime | | Không | `updatedAt` | Thời điểm cập nhật thông tin gần nhất |
+| Trường | Kiểu | Khóa / Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | PK | Mã phòng |
+| `roomNumber` | String | Unique | Số phòng (101, 102…) |
+| `floor` | Int | Index | Tầng |
+| `roomTypeId` | UUID | FK, Index | Loại phòng |
+| `status` | Enum `RoomStatus` | Index, mặc định `AVAILABLE` | `AVAILABLE`, `OCCUPIED`, `RESERVED`, `CLEANING`, `MAINTENANCE`, `PENDING_APPROVAL`, `REJECTED` |
+| `notes` | String | Có thể null | Ghi chú nội bộ |
 
-#### 2. Bảng `room_types` (Hạng phòng và Bảng giá)
-### Bảng 3.4: Từ điển dữ liệu Bảng `room_types`
-| Tên trường (Field) | Kiểu dữ liệu | Khóa | Null | Mặc định | Mô tả ý nghĩa nghiệp vụ |
-| :--- | :--- | :---: | :---: | :--- | :--- |
-| `id` | String (UUID) | **PK** | Không | `uuid()` | Mã định danh duy nhất của hạng phòng |
-| `name` | String | | Không | | Tên hạng phòng (Standard Queen, Deluxe Ocean, Suite...) |
-| `description` | Text | | Có | `null` | Mô tả chi tiết phong cách, view ngắm cảnh |
-| `basePrice` | Float | | Không | | Đơn giá niêm yết cơ bản cho 1 đêm lưu trú (VNĐ) |
-| `maxOccupancy` | Int | | Không | `2` | Số lượng khách lưu trú tối đa cho phép |
-| `amenities` | String[] | | Không | `[]` | Mảng danh sách tiện ích (Wifi, Minibar, Bồn tắm nằm...) |
-| `images` | String[] | | Không | `[]` | Mảng danh sách đường dẫn ảnh thực tế của phòng |
-| `createdAt` | DateTime | | Không | `now()` | Thời điểm khởi tạo hạng phòng |
-| `updatedAt` | DateTime | | Không | `updatedAt` | Thời điểm cập nhật giá hoặc tiện ích |
+*Bảng 3.9: Bảng `bookings`*
 
-#### 3. Bảng `rooms` (Danh mục phòng vật lý)
-### Bảng 3.5: Từ điển dữ liệu Bảng `rooms`
-| Tên trường (Field) | Kiểu dữ liệu | Khóa | Null | Mặc định | Mô tả ý nghĩa nghiệp vụ |
-| :--- | :--- | :---: | :---: | :--- | :--- |
-| `id` | String (UUID) | **PK** | Không | `uuid()` | Mã định danh duy nhất của phòng vật lý |
-| `roomNumber` | String | **Unique** | Không | | Số hiệu phòng thực tế (ví dụ: 101, 102, 201...) |
-| `floor` | Int | Index | Không | | Số tầng vị trí của phòng trong tòa nhà |
-| `status` | Enum `RoomStatus` | Index | Không | `AVAILABLE` | Trạng thái: `AVAILABLE`, `OCCUPIED`, `CLEANING`... |
-| `roomTypeId` | String (UUID) | **FK**, Index | Không | | Tham chiếu khóa chính `room_types.id` |
-| `createdAt` | DateTime | | Không | `now()` | Thời điểm đưa phòng vào vận hành |
-| `updatedAt` | DateTime | | Không | `updatedAt` | Thời điểm cập nhật trạng thái dọn dẹp |
+| Trường | Kiểu | Khóa / Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | PK | Mã đơn |
+| `bookingCode` | String | Unique | Mã hiển thị, ví dụ `BK-07341472` |
+| `customerId`, `roomId` | UUID | FK, Index | Khách hàng và phòng |
+| `checkInDate`, `checkOutDate` | DateTime | Index | Ngày nhận (14:00) và trả (12:00) dự kiến |
+| `actualCheckIn`, `actualCheckOut` | DateTime | Có thể null | Thời điểm nhận / trả phòng thực tế |
+| `guestCount` | Int | Mặc định 1 | Số khách |
+| `totalAmount`, `depositAmount` | Float | | Tiền phòng dự kiến, tiền cọc |
+| `status` | Enum `BookingStatus` | Index, mặc định `PENDING` | `PENDING`, `CONFIRMED`, `CHECKED_IN`, `CHECKED_OUT`, `CANCELLED` |
+| `specialRequests` | String | Có thể null | Yêu cầu đặc biệt, ghi chú trả phòng sớm |
+| `confirmedAt`, `confirmedById`, `confirmationNote` | | Có thể null | Dấu vết duyệt đơn |
+| `cancellationReason`, `cancelledAt`, `cancelledById` | | Có thể null | Dấu vết hủy / từ chối đơn |
 
-#### 4. Bảng `bookings` (Đơn đặt phòng lưu trú)
-### Bảng 3.6: Từ điển dữ liệu Bảng `bookings`
-| Tên trường (Field) | Kiểu dữ liệu | Khóa | Null | Mặc định | Mô tả ý nghĩa nghiệp vụ |
-| :--- | :--- | :---: | :---: | :--- | :--- |
-| `id` | String (UUID) | **PK** | Không | `uuid()` | Mã định danh duy nhất của đơn phòng |
-| `bookingCode` | String | **Unique** | Không | | Mã hiển thị thân thiện (ví dụ: `BK-2026-088`) |
-| `customerId` | String (UUID) | **FK**, Index | Không | | Tham chiếu tới `users.id` khách hàng đặt phòng |
-| `roomId` | String (UUID) | **FK**, Index | Không | | Tham chiếu tới `rooms.id` phòng được phân bổ |
-| `checkInDate` | DateTime | Index | Không | | Thời điểm dự kiến nhận phòng (14:00) |
-| `checkOutDate` | DateTime | Index | Không | | Thời điểm dự kiến trả phòng (12:00) |
-| `actualCheckIn` | DateTime | | Có | `null` | Thời điểm lễ tân làm thủ tục Check-in thực tế |
-| `actualCheckOut`| DateTime | | Có | `null` | Thời điểm lễ tân làm thủ tục Check-out thực tế |
-| `guestCount` | Int | | Không | `1` | Số lượng khách thực tế ở trong phòng |
-| `totalAmount` | Float | | Không | | Tổng tiền phòng dự kiến theo số đêm |
-| `depositAmount` | Float | | Không | `0` | Số tiền khách đã thanh toán đặt cọc giữ chỗ |
-| `status` | Enum `BookingStatus` | Index | Không | `PENDING` | Trạng thái: `PENDING`, `CONFIRMED`, `CHECKED_IN`... |
-| `specialRequests`| Text | | Có | `null` | Yêu cầu đặc biệt của khách (tầng cao, setup hoa) |
-| `confirmedAt` | DateTime | | Có | `null` | Thời điểm nhân viên bấm duyệt đơn phòng |
-| `confirmedById` | String (UUID) | **FK** | Có | `null` | Tham chiếu `users.id` nhân viên duyệt đơn |
-| `cancellationReason`| Text | | Có | `null` | Lý do từ chối hoặc hủy đơn đặt phòng |
+Bảng `bookings` có thêm chỉ mục kết hợp `(roomId, status)` và `(customerId, status)` phục vụ kiểm tra trùng lịch và màn hình “Đơn của tôi”.
 
-#### 5. Bảng `invoices` (Hóa đơn tài chính)
-### Bảng 3.7: Từ điển dữ liệu Bảng `invoices`
-| Tên trường (Field) | Kiểu dữ liệu | Khóa | Null | Mặc định | Mô tả ý nghĩa nghiệp vụ |
-| :--- | :--- | :---: | :---: | :--- | :--- |
-| `id` | String (UUID) | **PK** | Không | `uuid()` | Mã định danh duy nhất của hóa đơn |
-| `invoiceCode` | String | **Unique** | Không | | Mã hóa đơn kế toán (ví dụ: `INV-2026-001`) |
-| `bookingId` | String (UUID) | **FK**, Unique| Không | | Tham chiếu 1-1 tới `bookings.id` |
-| `roomAmount` | Float | | Không | | Tiền phòng lưu trú |
-| `servicesAmount`| Float | | Không | `0` | Tiền dịch vụ phát sinh (minibar, ẩm thực) |
-| `discount` | Float | | Không | `0` | Số tiền chiết khấu, khuyến mại |
-| `tax` | Float | | Không | `0` | Tiền thuế VAT |
-| `finalAmount` | Float | | Không | | Tổng tiền cuối cùng khách cần thanh toán |
-| `paidAmount` | Float | | Không | `0` | Tổng tiền khách đã thanh toán (CONFIRMED) |
-| `paymentStatus`| Enum `PaymentStatus` | Index | Không | `UNPAID` | Trạng thái: `UNPAID`, `PARTIAL`, `PAID`, `REFUNDED` |
-| `issuedById` | String (UUID) | **FK** | Có | `null` | Tham chiếu `users.id` thu ngân lập hóa đơn |
-| `paidAt` | DateTime | Index | Có | `null` | Thời điểm khách hoàn tất thanh toán dứt điểm |
+*Bảng 3.10: Bảng `invoices`*
 
-#### 6. Bảng `payments` (Sổ thu tiền chi tiết từng đợt)
-### Bảng 3.8: Từ điển dữ liệu Bảng `payments`
-| Tên trường (Field) | Kiểu dữ liệu | Khóa | Null | Mặc định | Mô tả ý nghĩa nghiệp vụ |
-| :--- | :--- | :---: | :---: | :--- | :--- |
-| `id` | String (UUID) | **PK** | Không | `uuid()` | Mã định danh duy nhất của giao dịch thu |
-| `invoiceId` | String (UUID) | **FK**, Index | Không | | Tham chiếu tới hóa đơn `invoices.id` |
-| `amount` | Float | | Không | | Số tiền của lần thanh toán cụ thể (VNĐ) |
-| `method` | Enum `PaymentMethod` | | Không | `CASH` | Hình thức: `CASH`, `CREDIT_CARD`, `BANK_TRANSFER` |
-| `type` | Enum `PaymentEntryType`| | Không | `PAYMENT` | Phân loại: `PAYMENT`, `DEPOSIT`, `REFUND` |
-| `status` | Enum `PaymentEntryStatus`| Index | Không | `CONFIRMED` | Trạng thái: `PENDING`, `CONFIRMED`, `REJECTED` |
-| `reference` | String | | Có | `null` | Mã giao dịch ngân hàng do khách nhập khi chuyển |
-| `note` | String | | Có | `null` | Ghi chú khoản thu (ví dụ: Thu cọc trước 30%) |
-| `createdById` | String (UUID) | **FK** | Có | `null` | Tham chiếu `users.id` người tạo giao dịch |
-| `confirmedById`| String (UUID) | **FK**, Index | Có | `null` | Tham chiếu `users.id` thu ngân duyệt nhận tiền |
-| `shiftId` | String (UUID) | **FK**, Index | Có | `null` | Tham chiếu tới ca trực `work_shifts.id` |
+| Trường | Kiểu | Khóa / Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | PK | Mã hóa đơn |
+| `invoiceCode` | String | Unique | Ví dụ `INV-07341472` |
+| `bookingId` | UUID | FK, Unique | Đơn đặt phòng (1 – 1) |
+| `roomAmount`, `servicesAmount`, `discount`, `tax` | Float | | Tiền phòng, dịch vụ, giảm giá, thuế |
+| `finalAmount` | Float | | Tổng phải trả |
+| `paidAmount` | Float | Mặc định 0 | Tính lại từ tổng các dòng `payments` đã xác nhận |
+| `paymentMethod` | Enum | Mặc định `CASH` | `CASH`, `CREDIT_CARD`, `BANK_TRANSFER` |
+| `paymentStatus` | Enum | Index | `UNPAID`, `PARTIAL`, `PAID`, `REFUNDED` |
+| `issuedById`, `notes`, `paidAt` | | Có thể null | Người lập, ghi chú, thời điểm thanh toán đủ |
 
-#### 7. Bảng `work_shifts` (Quản lý ca trực & Đối soát tiền két)
-### Bảng 3.9: Từ điển dữ liệu Bảng `work_shifts`
-| Tên trường (Field) | Kiểu dữ liệu | Khóa | Null | Mặc định | Mô tả ý nghĩa nghiệp vụ |
-| :--- | :--- | :---: | :---: | :--- | :--- |
-| `id` | String (UUID) | **PK** | Không | `uuid()` | Mã định danh duy nhất của ca trực |
-| `shiftCode` | String | **Unique** | Không | | Mã ca trực tự sinh (ví dụ: `SFT-20260921-0001`) |
-| `staffId` | String (UUID) | **FK**, Index | Không | | Tham chiếu `users.id` nhân viên trực ca |
-| `shiftType` | Enum `ShiftType` | | Không | `MORNING` | Loại ca: `MORNING` (Sáng), `AFTERNOON`, `NIGHT` |
-| `deskName` | String | | Có | `null` | Tên quầy giao dịch / máy tính trực lễ tân |
-| `status` | Enum `ShiftStatus` | Index | Không | `OPEN` | Trạng thái: `OPEN` (Đang mở), `CLOSED` (Đã chốt) |
-| `startTime` | DateTime | Index | Không | `now()` | Thời điểm nhân viên mở ca trực |
-| `endTime` | DateTime | | Có | `null` | Thời điểm nhân viên hoàn tất chốt ca |
-| `initialCash` | Float | | Không | `0` | Tiền mặt bàn giao trong két đầu ca |
-| `actualCash` | Float | | Có | `null` | Tiền mặt thực tế nhân viên kiểm đếm cuối ca |
-| `expectedCash`| Float | | Có | `null` | Tiền lý thuyết = Đầu ca + Tổng thu tiền mặt trong ca |
-| `cashDifference`| Float | | Có | `null` | Chênh lệch tiền két = `actualCash - expectedCash` |
-| `creditCardAmount`| Float | | Có | `0` | Doanh thu quẹt thẻ POS phát sinh trong ca |
-| `bankTransferAmount`| Float | | Có | `0` | Doanh thu chuyển khoản phát sinh trong ca |
-| `totalRevenue`| Float | | Có | `0` | Tổng doanh thu tất cả các nguồn trong ca |
-| `differenceReason`| Text | | Có | `null` | Bắt buộc giải trình nếu `cashDifference != 0` |
-| `handoverStaffId`| String (UUID) | **FK** | Có | `null` | Tham chiếu `users.id` nhân viên nhận bàn giao |
+*Bảng 3.11: Bảng `payments` (sổ thu tiền)*
 
-#### 8. Bảng `extra_service_orders` & `hotel_services` (Dịch vụ khách sạn)
-### Bảng 3.10: Từ điển dữ liệu Bảng `extra_service_orders` & `hotel_services`
-| Tên trường (Field) | Kiểu dữ liệu | Khóa | Null | Mặc định | Mô tả ý nghĩa nghiệp vụ |
-| :--- | :--- | :---: | :---: | :--- | :--- |
-| `id` | String (UUID) | **PK** | Không | `uuid()` | Mã định danh đơn gọi dịch vụ phòng |
-| `bookingId` | String (UUID) | **FK**, Index | Không | | Tham chiếu đơn phòng `bookings.id` |
-| `serviceName` | String | | Không | | Tên dịch vụ (Rượu vang, Giặt là nhanh, Spa...) |
-| `unitPrice` | Float | | Không | | Đơn giá dịch vụ tại thời điểm gọi |
-| `quantity` | Int | | Không | `1` | Số lượng sử dụng |
-| `totalPrice` | Float | | Không | | Thành tiền = `unitPrice * quantity` |
-| `status` | String | Index | Không | `CONFIRMED` | Trạng thái: `REQUESTED`, `CONFIRMED`, `REJECTED` |
-| `requestedById`| String (UUID) | **FK** | Có | `null` | Tham chiếu `users.id` người yêu cầu dịch vụ |
+| Trường | Kiểu | Khóa / Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | PK | Mã dòng thu |
+| `invoiceId` | UUID | FK, Index | Hóa đơn |
+| `amount` | Float | | Số tiền |
+| `method` | Enum `PaymentMethod` | | Phương thức |
+| `type` | Enum `PaymentEntryType` | | `PAYMENT`, `DEPOSIT`, `REFUND` |
+| `status` | Enum `PaymentEntryStatus` | Index, mặc định `CONFIRMED` | `PENDING` (khách báo đã chuyển), `CONFIRMED`, `REJECTED` |
+| `reference`, `note`, `rejectedReason` | String | Có thể null | Mã giao dịch ngân hàng, ghi chú, lý do từ chối |
+| `createdById`, `confirmedById`, `confirmedAt` | | Có thể null | Người tạo, người xác nhận, thời điểm xác nhận |
+| `shiftId` | UUID | FK, Index | Ca trực ghi nhận |
 
----
+*Bảng 3.12: Bảng `work_shifts`*
 
-## 3.7. Thiết kế chuẩn giao tiếp RESTful API Spec
+| Trường | Kiểu | Khóa / Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | PK | Mã ca |
+| `shiftCode` | String | Unique | `SFT-YYYYMMDD-XXXX` |
+| `staffId` | UUID | FK, Index | Nhân viên trực |
+| `shiftType` | Enum | Mặc định `MORNING` | `MORNING`, `AFTERNOON`, `NIGHT`, `CUSTOM` |
+| `deskName` | String | Có thể null | Quầy / máy trực |
+| `status` | Enum | Index | `OPEN`, `CLOSED` |
+| `startTime`, `endTime` | DateTime | | Giờ mở / chốt ca |
+| `initialCash`, `actualCash`, `expectedCash`, `cashDifference` | Float | | Tiền đầu ca, thực đếm, sổ sách, chênh lệch |
+| `creditCardAmount`, `bankTransferAmount`, `totalRevenue` | Float | | Doanh thu thẻ, chuyển khoản, tổng trong ca |
+| `openNote`, `closeNote`, `differenceReason` | String | Có thể null | Ghi chú và giải trình chênh lệch |
+| `handoverStaffId` | UUID | FK | Nhân viên nhận bàn giao |
 
-### Bảng 3.11: Đặc tả các API RESTful Endpoints cốt lõi của hệ thống Backend
-| Phương thức | Đường dẫn Endpoint | Quyền truy cập | Mô tả nghiệp vụ |
+*Bảng 3.13: Bảng `extra_service_orders`, `hotel_services` và `password_resets`*
+
+| Bảng | Trường chính | Mô tả |
+| :--- | :--- | :--- |
+| `extra_service_orders` | `id`, `bookingId` (FK), `serviceName`, `unitPrice`, `quantity`, `totalPrice`, `status` (`REQUESTED`, `CONFIRMED`, `REJECTED`), `requestedById`, `note` | Dịch vụ phát sinh của một đơn, lưu bản sao tên và đơn giá tại thời điểm gọi |
+| `hotel_services` | `id`, `code` (Unique), `name`, `category`, `description`, `unitPrice`, `unit`, `icon`, `isAvailable` | Danh mục dịch vụ khách sạn |
+| `password_resets` | `id`, `email` (Index), `otp`, `token` (Unique), `expiresAt`, `used` | Phiên khôi phục mật khẩu |
+
+## 3.7. Thiết kế giao tiếp RESTful API
+
+API dùng tiền tố `/api/v1`, tài nguyên là danh từ số nhiều (`/rooms`, `/bookings`, `/invoices`), các hành động chuyển trạng thái là tài nguyên con (`/bookings/{id}/check-in`). Mọi phản hồi có cùng cấu trúc `{ statusCode, success, message, data, timestamp }`; lỗi có thêm `error`, `errors` (danh sách lỗi validate) và `path`. Danh sách có phân trang trả `data` dạng `{ data: [...], meta: { total, page, limit, totalPages } }`. Toàn bộ 95 đường dẫn được tài liệu hóa bằng Swagger tại `/api/docs`; bảng dưới liệt kê các API cốt lõi.
+
+*Bảng 3.14: Các API RESTful cốt lõi*
+
+| Method | Endpoint | Quyền | Mô tả |
 | :---: | :--- | :--- | :--- |
-| `POST` | `/api/v1/auth/register` | Public | Đăng ký tài khoản khách hàng mới |
-| `POST` | `/api/v1/auth/login` | Public | Đăng nhập hệ thống, cấp phát token JWT |
-| `POST` | `/api/v1/auth/forgot-password`| Public | Gửi mã OTP khôi phục mật khẩu qua Email |
-| `POST` | `/api/v1/auth/reset-password` | Public | Xác thực OTP và đặt lại mật khẩu mới |
-| `GET` | `/api/v1/rooms` | Public / All | Lấy danh sách phòng theo tầng, loại, trạng thái |
-| `GET` | `/api/v1/rooms/matrix` | Staff / Admin | Lấy ma trận sơ đồ phòng phục vụ lễ tân |
-| `GET` | `/api/v1/rooms/available` | Customer / Staff| Tra cứu phòng trống theo khoảng ngày nhận - trả |
-| `POST` | `/api/v1/bookings` | Customer / Staff| Tạo đơn đặt phòng mới (kiểm tra chống trùng phòng) |
-| `GET` | `/api/v1/bookings/pending` | Staff / Admin | Lấy danh sách đơn đặt phòng trực tuyến chờ duyệt |
-| `PUT` | `/api/v1/bookings/{id}/approve`| Staff / Admin | Duyệt đơn phòng, chuyển trạng thái phòng sang RESERVED |
-| `PUT` | `/api/v1/bookings/{id}/reject` | Staff / Admin | Từ chối đơn đặt phòng kèm lý do giải thích |
-| `POST` | `/api/v1/bookings/{id}/check-in`| Staff / Admin | Làm thủ tục Check-in, chuyển phòng sang OCCUPIED |
-| `POST` | `/api/v1/bookings/{id}/check-out`| Staff / Admin| Làm thủ tục Check-out, chuyển phòng sang CLEANING |
-| `POST` | `/api/v1/bookings/{id}/change-room`| Staff / Admin| Hoán đổi sang phòng khác cho khách đang ở |
-| `GET` | `/api/v1/bookings/{id}/checkout-preview`| Staff / Admin| Xem trước bảng kê chi phí trả phòng (Read-only) |
-| `POST` | `/api/v1/invoices/{id}/pay` | Customer / Staff| Gửi yêu cầu thanh toán chuyển khoản hoặc thu tiền mặt |
-| `POST` | `/api/v1/invoices/payments/{id}/reject`| Staff / Admin| Từ chối giao dịch chuyển khoản giả mạo / chưa có tiền |
-| `POST` | `/api/v1/shifts/open` | Receptionist | Mở ca trực lễ tân, khai báo tiền mặt ban đầu |
-| `POST` | `/api/v1/shifts/close` | Receptionist | Chốt ca trực, kiểm đếm két và đối soát tiền mặt |
-| `GET` | `/api/v1/analytics/dashboard` | Admin | Lấy các thẻ chỉ số KPI vận hành hôm nay |
-| `GET` | `/api/v1/analytics/revenue` | Admin | Lấy dữ liệu biểu đồ doanh thu 12 tháng theo năm |
+| POST | `/api/v1/auth/register` | Public | Đăng ký tài khoản khách hàng |
+| POST | `/api/v1/auth/login` | Public | Đăng nhập, cấp access + refresh token |
+| POST | `/api/v1/auth/refresh-token` | Public | Cấp cặp token mới |
+| POST | `/api/v1/auth/forgot-password` | Public | Gửi OTP khôi phục mật khẩu |
+| POST | `/api/v1/auth/reset-password` | Public | Đặt lại mật khẩu bằng resetToken / OTP |
+| GET | `/api/v1/auth/me` | Đăng nhập | Thông tin tài khoản hiện tại |
+| GET | `/api/v1/rooms` | Public | Danh sách / sơ đồ phòng, lọc tầng, trạng thái, loại; phân trang |
+| GET | `/api/v1/rooms/stream` | Public (SSE) | Luồng sự kiện thay đổi trạng thái phòng |
+| GET | `/api/v1/rooms/available` | Public | Phòng trống theo khoảng ngày |
+| PATCH | `/api/v1/rooms/{id}/status` | Admin, Lễ tân | Cập nhật nhanh trạng thái phòng |
+| POST | `/api/v1/bookings` | Đăng nhập | Đặt phòng (chống trùng lịch) |
+| GET | `/api/v1/bookings` | Đăng nhập | Danh sách đơn: lọc trạng thái, ngày, tìm kiếm, phân trang |
+| PATCH | `/api/v1/bookings/{id}/approve` | Admin, Lễ tân | Duyệt đơn, ghi nhận tiền cọc |
+| PATCH | `/api/v1/bookings/{id}/reject` | Admin, Lễ tân | Từ chối đơn kèm lý do |
+| PATCH | `/api/v1/bookings/{id}/cancel` | Đăng nhập | Hủy đơn (khách chỉ hủy được đơn chờ duyệt) |
+| POST | `/api/v1/bookings/{id}/check-in` | Admin, Lễ tân | Nhận phòng |
+| POST | `/api/v1/bookings/{id}/change-room` | Admin, Lễ tân | Đổi phòng cho khách đang ở |
+| GET | `/api/v1/bookings/{id}/checkout-preview` | Admin, Lễ tân | Xem trước bảng quyết toán |
+| POST | `/api/v1/bookings/{id}/check-out` | Admin, Lễ tân | Trả phòng, chốt hóa đơn, thu / hoàn tiền |
+| POST | `/api/v1/invoices/{id}/pay` | Admin, Lễ tân | Thu tiền tại quầy |
+| POST | `/api/v1/invoices/{id}/payment-requests` | Đăng nhập | Khách gửi yêu cầu thanh toán chuyển khoản |
+| POST | `/api/v1/invoices/payments/{id}/confirm` | Admin, Lễ tân | Xác nhận đã nhận tiền |
+| POST | `/api/v1/invoices/payments/{id}/reject` | Admin, Lễ tân | Từ chối yêu cầu thanh toán |
+| POST | `/api/v1/shifts/open` | Admin, Lễ tân | Mở ca trực |
+| POST | `/api/v1/shifts/close` | Admin, Lễ tân | Chốt ca, đối soát tiền mặt |
+| GET | `/api/v1/analytics/dashboard` | Admin, Lễ tân | Chỉ số điều hành hôm nay |
+| GET | `/api/v1/analytics/revenue` | Admin | Doanh thu 12 tháng theo năm |
 
 ---
 
 \newpage
 
-# CHƯƠNG 4: HIỆN THỰC HÓA VÀ GIAO DIỆN HỆ THỐNG (IMPLEMENTATION & UI)
+# CHƯƠNG 4: HIỆN THỰC HÓA VÀ GIAO DIỆN HỆ THỐNG
 
-## 4.1. Hiện thực hóa Backend (NestJS Server)
+## 4.1. Hiện thực hóa Backend (NestJS)
 
-### 4.1.1. Cấu trúc mã nguồn Modular Monolith
-Toàn bộ mã nguồn máy chủ Backend tại thư mục `Hotel-Management/src` được tổ chức chuẩn kiến trúc hướng Module:
+### 4.1.1. Cấu trúc mã nguồn
+
+Mã nguồn máy chủ (`Hotel-Management`, khoảng 16.400 dòng TypeScript, 11 controller, 18 service, 45 lớp DTO) được tổ chức theo module:
+
 ```
-Hotel-Management/src/
-├── analytics/         # Module thống kê doanh thu, tỷ lệ lấp đầy phòng
-├── auth/              # Module xác thực JWT, đăng ký, đăng nhập, khôi phục OTP
-│   └── dto/           # Data Transfer Objects kiểm định dữ liệu xác thực
-├── bookings/          # Module đặt phòng, duyệt đơn, check-in, check-out, đổi phòng
-├── common/            # Bộ lọc ngoại lệ, Guards phân quyền, Decorators, Interceptors
-├── elasticsearch/     # Dịch vụ tìm kiếm phân tán toàn văn
-├── invoices/          # Module hóa đơn, thanh toán nhiều đợt, hoàn tiền
-├── mail/              # Dịch vụ gửi email thông báo và mã OTP xác thực
-├── notifications/     # Module thông báo đẩy FCM & Tác vụ nhắc Check-in tự động
-├── prisma/            # Dịch vụ kết nối CSDL và kịch bản Seed dữ liệu mẫu
-├── redis/             # Dịch vụ bộ đệm dữ liệu tốc độ cao In-Memory
-├── room-types/        # Quản lý danh mục loại phòng và bảng giá
-├── rooms/             # Quản lý phòng vật lý và ma trận sơ đồ phòng
-├── services/          # Quản lý danh mục dịch vụ khách sạn (F&B, Giặt là, Spa)
-├── shifts/            # Quản lý ca trực lễ tân, đối soát và bàn giao tiền két
-├── upload/            # Tải ảnh phòng và avatar đại diện lên Cloudinary
-├── users/             # Quản trị người dùng, cập nhật thông tin cá nhân
-└── app.module.ts      # Root Module liên kết toàn bộ hệ thống
+Hotel-Management/
+├── prisma/
+│   ├── schema.prisma      # 10 model, 9 enum, quan hệ và chỉ mục
+│   ├── migrations/        # Lịch sử thay đổi cấu trúc CSDL
+│   └── seed.ts            # Dữ liệu mẫu: tài khoản, loại phòng, phòng, dịch vụ
+└── src/
+    ├── main.ts            # Prefix /api/v1, CORS, ValidationPipe, Swagger, gzip
+    ├── app.module.ts      # Module gốc
+    ├── common/            # decorators, dto, filters, guards, interceptors, utils
+    ├── auth/              # Đăng ký, đăng nhập, JWT, OTP, chính sách 1 thiết bị
+    ├── users/             # Tài khoản, hồ sơ cá nhân, SSE danh sách tài khoản
+    ├── room-types/        # Loại phòng
+    ├── rooms/             # Phòng, phòng trống, tìm kiếm, SSE trạng thái phòng
+    ├── bookings/          # Đặt phòng, duyệt, check-in, đổi phòng, check-out
+    ├── invoices/          # Hóa đơn, sổ thu tiền, yêu cầu thanh toán, hoàn tiền
+    ├── services/          # Danh mục dịch vụ khách sạn
+    ├── shifts/            # Mở / chốt ca trực, đối soát tiền mặt
+    ├── analytics/         # Dashboard, doanh thu, công suất, hiệu suất nhân viên
+    ├── notifications/     # Thông báo, FCM, cron nhắc lịch nhận phòng
+    ├── prisma/  redis/  elasticsearch/   # Hạ tầng dữ liệu
+    └── mail/  upload/     # Gửi email OTP, tải ảnh lên Cloudinary / Supabase
 ```
 
-### 4.1.2. Hiện thực module Xác thực, Phân quyền (Auth & Guards)
-Hệ thống sử dụng chiến lược `JwtStrategy` kết hợp `RolesGuard` để kiểm tra vai trò người dùng trong Token:
+Mỗi module nghiệp vụ theo cùng một khuôn: `*.controller.ts` nhận request và gọi Service, `*.service.ts` chứa nghiệp vụ, `dto/*.dto.ts` mô tả và kiểm tra dữ liệu vào, `*.module.ts` khai báo phụ thuộc.
+
+### 4.1.2. Xác thực và phân quyền
+
+Quyền truy cập được khai báo bằng decorator ngay trên route; `RolesGuard` đọc danh sách vai trò yêu cầu và so với vai trò trong token:
+
 ```typescript
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -1046,509 +761,309 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (!requiredRoles) return true;
+    if (!requiredRoles || requiredRoles.length === 0) {
+      return true;
+    }
     const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.includes(user.role);
+    if (!user) {
+      throw new ForbiddenException('User is not authenticated');
+    }
+    const hasRole = requiredRoles.some((role) => user.role === role);
+    if (!hasRole) {
+      throw new ForbiddenException(`Quyền truy cập bị từ chối: Yêu cầu vai trò [${requiredRoles.join(', ')}]`);
+    }
+    return true;
   }
 }
 ```
 
-Chuẩn hóa dữ liệu trả về cho toàn bộ ứng dụng thông qua `TransformInterceptor`:
+`JwtStrategy.validate()` ngoài kiểm tra chữ ký còn kiểm tra token có trong blacklist đăng xuất không, tài khoản còn hoạt động không, và với tài khoản khách hàng thì mã phiên `sid` trong token phải khớp `activeSessionId` đang lưu.
+
+Mọi phản hồi thành công được chuẩn hóa bởi `TransformInterceptor`:
+
 ```typescript
-@Injectable()
-export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T>> {
-    return next.handle().pipe(
-      map((data) => ({
-        statusCode: context.switchToHttp().getResponse().statusCode,
-        success: true,
-        message: data?.message || 'Thành công',
-        data: data?.data !== undefined ? data.data : data,
-        timestamp: new Date().toISOString(),
-      })),
-    );
-  }
+return next.handle().pipe(
+  map((data) => {
+    let message = 'Thành công';
+    if (data && typeof data === 'object' && !Array.isArray(data) && typeof data.message === 'string') {
+      message = data.message;
+    }
+    return { statusCode, success: true, message, data: data !== undefined ? data : null, timestamp: new Date().toISOString() };
+  }),
+);
+```
+
+Còn mọi lỗi (HttpException, lỗi Prisma như trùng khóa `P2002` → 409, không tìm thấy `P2025` → 404, lỗi bất ngờ → 500) được `AllExceptionsFilter` chuyển thành cùng cấu trúc JSON với thông điệp tiếng Việt.
+
+### 4.1.3. Module đặt phòng
+
+`BookingsController` chỉ nhận DTO đã được kiểm tra và chuyển cho Service; khách hàng luôn bị giới hạn về đơn của chính mình:
+
+```typescript
+@Post()
+create(@Body() dto: CreateBookingDto, @CurrentUser('id') userId: string, @CurrentUser('role') role: Role) {
+  return this.bookingsService.create(dto, userId, role);
+}
+
+@Get()
+findAll(@CurrentUser('id') userId: string, @CurrentUser('role') role: Role, @Query() query: QueryBookingsDto) {
+  // Khách hàng luôn bị khóa về đơn của chính mình, bất kể customerId gửi lên.
+  return this.bookingsService.findAll({ ...query, ...(role === Role.CUSTOMER ? { customerId: userId } : {}) }, role);
 }
 ```
 
-### 4.1.3. Hiện thực module Đặt phòng & Thuật toán Interval Overlap
-Tại `bookings.service.ts`, thuật toán kiểm tra xung đột phòng được thực thi:
+`BookingsService.create()` thực hiện thuật toán đã trình bày ở mục 3.5.4, sau đó tính tiền và tạo đơn. Hóa đơn **không** được tạo ở bước này: hóa đơn chỉ phát sinh khi đơn được duyệt kèm tiền cọc hoặc khi check-out.
+
 ```typescript
-async createBooking(userId: string, dto: CreateBookingDto) {
-  // 1. Kiểm tra tranh chấp lịch phòng
-  const conflict = await this.prisma.booking.findFirst({
-    where: {
-      roomId: dto.roomId,
-      status: { in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN] },
-      AND: [
-        { checkInDate: { lt: new Date(dto.checkOutDate) } },
-        { checkOutDate: { gt: new Date(dto.checkInDate) } },
-      ],
-    },
-  });
-  if (conflict) {
-    throw new ConflictException('Phòng đã được đặt trong khoảng thời gian được chọn!');
+const nights = Math.max(1, Math.ceil(Math.abs(checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+const totalAmount = nights * room.roomType.basePrice;
+const initialStatus = currentUserRole === Role.CUSTOMER ? BookingStatus.PENDING : (dto.status || BookingStatus.CONFIRMED);
+
+const booking = await this.prisma.booking.create({
+  data: { bookingCode, customerId, roomId: dto.roomId, checkInDate: checkIn, checkOutDate: checkOut,
+          guestCount: dto.guestCount || 1, totalAmount, depositAmount: dto.depositAmount || 0,
+          status: initialStatus, specialRequests: dto.specialRequests },
+  include: BOOKING_INCLUDE,
+});
+await this.syncRoomStatus(dto.roomId);          // suy diễn lại trạng thái phòng
+await this.redis.delByPattern('cache:rooms:*'); // xóa bộ đệm phòng trống
+```
+
+Check-in đổi trạng thái đơn và phòng trong cùng một giao dịch rồi phát sự kiện realtime:
+
+```typescript
+const [updatedBooking] = await this.prisma.$transaction([
+  this.prisma.booking.update({ where: { id }, data: { status: BookingStatus.CHECKED_IN, actualCheckIn: new Date() }, include: BOOKING_INCLUDE }),
+  this.prisma.room.update({ where: { id: booking.roomId }, data: { status: RoomStatus.OCCUPIED } }),
+]);
+this.roomEvents.emitStatusChanged({ ...updatedBooking.room, status: RoomStatus.OCCUPIED }); // đẩy qua SSE
+```
+
+### 4.1.4. Hóa đơn nhiều khoản thu và ca trực
+
+Khi check-out, `buildSettlement()` – dùng chung với API xem trước – tính số đêm thực tế, phát hiện trả phòng trước hạn, cộng dịch vụ đã xác nhận và trừ số đã thu. Nếu số tiền thu chưa đủ, máy chủ từ chối trả phòng. Khi hợp lệ, trong một giao dịch: đơn chuyển `CHECKED_OUT`, phòng chuyển `CLEANING`, hóa đơn được tạo hoặc cập nhật, dòng thu tiền (gắn ca trực đang mở) và dòng hoàn tiền (nếu trả sớm) được ghi, rồi `paidAmount` được tính lại từ sổ thu tiền.
+
+Chốt ca trực đối chiếu tiền mặt thực tế với số liệu sổ sách:
+
+```typescript
+async closeShift(staffId: string, dto: CloseShiftDto, currentShiftId?: string) {
+  const shift = await this.prisma.workShift.findFirst({ where: { staffId, status: ShiftStatus.OPEN }, include: { staff: true } });
+  if (!shift) throw new NotFoundException('Không tìm thấy ca trực đang mở cần chốt');
+
+  const stats = await this.calculateShiftStats(shift);   // expectedCash = đầu ca + thu tiền mặt − hoàn tiền mặt
+  const actualCash = roundMoney(dto.actualCash);
+  const cashDifference = roundMoney(actualCash - stats.expectedCash);
+
+  // Nếu tiền lệch, bắt buộc giải trình lý do
+  if (cashDifference !== 0 && (!dto.differenceReason || !dto.differenceReason.trim())) {
+    throw new BadRequestException('Số tiền thực tế kiểm đếm lệch so với sổ sách. Vui lòng nhập lý do giải trình chênh lệch quỹ (differenceReason).');
   }
 
-  // 2. Thực thi Transaction tạo Booking và Invoice đối ứng
   return this.prisma.$transaction(async (tx) => {
-    const booking = await tx.booking.create({
-      data: {
-        customerId: userId,
-        roomId: dto.roomId,
-        checkInDate: new Date(dto.checkInDate),
-        checkOutDate: new Date(dto.checkOutDate),
-        guestCount: dto.guestCount,
-        totalAmount: dto.totalAmount,
-        status: BookingStatus.PENDING,
-      },
+    // Gắn các khoản thu phát sinh trong ca nhưng chưa có shiftId
+    await tx.payment.updateMany({
+      where: { shiftId: null, confirmedById: shift.staffId, confirmedAt: { gte: shift.startTime, lte: new Date() } },
+      data: { shiftId: shift.id },
     });
-
-    await tx.invoice.create({
-      data: {
-        bookingId: booking.id,
-        roomAmount: dto.totalAmount,
-        finalAmount: dto.totalAmount,
-        paymentStatus: PaymentStatus.UNPAID,
-      },
+    return tx.workShift.update({
+      where: { id: shift.id },
+      data: { status: ShiftStatus.CLOSED, endTime: new Date(), actualCash, expectedCash: stats.expectedCash, cashDifference,
+              creditCardAmount: stats.creditCardAmount, bankTransferAmount: stats.bankTransferAmount,
+              totalRevenue: stats.totalRevenue, differenceReason: dto.differenceReason?.trim() || null },
     });
-
-    return booking;
   });
 }
 ```
 
-### 4.1.4. Hiện thực module Hóa đơn đa khoản thu & Quản lý Ca trực
-Thuật toán tính toán tiền hóa đơn tự động và đối soát tiền két khi chốt ca trực:
+### 4.1.5. Tác vụ định kỳ nhắc lịch nhận phòng
+
 ```typescript
-async closeShift(staffId: string, dto: CloseShiftDto) {
-  const shift = await this.prisma.workShift.findFirst({
-    where: { staffId, status: ShiftStatus.OPEN },
+@Cron('0 1 * * *', { name: 'checkin-reminder', timeZone: 'Asia/Ho_Chi_Minh' })
+async handleCheckinReminder() {
+  const upcomingBookings = await this.prisma.booking.findMany({
+    where: { status: 'CONFIRMED', checkInDate: { gte: todayStart, lte: tomorrowEnd } },
+    include: { customer: { select: { id: true, fullName: true, email: true } }, room: { select: { roomNumber: true } } },
   });
-  if (!shift) throw new NotFoundException('Không tìm thấy ca trực đang mở!');
-
-  // Tính tổng tiền mặt thu được trong ca
-  const cashPayments = await this.prisma.payment.aggregate({
-    where: {
-      shiftId: shift.id,
-      method: PaymentMethod.CASH,
-      status: PaymentEntryStatus.CONFIRMED,
-    },
-    _sum: { amount: true },
-  });
-
-  const expectedCash = shift.initialCash + (cashPayments._sum.amount || 0);
-  const cashDifference = dto.actualCash - expectedCash;
-
-  // Ràng buộc kỷ luật: bắt buộc giải trình nếu chênh lệch khác 0
-  if (cashDifference !== 0 && !dto.differenceReason) {
-    throw new BadRequestException('Vui lòng nhập lý do giải trình khi tiền két có chênh lệch!');
-  }
-
-  return this.prisma.workShift.update({
-    where: { id: shift.id },
-    data: {
-      actualCash: dto.actualCash,
-      expectedCash,
-      cashDifference,
-      differenceReason: dto.differenceReason,
-      endTime: new Date(),
-      status: ShiftStatus.CLOSED,
-    },
-  });
+  // Gửi thông báo nhắc lịch cho từng khách (trong ứng dụng + đẩy FCM nếu có token)
 }
 ```
 
----
+Tác vụ chạy lúc 01:00 sáng giờ Việt Nam mỗi ngày. Chú thích trong mã nguồn ghi “08:00 sáng” nhưng vì đã khai báo `timeZone: 'Asia/Ho_Chi_Minh'`, biểu thức `0 1 * * *` thực tế chạy lúc 01:00 – điểm này cần chỉnh lại thành `0 8 * * *` để khách nhận thông báo vào giờ hợp lý (xem mục 7.2).
 
-## 4.2. Hiện thực hóa Mobile App (Flutter Client) & Hướng dẫn Chụp ảnh màn hình
+## 4.2. Hiện thực hóa ứng dụng di động (Flutter)
 
-Cấu trúc mã nguồn Flutter tại thư mục `hotel_app/lib` được tổ chức theo kiến trúc Clean Feature-First Architecture:
+Mã nguồn ứng dụng (`hotel_app/lib`) tổ chức theo tính năng:
+
 ```
 hotel_app/lib/
-├── core/              # Theme màu sắc, mạng Dio, bảo mật FlutterSecureStorage
-├── di/                # Dependency Injection (GetIt Service Locator)
-├── features/          # Các phân hệ tính năng nghiệp vụ
-│   ├── admin/         # Màn hình Admin: Dashboard, Báo cáo FL Chart, Quản lý phòng & Nhân sự
-│   ├── auth/          # Màn hình Xác thực: Login, Register, Quên mật khẩu OTP
-│   ├── cashier/       # Màn hình Thu ngân: Hóa đơn, Sổ thu tiền, Đối soát
-│   ├── customer/      # Màn hình Khách: Home, Tìm phòng, Đặt phòng, Đơn của tôi, Dịch vụ
-│   ├── notifications/ # Màn hình Trung tâm thông báo đẩy FCM và Cài đặt nhận tin
-│   ├── profile/       # Màn hình Cá nhân: Cập nhật thông tin, Avatar, Đổi mật khẩu
-│   ├── receptionist/  # Màn hình Lễ tân: Room Matrix, Check-in, Check-out, Ca trực
-│   └── splash/        # Màn hình Chào khởi động
-├── shared/            # Widgets tái sử dụng (Custom Button, Form Input, Shimmer...)
-└── main.dart          # Điểm khởi chạy ứng dụng Flutter
+├── core/            # constants, errors, network (DioClient, SseClient), router, services,
+│                    # session, storage (token), theme, utils
+├── di/              # injection_container.dart – đăng ký GetIt
+├── features/
+│   ├── auth/        # Đăng nhập, đăng ký, quên mật khẩu (AuthBloc)
+│   ├── customer/    # Trang chủ, tìm phòng, chi tiết phòng, đơn của tôi, hóa đơn, gọi dịch vụ
+│   ├── receptionist/# Sơ đồ phòng, hôm nay, duyệt đơn, yêu cầu thanh toán, chốt ca
+│   ├── cashier/     # Danh sách hóa đơn, thu tiền, hoàn tiền (InvoiceBloc)
+│   ├── admin/       # Dashboard, báo cáo, phòng, dịch vụ, tài khoản, ca trực (UserBloc…)
+│   ├── notifications/, profile/, splash/
+├── shared/          # models, repositories, widgets dùng chung (skeleton, status badge…)
+└── main.dart
 ```
 
-Dưới đây là chi tiết toàn bộ các màn hình chức năng của ứng dụng di động kèm **KHUNG CHÈN ẢNH** để sinh viên chụp ảnh màn hình điện thoại dán vào:
+Các mục dưới đây trình bày các màn hình chính. Ảnh chụp được lấy từ bản thiết kế và chạy thử ứng dụng ở học phần UI/UX; các màn hình chưa có ảnh được đánh dấu khung chèn để bổ sung.
 
----
+### 4.2.1. Phân hệ chung và xác thực
 
-### 4.2.1. Phân hệ Chung & Xác thực tài khoản (Auth & Common)
+#### 1. Màn hình chào (Splash)
+- **Tập tin:** `lib/features/splash/splash_screen.dart`
+- **Mô tả:** hiển thị logo, kiểm tra token đã lưu để điều hướng thẳng vào màn hình theo vai trò hoặc về màn hình đăng nhập.
 
-#### 1. Màn hình Chào (Splash Screen)
-- **Tập tin:** `lib/features/splash/screens/splash_screen.dart`
-- **Mô tả:** Màn hình khởi động ứng dụng với logo Luxe Grand Hotel ánh vàng kim nổi bật trên nền xanh đen huyền bí, hiệu ứng fade-in mượt mà, tự động kiểm tra trạng thái đăng nhập trong `FlutterSecureStorage` để điều hướng vào màn hình tương ứng.
+> 📸 **[KHUNG CHÈN ẢNH]** Mở ứng dụng và chụp màn hình chào.
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.1]**  
-> **Tên hình:** Giao diện Màn hình Chào (Splash Screen) khởi động ứng dụng  
-> **Vị trí chụp:** Mở ứng dụng điện thoại -> Màn hình hiển thị Logo Luxe Grand Hotel và tên thương hiệu sang trọng.  
-> **Hướng dẫn chụp ảnh:** Chụp ảnh màn hình điện thoại khi vừa mở app ở trạng thái tải logo đẹp mắt.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.1: Giao diện Màn hình Chào (Splash Screen) khởi động ứng dụng*
+*Hình 4.1: Màn hình chào (Splash)*
 
-#### 2. Màn hình Đăng nhập và Đăng ký (Login & Register Screens)
-- **Tập tin:** `lib/features/auth/screens/login_screen.dart` và `register_screen.dart`
-- **Mô tả:** Form đăng nhập hỗ trợ kiểm định dữ liệu đầu vào (Validation), hiển thị/ẩn mật khẩu bằng mắt, lưu mật khẩu an toàn. Form đăng ký gồm họ tên, số điện thoại, email và mật khẩu.
+#### 2. Đăng nhập và đăng ký
+- **Tập tin:** `lib/features/auth/screens/login_screen.dart`, `register_screen.dart`
+- **Mô tả:** kiểm tra dữ liệu nhập ngay trên form; hiển thị thông điệp lỗi từ API (ví dụ “Email hoặc mật khẩu không chính xác”); khi tài khoản khách đăng nhập ở máy khác, máy cũ nhận thông báo phiên đã kết thúc.
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.2]**  
-> **Tên hình:** Giao diện Đăng nhập và Đăng ký tài khoản khách hàng  
-> **Vị trí chụp:** Ứng dụng Flutter > Màn hình Đăng nhập (`login_screen.dart`) và tab Đăng ký (`register_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Ghép 2 ảnh chụp màn hình điện thoại cạnh nhau (Bên trái: Form Đăng nhập; Bên phải: Form Đăng ký) rồi dán vào đây.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.2: Giao diện Đăng nhập và Đăng ký tài khoản khách hàng*
+> 📸 **[KHUNG CHÈN ẢNH]** Chụp màn hình đăng nhập và đăng ký đặt cạnh nhau.
 
-#### 3. Màn hình Quên mật khẩu và Nhập mã xác thực OTP
+*Hình 4.2: Màn hình đăng nhập và đăng ký*
+
+#### 3. Quên mật khẩu
 - **Tập tin:** `lib/features/auth/screens/forgot_password_screen.dart`
-- **Mô tả:** Giao diện 2 bước: Bước 1 nhập Email nhận mã OTP 6 số; Bước 2 gồm 6 ô nhập mã OTP tự động chuyển focus kèm ô nhập mật khẩu mới.
+- **Mô tả:** nhập email nhận OTP → nhập OTP → đặt mật khẩu mới.
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.3]**  
-> **Tên hình:** Giao diện Quên mật khẩu và Nhập mã xác thực OTP gửi qua Email  
-> **Vị trí chụp:** Màn hình Quên mật khẩu (`forgot_password_screen.dart`) hiển thị các ô nhập mã OTP 6 số và mật khẩu mới.  
-> **Hướng dẫn chụp ảnh:** Nhập email thử nghiệm, chụp lại màn hình hiển thị các ô mã OTP 6 số đẹp mắt.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.3: Giao diện Quên mật khẩu và Nhập mã xác thực OTP gửi qua Email*
+> 📸 **[KHUNG CHÈN ẢNH]** Chụp bước nhập mã OTP và mật khẩu mới.
 
-#### 4. Màn hình Quản lý Hồ sơ cá nhân (Profile Screen)
-- **Tập tin:** `lib/features/profile/screens/profile_screen.dart`
-- **Mô tả:** Hiển thị thông tin người dùng, ảnh đại diện Avatar tải từ Cloudinary, nút chọn ảnh từ thư viện, form cập nhật họ tên, số điện thoại và nút mở modal đổi mật khẩu an toàn.
+*Hình 4.3: Màn hình quên mật khẩu*
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.4]**  
-> **Tên hình:** Giao diện Quản lý Hồ sơ cá nhân và Cập nhật ảnh đại diện (Avatar)  
-> **Vị trí chụp:** Tab "Tài khoản" ở thanh điều hướng (`profile_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Mở màn hình hồ sơ cá nhân đã có avatar và thông tin cá nhân hiển thị, chụp lại màn hình.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.4: Giao diện Quản lý Hồ sơ cá nhân và Cập nhật ảnh đại diện (Avatar)*
+#### 4. Hồ sơ cá nhân và thông báo
+- **Tập tin:** `lib/features/profile/screens/profile_screen.dart`, `lib/features/notifications/screens/notifications_screen.dart`
+- **Mô tả:** cập nhật họ tên, số điện thoại, ảnh đại diện, đổi mật khẩu; danh sách thông báo với nút “Đọc tất cả”.
 
-#### 5. Màn hình Trung tâm Thông báo đẩy (Notifications Screen)
-- **Tập tin:** `lib/features/notifications/screens/notifications_screen.dart` và `notification_settings_screen.dart`
-- **Mô tả:** Danh sách các thông báo đẩy FCM được phân loại theo icon trực quan (Duyệt đơn, Nhắc check-in, Hóa đơn); nút "Đọc tất cả"; màn hình cài đặt bật/tắt nhận tin qua Push Notification hoặc Email.
+> 📸 **[KHUNG CHÈN ẢNH]** Chụp màn hình hồ sơ và màn hình thông báo.
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.5]**  
-> **Tên hình:** Giao diện Hộp thư Thông báo đẩy (FCM) & Cài đặt nhận tin  
-> **Vị trí chụp:** Chạm vào biểu tượng Chuông thông báo ở góc trên màn hình chính (`notifications_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình danh sách các thông báo nhận phòng, duyệt đơn đã gửi tới điện thoại.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.5: Giao diện Hộp thư Thông báo đẩy (FCM) & Cài đặt nhận tin*
+*Hình 4.4: Màn hình hồ sơ cá nhân và thông báo*
 
----
+### 4.2.2. Phân hệ khách hàng
 
-### 4.2.2. Phân hệ Khách hàng (Customer Experience Flow)
+#### 5. Trang chủ và tìm phòng
+- **Tập tin:** `lib/features/customer/screens/home_screen.dart`, `room_search_screen.dart`
+- **API:** `GET /room-types`, `GET /rooms`, `GET /rooms/available`
+- **Mô tả:** lời chào, ô tìm kiếm, lọc theo hạng phòng, danh sách phòng kèm ảnh, giá/đêm, điểm đánh giá.
 
-#### 6. Màn hình Trang chủ và Tìm kiếm phòng theo bộ lọc (Home & Search)
-- **Tập tin:** `lib/features/customer/screens/home_screen.dart` và `room_search_screen.dart`
-- **Mô tả:** Banner giới thiệu khách sạn sang trọng, widget chọn ngày nhận - trả phòng (`showDateRangePicker`), chọn số khách; danh sách phòng trống kèm giá niêm yết, đánh giá sao và nhãn khuyến mại.
+![Trang chủ khách hàng](docs/bai_tap_lon_ktpm/hinh/tn_trang_chu.png)
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.6]**  
-> **Tên hình:** Giao diện Trang chủ Khách hàng và Bộ lọc tìm kiếm phòng trống theo ngày  
-> **Vị trí chụp:** Đăng nhập tài khoản Khách hàng -> Màn hình Trang chủ (`home_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình trang chủ hiển thị khung chọn lịch ngày nhận/trả và danh sách thẻ phòng.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.6: Giao diện Trang chủ Khách hàng và Bộ lọc tìm kiếm phòng trống theo ngày*
+*Hình 4.5: Trang chủ và danh sách phòng của khách hàng*
 
-#### 7. Màn hình Chi tiết hạng phòng và Tiện nghi (Room Detail Screen)
+#### 6. Chi tiết phòng
 - **Tập tin:** `lib/features/customer/screens/room_detail_screen.dart`
-- **Mô tả:** Carousel ảnh phòng sắc nét vuốt ngang, thông số diện tích, view ngắm cảnh, danh mục biểu tượng tiện nghi (Wifi, Bồn tắm, Hồ bơi, Minibar) và thanh đặt phòng nổi dưới chân màn hình.
+- **API:** `GET /rooms/{id}`
+- **Mô tả:** ảnh lớn, hạng phòng, cảnh báo nếu phòng đang có khách, diện tích, loại giường, hướng nhìn, sức chứa, điểm nổi bật, tiện nghi theo nhóm, đánh giá của khách; thanh giá và nút “Chọn ngày đặt trước” cố định ở cuối màn hình.
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.7]**  
-> **Tên hình:** Giao diện Xem chi tiết hạng phòng, Tiện nghi và Thư viện ảnh phòng  
-> **Vị trí chụp:** Chạm vào một phòng bất kỳ trên màn hình Trang chủ -> Mở `room_detail_screen.dart`.  
-> **Hướng dẫn chụp ảnh:** Chụp toàn cảnh màn hình chi tiết phòng hiển thị ảnh lớn, các tiện ích và đơn giá theo đêm.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.7: Giao diện Xem chi tiết hạng phòng, Tiện nghi và Thư viện ảnh phòng*
+![Chi tiết phòng](docs/bai_tap_lon_ktpm/hinh/tn_chi_tiet_phong.png)
 
-#### 8. Màn hình Xác nhận Đặt phòng trực tuyến
-- **Tập tin:** Modal đặt phòng tích hợp trong `room_detail_screen.dart`
-- **Mô tả:** Tóm tắt lịch lưu trú, số đêm, tự động tính tổng tiền phòng, ô nhập yêu cầu đặc biệt và nút bấm "Xác nhận đặt phòng".
+*Hình 4.6: Màn hình chi tiết phòng*
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.8]**  
-> **Tên hình:** Giao diện Xác nhận Đặt phòng trực tuyến và Nhập yêu cầu đặc biệt  
-> **Vị trí chụp:** Nhấn nút "Đặt phòng ngay" trên màn hình chi tiết phòng.  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình popup / bottom-sheet xác nhận đơn phòng kèm số tiền tính toán tự động.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.8: Giao diện Xác nhận Đặt phòng trực tuyến và Nhập yêu cầu đặc biệt*
+#### 7. Xác nhận đặt phòng
+- **Tập tin:** `lib/features/customer/widgets/create_booking_modal.dart`
+- **API:** `GET /rooms/available` (kiểm tra khi mở), `POST /bookings`
+- **Mô tả:** chọn ngày nhận/trả, số khách, yêu cầu đặc biệt; hiển thị số đêm, tổng tiền và quy định đặt cọc trước khi gửi.
 
-#### 9. Màn hình Đơn đặt phòng của tôi (My Bookings Screen)
-- **Tập tin:** `lib/features/customer/screens/my_bookings_screen.dart`
-- **Mô tả:** Quản lý toàn bộ danh sách đơn phòng theo các tab trạng thái: Tất cả, Chờ duyệt, Đã xác nhận, Đang ở, Đã trả phòng; hiển thị mã đơn (ví dụ `BK-2026-088`), ngày lưu trú và badge màu trạng thái.
+![Xác nhận đặt phòng](docs/bai_tap_lon_ktpm/hinh/tn_xac_nhan_dat_phong.png)
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.9]**  
-> **Tên hình:** Giao diện Danh sách đơn đặt phòng của tôi (My Bookings) và Tiến trình đơn  
-> **Vị trí chụp:** Tab "Đơn của tôi" trên thanh điều hướng (`my_bookings_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình danh sách các đơn đặt phòng của khách với các trạng thái khác nhau.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.9: Giao diện Danh sách đơn đặt phòng của tôi (My Bookings) và Tiến trình đơn*
+*Hình 4.7: Màn hình xác nhận đặt phòng*
 
-#### 10. Màn hình Chi tiết hóa đơn và Quét mã QR chuyển khoản thanh toán
-- **Tập tin:** `lib/features/customer/screens/my_invoices_screen.dart`
-- **Mô tả:** Chi tiết tiền phòng, tiền dịch vụ, tổng tiền và tiền đã trả; hiển thị mã VietQR chuyển khoản tự sinh kèm số tài khoản, tên ngân hàng và nội dung chuyển tiền chuẩn xác; ô nhập mã giao dịch xác nhận.
+#### 8. Đơn đặt phòng và hóa đơn của tôi
+- **Tập tin:** `lib/features/customer/screens/my_bookings_screen.dart`, `my_invoices_screen.dart`
+- **API:** `GET /bookings`, `PATCH /bookings/{id}/cancel`, `GET /invoices/my`, `POST /invoices/{id}/payment-requests`
+- **Mô tả:** lọc đơn theo trạng thái (tất cả, chờ duyệt, đã xác nhận…), mã đơn, ngày lưu trú, tổng tiền, nút hủy; hóa đơn hiển thị số phải thanh toán, đã trả, còn thiếu và nút thanh toán.
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.10]**  
-> **Tên hình:** Giao diện Chi tiết hóa đơn và Quét mã QR chuyển khoản thanh toán  
-> **Vị trí chụp:** Bấm vào một hóa đơn cần thanh toán -> Bấm "Thanh toán chuyển khoản" (`my_invoices_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình hiển thị mã QR Code chuyển khoản của khách sạn kèm bảng kê chi phí hóa đơn.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.10: Giao diện Chi tiết hóa đơn và Quét mã QR chuyển khoản thanh toán*
+![Đơn và hóa đơn của khách](docs/bai_tap_lon_ktpm/hinh/tn_don_va_hoa_don.png)
 
-#### 11. Màn hình Gọi dịch vụ phòng (Room Service Screen)
+*Hình 4.8: Màn hình đơn đặt phòng và hóa đơn của khách hàng*
+
+#### 9. Gọi dịch vụ phòng
 - **Tập tin:** `lib/features/customer/screens/service_order_screen.dart`
-- **Mô tả:** Danh mục đồ ăn, đồ uống minibar, dịch vụ giặt là và spa; bộ đếm tăng/giảm số lượng món; nút bấm "Gọi phục vụ" gửi yêu cầu tức thì tới quầy buồng phòng.
+- **API:** `GET /services`, `POST /bookings/{id}/service-requests`
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.11]**  
-> **Tên hình:** Giao diện Gọi dịch vụ phòng (Room Service: Minibar, Ẩm thực, Giặt là)  
-> **Vị trí chụp:** Màn hình dịch vụ phòng (`service_order_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chọn vài món đồ uống minibar hoặc đồ ăn, chụp lại màn hình danh sách dịch vụ và nút đặt món.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.11: Giao diện Gọi dịch vụ phòng (Room Service: Minibar, Ẩm thực, Giặt là)*
+> 📸 **[KHUNG CHÈN ẢNH]** Chụp danh mục dịch vụ khi khách đang lưu trú.
 
----
+*Hình 4.9: Màn hình gọi dịch vụ phòng*
 
-### 4.2.3. Phân hệ Lễ tân & Thu ngân (Front-Desk Operations Flow)
+### 4.2.3. Phân hệ lễ tân – thu ngân
 
-#### 12. Màn hình Sơ đồ Ma trận phòng theo tầng (Room Matrix Screen)
+#### 10. Sơ đồ phòng (Room Matrix)
 - **Tập tin:** `lib/features/receptionist/screens/room_matrix_screen.dart`
-- **Mô tả:** "Trái tim" của phân hệ lễ tân: Thể hiện trực quan toàn bộ các tầng của khách sạn; mỗi phòng là một thẻ với số phòng, hạng phòng, tên khách đang ở và 5 mã màu trạng thái thời gian thực.
+- **API:** `GET /rooms`, SSE `GET /rooms/stream`, `PATCH /rooms/{id}/status`
+- **Mô tả:** thống kê nhanh số phòng trống / đang ở / chờ dọn / khách đến; phòng chia theo tầng, mỗi ô có số phòng, màu và nhãn trạng thái; ô phòng đổi màu ngay khi máy khác check-in/check-out; nút “Nhận phòng tại quầy” cho khách vãng lai.
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.12]**  
-> **Tên hình:** Giao diện Sơ đồ Ma trận phòng theo tầng (Room Matrix) với 5 mã màu trực quan  
-> **Vị trí chụp:** Đăng nhập tài khoản Lễ tân -> Màn hình chính Room Matrix (`room_matrix_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình hiển thị sơ đồ phòng chia theo tầng có đầy đủ các phòng màu xanh, đỏ, cam, xanh dương.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.12: Giao diện Sơ đồ Ma trận phòng theo tầng (Room Matrix) với 5 mã màu trực quan*
+![Sơ đồ phòng](docs/bai_tap_lon_ktpm/hinh/tn_so_do_phong.png)
 
-#### 13. Menu Thao tác nhanh trên thẻ phòng (Quick Actions Menu)
-- **Tập tin:** BottomSheet trong `room_matrix_screen.dart`
-- **Mô tả:** Khi chạm vào thẻ phòng, menu trượt từ dưới lên cung cấp các hành động tức thì: *Xem thông tin khách, Nhận phòng nhanh (Walk-in), Check-out, Đổi phòng, Chuyển trạng thái dọn buồng phòng*.
+*Hình 4.10: Màn hình sơ đồ phòng của lễ tân*
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.13]**  
-> **Tên hình:** Giao diện Thao tác nhanh trên thẻ phòng (Quick Actions Menu)  
-> **Vị trí chụp:** Chạm vào một thẻ phòng bất kỳ trên màn hình Room Matrix.  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình khi menu thao tác nhanh trượt lên với các nút chức năng rõ ràng.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.13: Giao diện Thao tác nhanh trên thẻ phòng (Quick Actions Menu)*
+#### 11. Lượt khách hôm nay: nhận phòng và trả phòng
+- **Tập tin:** `lib/features/receptionist/screens/front_desk_today_screen.dart`, `lib/features/admin/screens/today_check_ins_screen.dart`, `today_check_outs_screen.dart`
+- **API:** `GET /bookings?status=…&checkInFrom=&checkInTo=`, `POST /bookings/{id}/check-in`, `GET /bookings/{id}/checkout-preview`, `POST /bookings/{id}/check-out`
 
-#### 14. Màn hình Tiếp nhận khách vãng lai (Walk-in Check-in)
-- **Tập tin:** Dialog/Modal tiếp nhận khách vãng lai trong `room_matrix_screen.dart`
-- **Mô tả:** Nhập thông tin nhanh khách đến thuê phòng trực tiếp tại quầy: Họ tên, CCCD, Số điện thoại, Số đêm ở; hệ thống tạo ngay Booking và nhận phòng lập tức.
+![Lượt khách hôm nay](docs/bai_tap_lon_ktpm/hinh/tn_luot_khach_hom_nay.png)
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.14]**  
-> **Tên hình:** Giao diện Tiếp nhận khách vãng lai và Nhận phòng nhanh tại quầy (Walk-in)  
-> **Vị trí chụp:** Chạm vào phòng trống (AVAILABLE) -> Chọn "Nhận phòng nhanh (Walk-in)".  
-> **Hướng dẫn chụp ảnh:** Nhập thông tin khách mẫu và chụp lại màn hình form làm thủ tục Walk-in.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.14: Giao diện Tiếp nhận khách vãng lai và Nhận phòng nhanh tại quầy (Walk-in)*
+*Hình 4.11: Màn hình nhận phòng và trả phòng hôm nay*
 
-#### 15. Màn hình Danh sách Khách nhận phòng và Trả phòng trong ngày
-- **Tập tin:** `lib/features/receptionist/screens/front_desk_today_screen.dart`
-- **Mô tả:** Thống kê danh sách khách có lịch đến (`Today Check-ins`) và lịch đi (`Today Check-outs`) trong ngày hôm nay; nút bấm một chạm để tiến hành làm thủ tục cho khách.
+#### 12. Đổi phòng
+- **Tập tin:** `lib/features/receptionist/widgets/change_room_sheet.dart`
+- **API:** `POST /bookings/{id}/change-room`
+- **Mô tả:** hiển thị phòng hiện tại, chọn phòng trống mới, nhập lý do, tùy chọn giữ nguyên đơn giá cũ.
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.15]**  
-> **Tên hình:** Giao diện Danh sách khách nhận phòng (Check-ins) và trả phòng (Check-outs) hôm nay  
-> **Vị trí chụp:** Màn hình Lễ tân hôm nay (`front_desk_today_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình danh sách khách hẹn đến và đi trong ngày.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.15: Giao diện Danh sách khách nhận phòng (Check-ins) và trả phòng (Check-outs) hôm nay*
+![Đổi phòng](docs/bai_tap_lon_ktpm/hinh/tn_doi_phong.png)
 
-#### 16. Màn hình Thực hiện thủ tục Đổi phòng lưu trú (Change Room)
-- **Tập tin:** Sheet hoán đổi phòng trong `room_matrix_screen.dart`
-- **Mô tả:** Chọn phòng mới từ danh sách phòng trống tương đương; hệ thống hiển thị thông tin đối chiếu phòng cũ và phòng mới, tự động tính chênh lệch giá nếu có.
+*Hình 4.12: Màn hình đổi phòng cho khách*
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.16]**  
-> **Tên hình:** Giao diện Thực hiện thủ tục Đổi phòng lưu trú (Change Room)  
-> **Vị trí chụp:** Chạm vào phòng đang có khách (OCCUPIED) -> Chọn "Đổi phòng".  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình giao diện chọn phòng mới và xác nhận chuyển phòng cho khách.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.16: Giao diện Thực hiện thủ tục Đổi phòng lưu trú (Change Room)*
+#### 13. Hóa đơn và thu tiền
+- **Tập tin:** `lib/features/cashier/screens/cashier_invoices_screen.dart`, `widgets/invoice_detail_sheet.dart`, `widgets/payment_sheet.dart`
+- **API:** `GET /invoices/{id}`, `POST /invoices/{id}/pay`, `POST /invoices/{id}/refund`
+- **Mô tả:** bảng kê tiền phòng, dịch vụ, thuế, tổng, đã thanh toán, còn thiếu; sổ các lần thu; ghi nhận thu tiền với mức thu nhanh (toàn bộ / 50%) và phương thức tiền mặt, chuyển khoản VietQR, thẻ POS.
 
-#### 17. Màn hình Xem trước bảng kê chi phí (Checkout Preview) & Trả phòng
-- **Tập tin:** Dialog xem trước hóa đơn và thực hiện trả phòng
-- **Mô tả:** Bảng kê chi tiết tiền phòng, các món minibar đã sử dụng, số tiền đã cọc/trả trước và số dư còn nợ (`amountDue`); nút thanh toán tiền mặt/quẹt thẻ và nút hoàn tất trả phòng.
+![Hóa đơn và thu tiền](docs/bai_tap_lon_ktpm/hinh/tn_hoa_don_thu_tien.png)
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.17]**  
-> **Tên hình:** Giao diện Xem trước bảng kê chi phí trả phòng (Checkout Preview) & Trả phòng  
-> **Vị trí chụp:** Chọn một phòng đang lưu trú -> Bấm "Trả phòng (Check-out)".  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình bảng kê quyết toán chi phí hiển thị tiền phòng và dịch vụ rõ ràng trước khi xác nhận.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.17: Giao diện Xem trước bảng kê chi phí trả phòng (Checkout Preview) & Trả phòng*
+*Hình 4.13: Màn hình chi tiết hóa đơn và ghi nhận thu tiền*
 
-#### 18. Màn hình Phê duyệt đơn đặt phòng trực tuyến (Booking Approval Screen)
-- **Tập tin:** `lib/features/receptionist/screens/booking_approval_screen.dart`
-- **Mô tả:** Danh sách các đơn phòng trực tuyến khách đặt trên app ở trạng thái Chờ duyệt (`PENDING`); lễ tân kiểm tra lịch phòng và nhấn "Duyệt đơn" (xanh) hoặc "Từ chối" (đỏ kèm lý do).
+#### 14. Duyệt đơn và yêu cầu thanh toán
+- **Tập tin:** `lib/features/receptionist/screens/booking_approval_screen.dart`, `payment_requests_screen.dart`
+- **API:** `PATCH /bookings/{id}/approve | reject`, `GET /invoices/payment-requests`, `POST /invoices/payments/{id}/confirm | reject`
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.18]**  
-> **Tên hình:** Giao diện Duyệt và Từ chối đơn đặt phòng trực tuyến chờ xử lý  
-> **Vị trí chụp:** Mục "Đơn chờ duyệt" trên giao diện lễ tân (`booking_approval_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình danh sách các đơn đặt phòng PENDING kèm 2 nút Duyệt / Từ chối.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.18: Giao diện Duyệt và Từ chối đơn đặt phòng trực tuyến chờ xử lý*
+> 📸 **[KHUNG CHÈN ẢNH]** Chụp danh sách đơn chờ duyệt và danh sách yêu cầu chuyển khoản chờ đối soát.
 
-#### 19. Màn hình Danh sách yêu cầu chuyển khoản cần đối soát
-- **Tập tin:** `lib/features/receptionist/screens/payment_requests_screen.dart`
-- **Mô tả:** Danh sách các khoản tiền khách báo chuyển khoản qua ngân hàng (`Payment PENDING`) kèm mã tham chiếu và tên khách; thu ngân kiểm tra sao kê ngân hàng rồi bấm "Xác nhận đã nhận" hoặc "Từ chối".
+*Hình 4.14: Màn hình duyệt đơn và đối soát yêu cầu thanh toán*
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.19]**  
-> **Tên hình:** Giao diện Danh sách yêu cầu chuyển khoản cần đối soát và Duyệt/Từ chối  
-> **Vị trí chụp:** Mục "Yêu cầu thanh toán" của thu ngân (`payment_requests_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình hiển thị danh sách các khoản thanh toán chuyển khoản chờ đối soát sao kê.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.19: Giao diện Danh sách yêu cầu chuyển khoản cần đối soát và Duyệt/Từ chối*
+#### 15. Mở ca và chốt ca trực
+- **Tập tin:** `lib/features/receptionist/widgets/open_shift_sheet.dart`, `lib/features/receptionist/screens/shift_close_screen.dart`
+- **API:** `POST /shifts/open`, `GET /shifts/current`, `POST /shifts/close`
+- **Mô tả:** chọn ca (sáng/chiều/đêm/linh hoạt), quầy trực, tiền mặt nhận bàn giao; khi chốt ca hiển thị tiền đầu ca, tiền mặt thu trong ca, tiền két lý thuyết, ô nhập tiền thực đếm, thông báo khớp hoặc lệch và nhân viên nhận bàn giao.
 
-#### 20. Màn hình Mở ca trực lễ tân (Open Shift Sheet)
-- **Tập tin:** Sheet mở ca trực tại quầy
-- **Mô tả:** Khai báo ca trực (Ca Sáng, Ca Chiều, Ca Đêm), tên quầy làm việc và bàn phím số nhập số tiền mặt tồn quỹ đầu ca trong két (`initialCash`).
+![Mở ca và chốt ca](docs/bai_tap_lon_ktpm/hinh/tn_ca_truc.png)
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.20]**  
-> **Tên hình:** Giao diện Mở ca trực lễ tân (Khai báo số tiền mặt ban đầu)  
-> **Vị trí chụp:** Chạm vào banner "Ca trực hiện tại: CHƯA MỞ CA" trên màn hình lễ tân.  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình form mở ca trực với ô chọn loại ca và ô nhập số tiền két đầu ca.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.20: Giao diện Mở ca trực lễ tân (Khai báo số tiền mặt ban đầu)*
+*Hình 4.15: Màn hình mở ca và chốt ca trực*
 
-#### 21. Màn hình Chốt ca trực lễ tân & Đối soát tiền két (Shift Close Screen)
-- **Tập tin:** `lib/features/receptionist/screens/shift_close_screen.dart`
-- **Mô tả:** Tóm tắt doanh thu trong ca: Doanh thu tiền mặt, thẻ, chuyển khoản; ô nhập số tiền đếm thực tế (`actualCash`); hiển thị số tiền chênh lệch thừa/thiếu (`cashDifference`) bằng chữ đỏ cảnh báo và ô bắt buộc giải trình.
+### 4.2.4. Phân hệ quản trị viên
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.21]**  
-> **Tên hình:** Giao diện Chốt ca trực lễ tân, Kiểm đếm tiền két và Giải trình chênh lệch  
-> **Vị trí chụp:** Bấm vào nút "Chốt ca trực" khi kết thúc ca làm việc (`shift_close_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Nhập số tiền thực tế có chênh lệch nhỏ, chụp lại màn hình hiển thị số tiền lý thuyết, tiền thực tế và ô nhập giải trình.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.21: Giao diện Chốt ca trực lễ tân, Kiểm đếm tiền két và Giải trình chênh lệch*
-
----
-
-### 4.2.4. Phân hệ Quản trị viên (Admin & Management Flow)
-
-#### 22. Màn hình Dashboard Tổng quan Quản trị viên
+#### 16. Dashboard quản trị
 - **Tập tin:** `lib/features/admin/screens/admin_dashboard_screen.dart`
-- **Mô tả:** 4 thẻ chỉ số KPI nhanh (Tỷ lệ lấp đầy hôm nay, Số lượt nhận phòng hôm nay, Số lượt trả phòng hôm nay, Số đơn chờ duyệt); các phím tắt quản lý nhanh danh mục phòng và nhân sự.
+- **API:** `GET /analytics/dashboard`, `GET /analytics/revenue/daily?range=7`, `GET /shifts/active`
+- **Mô tả:** doanh thu hôm nay, tỷ lệ lấp đầy, lượt nhận/trả phòng và đơn chờ duyệt; tình trạng ca trực tại quầy; biểu đồ doanh thu 7 ngày; cơ cấu buồng phòng theo trạng thái.
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.22]**  
-> **Tên hình:** Giao diện Dashboard Tổng quan Quản trị viên (Admin KPI Cards)  
-> **Vị trí chụp:** Đăng nhập tài khoản Quản trị viên (ADMIN) -> Màn hình Dashboard chính (`admin_dashboard_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp toàn cảnh màn hình Dashboard hiển thị 4 thẻ KPI màu sắc nổi bật và biểu đồ vận hành.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.22: Giao diện Dashboard Tổng quan Quản trị viên (Admin KPI Cards)*
+![Dashboard quản trị](docs/bai_tap_lon_ktpm/hinh/tn_dashboard.png)
 
-#### 23. Màn hình Báo cáo Biểu đồ Doanh thu 12 tháng (FL Chart)
-- **Tập tin:** `lib/features/admin/screens/reports_screen.dart`
-- **Mô tả:** Biểu đồ cột tương tác 12 tháng trong năm sử dụng thư viện `fl_chart`; chạm vào từng cột tháng để hiển thị Tooltip cơ cấu doanh thu tiền phòng và tiền dịch vụ; dropdown chọn xem các năm vận hành khác nhau.
+*Hình 4.16: Màn hình dashboard quản trị*
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.23]**  
-> **Tên hình:** Giao diện Báo cáo Biểu đồ Doanh thu tương tác 12 tháng theo năm (FL Chart)  
-> **Vị trí chụp:** Mục "Báo cáo Doanh thu" trên màn hình Admin (`reports_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình hiển thị biểu đồ cột FL Chart 12 tháng, chạm tay vào 1 cột để hiển thị tooltip số tiền doanh thu chi tiết.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.23: Giao diện Báo cáo Biểu đồ Doanh thu tương tác 12 tháng theo năm (FL Chart)*
+#### 17. Báo cáo, danh mục, tài khoản và lịch sử ca
+- **Tập tin:** `lib/features/admin/screens/reports_screen.dart`, `occupancy_detail_screen.dart`, `room_type_management_screen.dart`, `service_catalog_screen.dart`, `user_management_screen.dart`, `admin_shift_management_screen.dart`, `shift_detail_screen.dart`
+- **API:** `GET /analytics/revenue`, `GET /analytics/occupancy-by-type`, CRUD `/room-types`, `/services`, `/users`, `GET /shifts`, `POST /shifts/{id}/close`
 
-#### 24. Màn hình Phân tích chi tiết tỷ lệ lấp đầy theo hạng phòng (Occupancy Detail)
-- **Tập tin:** `lib/features/admin/screens/occupancy_detail_screen.dart`
-- **Mô tả:** Phân tích tỷ lệ khai thác phòng theo từng hạng (Standard, Superior, Deluxe, Suite); danh sách chi tiết các phòng kèm tên khách và ngày trả phòng dự kiến.
+> 📸 **[KHUNG CHÈN ẢNH]** Chụp màn hình báo cáo doanh thu năm, quản lý tài khoản và lịch sử ca trực.
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.24]**  
-> **Tên hình:** Giao diện Phân tích chi tiết tỷ lệ lấp đầy theo hạng phòng (Occupancy Detail)  
-> **Vị trí chụp:** Mục "Tỷ lệ lấp đầy phòng" trên Admin (`occupancy_detail_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình phân tích tỷ lệ phần trăm phòng đang có khách theo từng hạng phòng.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.24: Giao diện Phân tích chi tiết tỷ lệ lấp đầy theo hạng phòng (Occupancy Detail)*
-
-#### 25. Màn hình Quản lý danh mục phòng, Hạng phòng và Dịch vụ
-- **Tập tin:** `room_type_management_screen.dart` và `service_catalog_screen.dart`
-- **Mô tả:** Bảng danh sách các hạng phòng, bảng giá niêm yết, danh mục các món ăn đồ uống minibar; nút thêm mới, chỉnh sửa và xóa trực quan.
-
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.25]**  
-> **Tên hình:** Giao diện Quản lý danh mục phòng, Hạng phòng và Dịch vụ khách sạn  
-> **Vị trí chụp:** Mục "Danh mục phòng & Dịch vụ" trên màn hình Admin.  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình danh sách các hạng phòng kèm bảng giá và tiện ích niêm yết.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.25: Giao diện Quản lý danh mục phòng, Hạng phòng và Dịch vụ khách sạn*
-
-#### 26. Màn hình Quản trị Nhân sự và Phân quyền vai trò (User Management RBAC)
-- **Tập tin:** `lib/features/admin/screens/user_management_screen.dart`
-- **Mô tả:** Danh sách toàn bộ tài khoản nhân sự (Lễ tân, Thu ngân, Admin) và Khách hàng; các nút phân quyền vai trò, đổi mật khẩu nhân viên và khóa/mở khóa tài khoản.
-
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.26]**  
-> **Tên hình:** Giao diện Quản lý tài khoản nhân sự và Phân quyền vai trò RBAC  
-> **Vị trí chụp:** Mục "Quản lý nhân viên" trên Admin (`user_management_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Chụp màn hình danh sách tài khoản nhân sự với các huy hiệu vai trò ADMIN, RECEPTIONIST rõ ràng.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.26: Giao diện Quản lý tài khoản nhân sự và Phân quyền vai trò RBAC*
-
-#### 27. Màn hình Giám sát Sổ lịch sử ca trực của toàn bộ nhân viên lễ tân
-- **Tập tin:** `lib/features/admin/screens/admin_shift_management_screen.dart` và `shift_detail_screen.dart`
-- **Mô tả:** Lịch sử chi tiết toàn bộ các ca trực trong quá khứ; xem tiền mặt đầu ca, tiền thực tế, tiền chênh lệch, lý do giải trình và danh sách tất cả các khoản thu diễn ra trong ca trực đó; nút cưỡng chế chốt ca của Admin.
-
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 4.27]**  
-> **Tên hình:** Giao diện Sổ giám sát lịch sử ca trực của toàn bộ nhân viên lễ tân  
-> **Vị trí chụp:** Mục "Giám sát ca trực" trên Admin (`admin_shift_management_screen.dart`).  
-> **Hướng dẫn chụp ảnh:** Mở xem chi tiết 1 ca trực đã chốt có thông số tiền két và danh sách giao dịch, chụp lại màn hình.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 4.27: Giao diện Sổ giám sát lịch sử ca trực của toàn bộ nhân viên lễ tân*
+*Hình 4.17: Các màn hình báo cáo và quản trị*
 
 ---
 
@@ -1556,204 +1071,253 @@ Dưới đây là chi tiết toàn bộ các màn hình chức năng của ứng
 
 # CHƯƠNG 5: KIỂM THỬ VÀ ĐÁNH GIÁ KẾT QUẢ
 
-## 5.1. Kế hoạch và phương pháp kiểm thử (Tiêu chuẩn IEEE 829)
-Quá trình kiểm thử phần mềm được thực hiện bài bản và nghiêm ngặt theo tiêu chuẩn quốc tế **IEEE 829 (Test Documentation)** nhằm bảo đảm độ tin cậy tuyệt đối trước khi bàn giao:
-1. **Kiểm thử đơn vị (Unit Testing):** Sử dụng Jest kiểm thử các hàm logic lõi trên Backend (công thức tính doanh thu, thuật toán phát hiện trùng khoảng ngày, đối soát ca trực) và Flutter Test kiểm thử các BLoC state transitions.
-2. **Kiểm thử tích hợp (Integration Testing):** Kiểm tra giao tiếp giữa Mobile Client và Server thông qua các request HTTP thực tế, đảm bảo việc parse dữ liệu DTO đồng nhất và xử lý các Exception Filter đúng quy chuẩn.
-3. **Kiểm thử tranh chấp đồng thời (Concurrency Testing):** Giả lập nhiều tiến trình đặt phòng đồng thời vào cùng một phòng vật lý tại cùng một khoảng thời gian để kiểm chứng năng lực khóa dòng và tính toàn vẹn dữ liệu.
-4. **Kiểm thử chấp nhận người dùng (User Acceptance Testing - UAT):** Đóng vai Khách hàng, Lễ tân trực ca và Giám đốc điều hành thực hiện liên hoàn một kịch bản lưu trú hoàn chỉnh: Đặt phòng -> Duyệt -> Check-in -> Order đồ uống minibar -> Đổi phòng -> Yêu cầu chuyển khoản -> Chốt ca đối soát tiền két -> Check-out.
+## 5.1. Kế hoạch và phương pháp kiểm thử
 
----
+Hoạt động kiểm thử được tổ chức theo cấu trúc tài liệu của chuẩn IEEE 829 (kế hoạch – thiết kế ca kiểm thử – báo cáo kết quả) và gồm năm hạng mục:
 
-## 5.2. Bảng 42 Kịch bản kiểm thử chi tiết (Test Cases Matrix - 100% PASS)
+1. **Kiểm thử API hộp đen trên máy chủ triển khai:** 39 ca kiểm thử chia 5 nhóm (xác thực, phân quyền, danh mục, đặt phòng, thống kê – đăng xuất). Các ca được thiết kế bằng phân vùng tương đương, giá trị biên, bảng quyết định cho phân quyền và kiểm thử chuyển trạng thái; được đóng gói thành Postman Collection và chạy tự động bằng script `tool/docx/run_api_tests.js`.
+2. **Kiểm thử đặt phòng đồng thời:** gửi cùng lúc nhiều yêu cầu đặt một phòng trong cùng khoảng ngày để kiểm chứng cơ chế chống đặt trùng.
+3. **Đo hiệu năng:** gửi liên tiếp nhiều request với nhiều luồng song song tới các API đọc dữ liệu phổ biến (`tool/docx/run_load_test.js`).
+4. **Kiểm thử tự động phía ứng dụng:** bộ test Flutter (49 file) kiểm tra ánh xạ hợp đồng API, phân trang, xử lý lỗi, phân quyền theo vai trò, phiên một thiết bị, các luồng check-in/check-out và ca trực.
+5. **Kiểm tra tĩnh:** biên dịch TypeScript toàn bộ backend (`tsc --noEmit`).
 
-### Bảng 5.1: Bảng 42 Kịch bản kiểm thử (Test Cases) chi tiết bao phủ toàn diện 10 phân hệ
-| Mã TC | Tên ca kiểm thử | Dữ liệu đầu vào & Thao tác kiểm thử | Kết quả kỳ vọng | Mức độ | Trạng thái |
-| :---: | :--- | :--- | :--- | :---: | :---: |
-| **TC-AUTH-01** | Đăng ký tài khoản hợp lệ | Email mới, mật khẩu > 6 ký tự, họ tên đầy đủ | Tạo tài khoản thành công, băm Bcrypt, cấp quyền CUSTOMER | Cao | **PASS** |
-| **TC-AUTH-02** | Đăng ký với Email đã có | Nhập lại email đã tồn tại trong database | Chặn request, báo lỗi 409 Conflict | Cao | **PASS** |
-| **TC-AUTH-03** | Đăng ký mật khẩu quá ngắn | Nhập mật khẩu dưới 6 ký tự (ví dụ: `123`) | Bắt lỗi Validation form phía Client và Backend | Vừa | **PASS** |
-| **TC-AUTH-04** | Đăng nhập đúng tài khoản | Nhập đúng email và mật khẩu | Trả về Bearer JWT token, chuyển vào app | Cao | **PASS** |
-| **TC-AUTH-05** | Đăng nhập sai mật khẩu | Nhập đúng email nhưng gõ sai mật khẩu | Báo lỗi 401 Unauthorized thông báo rõ ràng | Cao | **PASS** |
-| **TC-AUTH-06** | Quên mật khẩu gửi OTP | Nhập email đã đăng ký hệ thống | Sinh mã OTP 6 số lưu CSDL, gửi mail qua Nodemailer | Cao | **PASS** |
-| **TC-AUTH-07** | Nhập sai mã OTP | Nhập mã OTP không khớp hoặc đã quá 10 phút | Báo lỗi 400 Bad Request không hợp lệ | Cao | **PASS** |
-| **TC-AUTH-08** | Đặt lại mật khẩu thành công | Nhập đúng mã OTP và mật khẩu mới hợp lệ | Đổi mật khẩu thành công, OTP chuyển `used = true` | Cao | **PASS** |
-| **TC-ROOM-01** | Xem sơ đồ Ma trận phòng | Đăng nhập tài khoản lễ tân, mở Room Matrix | Hiển thị đầy đủ phòng theo tầng kèm 5 mã màu chuẩn | Cao | **PASS** |
-| **TC-ROOM-02** | Tra cứu phòng trống theo ngày | Chọn khoảng ngày 25/09 - 28/09, số khách: 2 | Chỉ trả về các phòng hoàn toàn trống lịch | Cao | **PASS** |
-| **TC-ROOM-03** | Chuyển trạng thái dọn dẹp | Bấm hoàn tất dọn phòng từ CLEANING | Phòng chuyển trạng thái sang AVAILABLE (xanh lá) | Vừa | **PASS** |
-| **TC-BOOK-01** | Đặt phòng trực tuyến hợp lệ | Chọn phòng trống, ngày đến và ngày đi | Tạo Booking PENDING, tự động tạo Invoice UNPAID | Cao | **PASS** |
-| **TC-BOOK-02** | Kiểm thử tranh chấp trùng lịch| Đặt vào phòng đã có đơn CONFIRMED cùng ngày | Chặn request, báo lỗi 409 Conflict (ERR_ROOM_OCCUPIED)| Nghiêm ngặt| **PASS** |
-| **TC-BOOK-03** | Lễ tân phê duyệt đơn phòng | Bấm nút "Duyệt đơn" cho đơn PENDING | Đơn đổi sang CONFIRMED, phòng sang RESERVED, gửi FCM | Cao | **PASS** |
-| **TC-BOOK-04** | Từ chối đơn không nhập lý do | Bấm nút từ chối nhưng để trống lý do | Form báo đỏ bắt buộc nhập lý do giải thích | Vừa | **PASS** |
-| **TC-BOOK-05** | Từ chối đơn có kèm lý do | Bấm từ chối kèm lý do: "Hết phòng" | Đơn sang CANCELLED, lưu vết lý do, gửi thông báo | Vừa | **PASS** |
-| **TC-BOOK-06** | Làm thủ tục Check-in | Đối chiếu CCCD và bấm Check-in đơn đến hạn | Đơn sang CHECKED_IN, phòng chuyển sang OCCUPIED (đỏ) | Cao | **PASS** |
-| **TC-BOOK-07** | Nhận phòng vãng lai Walk-in | Chọn phòng trống tại quầy và bấm Walk-in | Tạo ngay Booking CHECKED_IN và chuyển phòng OCCUPIED | Cao | **PASS** |
-| **TC-BOOK-08** | Đổi phòng cho khách đang ở | Khách đổi từ phòng 101 sang phòng 102 trống | Phòng 101 về CLEANING, phòng 102 thành OCCUPIED | Cao | **PASS** |
-| **TC-BOOK-09** | Trả phòng khi còn nợ tiền | Hóa đơn còn dư nợ 500.000 VNĐ | Cảnh báo đỏ yêu cầu thanh toán dứt điểm trước | Cao | **PASS** |
-| **TC-BOOK-10** | Trả phòng thành công Check-out | Hóa đơn đã thanh toán đủ (remaining = 0) | Đơn sang CHECKED_OUT, phòng chuyển về CLEANING | Cao | **PASS** |
-| **TC-BOOK-11** | Xem trước hóa đơn Check-out | Bấm xem trước bảng kê chi phí trả phòng | Hiển thị chính xác số đêm, minibar mà không đổi trạng thái | Cao | **PASS** |
-| **TC-SERV-01** | Order dịch vụ đồ uống minibar | Khách gọi 2 chai rượu vang vào đơn phòng | Hóa đơn tự động cộng thêm chi phí tương ứng | Cao | **PASS** |
-| **TC-PAY-01** | Khách gửi yêu cầu chuyển khoản| Khách nhập mã giao dịch chuyển khoản trên app| Tạo Payment PENDING, chưa cộng tiền vào paidAmount | Cao | **PASS** |
-| **TC-PAY-02** | Thu ngân duyệt chuyển khoản | Thu ngân đối soát sao kê, bấm duyệt nhận tiền| Payment sang CONFIRMED, paidAmount hóa đơn tăng lên | Cao | **PASS** |
-| **TC-PAY-03** | Thu ngân từ chối tiền giả mạo | Bấm từ chối kèm lý do: "Chưa nhận được tiền" | Payment sang REJECTED, không cộng tiền vào hóa đơn | Cao | **PASS** |
-| **TC-PAY-04** | Hoàn trả tiền cọc thừa Refund | Nhập hoàn tiền 500.000đ sau khi kiểm phòng | Tạo Payment type = REFUND, cân bằng số dư hóa đơn | Vừa | **PASS** |
-| **TC-SHIFT-01**| Mở ca trực lễ tân thành công | Khai báo ca Sáng, tiền két đầu ca 2.000.000đ | Tạo WorkShift status = OPEN, hiển thị banner trực ca | Cao | **PASS** |
-| **TC-SHIFT-02**| Mở ca khi ca cũ chưa chốt | Nhân viên đang có 1 ca OPEN bấm mở tiếp ca khác| Chặn request, báo lỗi 409 ERR_SHIFT_ALREADY_OPEN | Vừa | **PASS** |
-| **TC-SHIFT-03**| Chốt ca lệch tiền không giải trình| Tiền két thực tế ít hơn lý thuyết, bỏ trống lý do| Chặn chốt ca, bắt buộc nhập lý do giải trình chênh lệch | Nghiêm ngặt| **PASS** |
-| **TC-SHIFT-04**| Chốt ca có giải trình hợp lệ | Nhập tiền thực tế kèm lý do giải trình chi tiêu| WorkShift sang CLOSED, khóa các giao dịch của ca | Cao | **PASS** |
-| **TC-SHIFT-05**| Admin cưỡng chế chốt ca | Nhân viên nghỉ đột xuất, Admin bấm chốt ca hộ| Ca trực chuyển CLOSED, giải phóng quầy làm việc | Cao | **PASS** |
-| **TC-SHIFT-06**| Tra cứu lịch sử ca và sổ quỹ | Mở màn hình Sổ ca trực trên Admin | Hiển thị đầy đủ lịch sử các ca và chi tiết từng khoản thu | Vừa | **PASS** |
-| **TC-STAT-01** | Xem Dashboard Admin | Mở màn hình Tổng quan Quản trị viên | Hiển thị chính xác 4 thẻ KPI vận hành thời gian thực | Cao | **PASS** |
-| **TC-STAT-02** | Xem biểu đồ doanh thu theo năm | Chọn xem biểu đồ doanh thu năm 2026 | Biểu đồ cột FL Chart hiển thị chính xác 12 tháng | Cao | **PASS** |
-| **TC-STAT-03** | Báo cáo hiệu suất nhân viên | Đánh giá năng suất phục vụ tiền sảnh | Thống kê số lượt Check-in/out và doanh số thu của từng người| Vừa | **PASS** |
-| **TC-STAT-04** | Biểu đồ doanh thu ngắn hạn | Chọn xem doanh thu 7 ngày / 30 ngày gần nhất | Trả về chuỗi doanh thu từng ngày chính xác | Vừa | **PASS** |
-| **TC-USER-01** | Admin thêm mới nhân viên | Admin khai báo tài khoản quyền RECEPTIONIST | Tạo tài khoản nhân sự mới, kích hoạt đăng nhập quầy | Cao | **PASS** |
-| **TC-USER-02** | Phân quyền & Khóa tài khoản | Admin chuyển quyền hoặc khóa tài khoản nhân sự| Tài khoản bị khóa không thể đăng nhập vào hệ thống | Cao | **PASS** |
-| **TC-NOTIF-01**| Nhận thông báo đẩy FCM | Backend duyệt đơn hoặc gửi nhắc nhở | Điện thoại hiển thị thông báo Push Notification tức thì | Cao | **PASS** |
-| **TC-NOTIF-02**| Đánh dấu đã đọc thông báo | Bấm đọc 1 thông báo hoặc "Đọc tất cả" | Cập nhật trạng thái đã đọc, xóa huy hiệu đỏ chưa đọc | Vừa | **PASS** |
-| **TC-SYNC-01** | Rà soát đồng bộ phòng tự động | Kích hoạt API sync-status | Tự động chuyển các phòng khách đã trả sang CLEANING | Vừa | **PASS** |
+Toàn bộ kiểm thử API chạy trên máy chủ thật `https://hotel-management-plsp.onrender.com/api/v1` (Render, gói miễn phí, region Singapore). Để không làm bẩn dữ liệu vận hành, các bộ kiểm thử đặt phòng ở ngày xa trong tương lai, duyệt đơn với tiền cọc 0 đ và tự dọn dữ liệu sau khi chạy (hủy đơn thử, xóa dịch vụ thử, vô hiệu hóa tài khoản thử).
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 5.1]**  
-> **Tên hình:** Ảnh chụp màn hình Kết quả thực thi bộ kịch bản kiểm thử API trên Postman Runner  
-> **Vị trí chụp:** Công cụ Postman > Chọn Collection "Luxe Grand Hotel API" > Chạy Postman Collection Runner.  
-> **Hướng dẫn chụp ảnh:** Chụp lại giao diện Postman Runner hiển thị danh sách các Test Suites màu xanh lá với kết quả 100% Passed.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 5.1: Ảnh chụp màn hình Kết quả thực thi bộ kịch bản kiểm thử API trên Postman Runner*
+## 5.2. Kết quả kiểm thử API
 
----
+Kết quả chạy lúc 15:31 ngày 20/10/2026: **38/39 ca đạt**, thời gian phản hồi trung bình 322 ms/request.
 
-## 5.3. Đánh giá hiệu năng chịu tải (Apache Benchmark / k6)
-Sử dụng công cụ kiểm thử tải chuyên dụng **Apache Benchmark (ab)** và **k6** để đo lường năng lực phục vụ của Backend NestJS kết hợp Redis Caching:
-- **Kịch bản kiểm thử:** Giả lập 50 người dùng đồng thời (Concurrency = 50) thực hiện liên tục 2.000 requests tới API tra cứu phòng và xem ma trận phòng.
-- **Kết quả đo lường thực tế:**
+*Bảng 5.1: Tổng hợp kết quả kiểm thử API theo nhóm*
 
-### Bảng 5.2: Kết quả đo lường hiệu năng và độ trễ phản hồi API hệ thống
-| Chỉ số đo lường (Metric) | Kết quả đạt được | Tiêu chuẩn đánh giá | Đánh giá |
+| Nhóm | Số ca | Đạt | Không đạt |
 | :--- | :---: | :---: | :---: |
-| **Tổng số requests thực hiện** | 2.000 requests | 2.000 requests | Hoàn thành 100% |
-| **Tỷ lệ requests lỗi (Failed requests)** | **0 (0%)** | < 1% | **Tuyệt đối an toàn** |
-| **Khả năng thông lượng (Throughput)** | **1.240 requests/phút** | > 800 req/phút | **Vượt 155% kỳ vọng** |
-| **Thời gian đáp ứng trung bình (Latency)**| **112 ms** | < 200 ms | **Cực kỳ mượt mà** |
-| **Độ trễ với dữ liệu đệm Redis Cache** | **38 ms** | < 50 ms | **Tức thì** |
-| **Mức tiêu thụ CPU máy chủ** | 18% - 32% | < 70% | Rất ổn định |
-| **Mức tiêu thụ RAM máy chủ** | 145 MB | < 512 MB | Tiết kiệm tài nguyên |
+| 1. Xác thực & tài khoản | 11 | 11 | 0 |
+| 2. Phân quyền (RBAC) | 4 | 4 | 0 |
+| 3. Danh mục: loại phòng, phòng, dịch vụ | 9 | 9 | 0 |
+| 4. Đặt phòng & quản lý trạng thái | 9 | 9 | 0 |
+| 5. Thống kê, đăng xuất & khóa tài khoản | 6 | 5 | 1 |
+| **Tổng cộng** | **39** | **38** | **1** |
 
----
+*Bảng 5.2: Kịch bản và kết quả kiểm thử API*
 
-## 5.4. Đánh giá an toàn và bảo mật hệ thống
-- **Bảo mật cơ sở dữ liệu:** Toàn bộ câu truy vấn được thực thi qua Prisma Client với cơ chế Prepared Statements, ngăn chặn 100% các cuộc tấn công tiêm mã độc SQL Injection.
-- **Bảo mật mật khẩu:** Áp dụng thuật toán băm một chiều Bcrypt với Salt round = 10, đảm bảo mật khẩu người dùng không thể bị dịch ngược kể cả khi cơ sở dữ liệu bị lộ lọt.
-- **Bảo mật giao tiếp mạng:** 100% dữ liệu truyền tải giữa Flutter Client và máy chủ NestJS được mã hóa qua giao thức HTTPS / TLS 1.3 và xác thực qua chuỗi JWT Bearer Token có thời hạn hợp lý.
-- **Kiểm soát phân quyền chặt chẽ:** Triển khai bộ đôi `JwtAuthGuard` và `RolesGuard` chặn đứng mọi hành vi truy cập trái thẩm quyền của người dùng thường vào các API quản trị của Admin.
+| Mã | Ca kiểm thử | Request | Mong đợi | Thực tế | Kết quả |
+| :---: | :--- | :--- | :--- | :---: | :---: |
+| TC01 | Đăng ký tài khoản khách hàng mới (cố tình gửi role = ADMIN) | `POST /auth/register` | 201 – Tạo tài khoản; server ép role = CUSTOMER; trả về accessToken, refreshToken | 201 · 811 ms | Đạt |
+| TC02 | Đăng ký trùng email | `POST /auth/register` | 409 – message = "Email này đã được đăng ký trong hệ thống" | 409 · 265 ms | Đạt |
+| TC03 | Đăng ký thiếu dữ liệu / sai định dạng | `POST /auth/register` | 400 – ValidationPipe trả mảng errors: email sai định dạng, mật khẩu < 6 ký tự, thiếu họ tên | 400 · 268 ms | Đạt |
+| TC04 | Đăng nhập Admin đúng thông tin | `POST /auth/login` | 201 – Trả về user (role = ADMIN), accessToken và refreshToken (JWT) | 201 · 972 ms | Đạt |
+| TC05 | Đăng nhập Lễ tân | `POST /auth/login` | 201 – Trả về user (role = RECEPTIONIST) và cặp token | 201 · 779 ms | Đạt |
+| TC06 | Đăng nhập sai mật khẩu | `POST /auth/login` | 401 – message = "Email hoặc mật khẩu không chính xác" | 401 · 519 ms | Đạt |
+| TC07 | Gọi API cần đăng nhập nhưng không gửi token | `GET /auth/me` | 401 – message = "Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn" | 401 · 263 ms | Đạt |
+| TC08 | Gửi token giả mạo | `GET /auth/me` | 401 – JwtStrategy từ chối chữ ký không hợp lệ | 401 · 256 ms | Đạt |
+| TC09 | Xem thông tin cá nhân | `GET /auth/me` | 200 – Trả về hồ sơ của chính tài khoản đang đăng nhập, không có trường password | 200 · 273 ms | Đạt |
+| TC10 | Làm mới token (refresh token rotation) | `POST /auth/refresh-token` | 201 – Cấp cặp accessToken + refreshToken mới | 201 · 260 ms | Đạt |
+| TC11 | Cập nhật thông tin cá nhân | `PATCH /users/me` | 200 – fullName, phone được cập nhật | 200 · 279 ms | Đạt |
+| TC12 | Khách hàng xem danh sách người dùng | `GET /users` | 403 – RolesGuard: "Quyền truy cập bị từ chối: Yêu cầu vai trò [ADMIN, RECEPTIONIST]" | 403 · 272 ms | Đạt |
+| TC13 | Lễ tân xem báo cáo doanh thu năm (chỉ Admin) | `GET /analytics/revenue` | 403 – RolesGuard chặn vì endpoint chỉ dành cho ADMIN | 403 · 236 ms | Đạt |
+| TC14 | Khách hàng tạo loại phòng | `POST /room-types` | 403 – Chỉ ADMIN được tạo loại phòng | 403 · 277 ms | Đạt |
+| TC15 | Admin xem danh sách người dùng có tìm kiếm + phân trang | `GET /users?search=hotel&page=1&limit=5` | 200 – data là mảng ≤ 5 phần tử, meta có total, page = 1, limit = 5, totalPages | 200 · 262 ms | Đạt |
+| TC16 | Xem loại phòng (công khai) | `GET /room-types` | 200 – Không cần token; trả danh sách loại phòng kèm giá, tiện nghi | 200 · 270 ms | Đạt |
+| TC17 | Danh sách phòng có phân trang + lọc trạng thái | `GET /rooms?status=AVAILABLE&page=1&limit=5` | 200 – Cấu trúc { data: [...], meta: { total, page, limit, totalPages } } | 200 · 277 ms | Đạt |
+| TC18 | Lọc phòng với trạng thái không hợp lệ | `GET /rooms?status=ABC` | 400 – message = "status không hợp lệ" | 400 · 277 ms | Đạt |
+| TC19 | Tìm phòng trống theo khoảng ngày | `GET /rooms/available?checkInDate={{checkIn}}&checkOutDate={{checkOut}}&guestCount=1` | 200 – Trả danh sách phòng không trùng lịch trong khoảng ngày; lưu roomId đầu tiên để đặt phòng | 200 · 272 ms | Đạt |
+| TC20 | Admin thêm dịch vụ mới | `POST /services` | 201 – Tạo bản ghi dịch vụ, trả về id | 201 · 255 ms | Đạt |
+| TC21 | Admin thêm dịch vụ với đơn giá âm | `POST /services` | 400 – message chứa "Đơn giá phải lớn hơn 0" | 400 · 265 ms | Đạt |
+| TC22 | Admin cập nhật dịch vụ | `PATCH /services/{id}` | 200 – unitPrice = 60000, isAvailable = false | 200 · 255 ms | Đạt |
+| TC23 | Admin xóa dịch vụ | `DELETE /services/{id}` | 200 – Xóa thành công bản ghi dịch vụ thử | 200 · 264 ms | Đạt |
+| TC24 | Xem dịch vụ vừa xóa | `GET /services/{id}` | 404 – Không còn tìm thấy dịch vụ | 404 · 254 ms | Đạt |
+| TC25 | Đặt phòng với ngày nhận ≥ ngày trả | `POST /bookings` | 400 – message = "Ngày nhận phòng phải trước ngày trả phòng" | 400 · 249 ms | Đạt |
+| TC26 | Khách hàng đặt phòng hợp lệ | `POST /bookings` | 201 – Đơn ở trạng thái PENDING, có bookingCode BK-xxxx, totalAmount = số đêm × giá loại phòng | 201 · 281 ms | Đạt |
+| TC27 | Đặt trùng lịch cùng phòng | `POST /bookings` | 409 – "Phòng này đã có khách đặt hoặc đang ở trong khoảng thời gian được chọn" | 409 · 248 ms | Đạt |
+| TC28 | Check-in đơn đang chờ duyệt | `POST /bookings/{id}/check-in` | 400 – Từ chối vì đơn PENDING chưa được phê duyệt | 400 · 260 ms | Đạt |
+| TC29 | Lễ tân phê duyệt đơn | `PATCH /bookings/{id}/approve` | 200 – Đơn chuyển PENDING → CONFIRMED, ghi người duyệt và thời điểm duyệt | 200 · 306 ms | Đạt |
+| TC30 | Khách hàng xem danh sách đơn của mình | `GET /bookings?page=1&limit=10` | 200 – Chỉ trả về đơn của chính khách hàng (server ép customerId = user hiện tại) | 200 · 252 ms | Đạt |
+| TC31 | Khách tự hủy đơn đã được xác nhận | `PATCH /bookings/{id}/cancel` | 403 – Khách chỉ được tự hủy đơn PENDING; đơn CONFIRMED phải liên hệ lễ tân | 403 · 259 ms | Đạt |
+| TC32 | Lễ tân hủy đơn có lý do | `PATCH /bookings/{id}/cancel` | 200 – Đơn chuyển CANCELLED, lưu cancellationReason, cancelledAt, cancelledBy | 200 · 457 ms | Đạt |
+| TC33 | Xem đơn đặt phòng không tồn tại | `GET /bookings/00000000-0000-0000-0000-000000000000` | 404 – NotFoundException với thông điệp tiếng Việt | 404 · 242 ms | Đạt |
+| TC34 | Dashboard thống kê | `GET /analytics/dashboard` | 200 – Trả các KPI: công suất phòng, doanh thu, số booking, phòng trống… | 200 · 285 ms | Đạt |
+| TC35 | Danh sách hóa đơn có phân trang | `GET /invoices?page=1&limit=5` | 200 – Cấu trúc { data, meta }, tối đa 5 hóa đơn | 200 · 276 ms | Đạt |
+| TC36 | Đăng xuất | `POST /auth/logout` | 201 – "Đăng xuất thành công"; refresh token bị thu hồi, activeSessionId bị xóa | 201 · 266 ms | Đạt |
+| TC37 | Dùng lại token sau khi đăng xuất | `GET /auth/me` | 401 – "Phiên làm việc đã kết thúc do đăng xuất. Vui lòng đăng nhập lại" | 200 · 273 ms | **Không đạt** |
+| TC38 | Admin vô hiệu hóa tài khoản kiểm thử | `DELETE /users/{id}` | 200 – isActive = false (xóa mềm) | 200 · 263 ms | Đạt |
+| TC39 | Đăng nhập bằng tài khoản đã bị khóa | `POST /auth/login` | 401 – message = "Tài khoản của bạn đã bị khóa" | 401 · 271 ms | Đạt |
+
+Ở lần chạy đầu, ca phê duyệt đơn báo sai do kịch bản kiểm thử đọc nhầm vị trí trường trạng thái trong phản hồi (API trả `data.booking.status`); kịch bản đã được sửa và chạy lại toàn bộ. Ca không đạt còn lại (TC37) là lỗi thật của hệ thống:
+
+*Bảng 5.3: Báo cáo lỗi BUG-01*
+
+| Mục | Nội dung |
+| :--- | :--- |
+| Ca kiểm thử | TC37 – Dùng lại access token sau khi đăng xuất |
+| Bước tái hiện | Khách hàng đăng nhập → gọi `POST /auth/logout` (201) → gọi lại `GET /auth/me` bằng chính token cũ |
+| Mong đợi | 401 – “Phiên làm việc đã kết thúc do đăng xuất. Vui lòng đăng nhập lại” |
+| Thực tế | 200 – vẫn trả hồ sơ người dùng; token cũ còn dùng được đến khi hết hạn (tối đa 1 ngày) |
+| Nguyên nhân | `AuthService.logout()` chỉ ghi token vào blacklist khi `redisService.isReady` (có Redis thật). Bản triển khai trên Render không có Redis nên `RedisService` chạy chế độ bộ nhớ dự phòng, bước blacklist bị bỏ qua. `JwtStrategy` chỉ so khớp `sid` khi `activeSessionId` khác null, mà đăng xuất lại xóa `activeSessionId`. |
+| Mức độ | Trung bình – ảnh hưởng yêu cầu chống truy cập trái phép khi token bị lộ sau đăng xuất |
+| Đề xuất sửa | Bỏ điều kiện `isReady` khi ghi blacklist (`RedisService.set()` đã tự lưu vào bộ nhớ khi chưa có Redis); trong `JwtStrategy` từ chối token có `sid` khi `activeSessionId` đã bị xóa; bổ sung dịch vụ Redis cho môi trường Render |
+
+## 5.3. Kiểm thử đặt phòng đồng thời
+
+Kịch bản: một tài khoản khách hàng gửi **đồng thời 10 yêu cầu** `POST /bookings` cho cùng phòng 101, cùng khoảng ngày 2027-12-28 → 2027-12-30 (chạy lúc 15:45 ngày 20/10/2026). Sau đó lễ tân truy vấn lại danh sách đơn của phòng trong khoảng ngày này để đối chiếu dữ liệu thực trong CSDL.
+
+*Bảng 5.4: Kết quả kiểm thử đặt phòng đồng thời*
+
+| Chỉ số | Kết quả |
+| :--- | :--- |
+| Số yêu cầu gửi đồng thời | 10 |
+| Phản hồi 201 Created | 1 |
+| Phản hồi 409 Conflict | 9 |
+| Số đơn còn hiệu lực trong CSDL | 1 |
+| Thông điệp từ chối | Phòng này đang được khách khác giữ chỗ để thanh toán, vui lòng thử lại sau giây lát! |
+
+Kết quả cho thấy chỉ đúng **1 đơn** được tạo; các yêu cầu còn lại bị khóa phân tán chặn ngay từ đầu với mã 409, không có đơn trùng lịch nào được ghi vào CSDL. Đơn thử và tài khoản thử được dọn sau khi kiểm thử.
+
+## 5.4. Đo hiệu năng
+
+Kịch bản: mỗi API được gọi 200 lần với 10 luồng song song từ máy kiểm thử tại Việt Nam tới máy chủ Render (region Singapore), chạy lúc 15:45 ngày 20/10/2026. Thời gian đo là thời gian phản hồi phía máy khách, đã bao gồm độ trễ mạng.
+
+*Bảng 5.5: Kết quả đo hiệu năng API*
+
+| API | Số request | Lỗi | Thông lượng (req/s) | Trung bình (ms) | P50 (ms) | P95 (ms) | Lớn nhất (ms) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Danh sách loại phòng (`GET /room-types`) | 200 | 0 | 28,3 | 349 | 274 | 905 | 1.106 |
+| Danh sách phòng (phân trang) (`GET /rooms`) | 200 | 0 | 9,5 | 1.033 | 921 | 1.999 | 2.310 |
+| Tìm phòng trống theo ngày (`GET /rooms/available`) | 200 | 0 | 9,7 | 1.027 | 907 | 1.800 | 2.201 |
+| Danh mục dịch vụ (`GET /services`) | 200 | 0 | 27,7 | 357 | 306 | 597 | 807 |
+
+Nhận xét:
+
+- Không có request nào lỗi trong 800 request.
+- Các API danh mục nhỏ (loại phòng, dịch vụ) phản hồi trung bình khoảng 0,35 giây; các API danh sách phòng và tìm phòng trống – phải kết hợp phòng, loại phòng và lịch đặt – trung bình khoảng 1 giây, thông lượng khoảng 10 request/giây.
+- Số liệu phản ánh môi trường gói miễn phí của Render (tài nguyên CPU hạn chế, một instance, không có Redis nên bộ đệm chạy trong bộ nhớ tiến trình) cộng độ trễ mạng quốc tế; đây là giới hạn của môi trường thử nghiệm, chưa phải năng lực tối đa của kiến trúc. Hướng cải thiện được nêu ở mục 7.3.
+
+## 5.5. Kiểm thử tự động phía ứng dụng và kiểm tra tĩnh
+
+*Bảng 5.6: Kết quả kiểm thử tự động khác (chạy ngày 20/10/2026)*
+
+| Hạng mục | Lệnh | Kết quả |
+| :--- | :--- | :--- |
+| Biên dịch backend (type-check toàn bộ `src`) | `npx tsc --noEmit` | 0 lỗi |
+| Test tự động ứng dụng Flutter (49 file test) | `flutter test` | 275 / 275 test đạt (khoảng 12 giây) |
+| Sinh script DDL từ Prisma schema | `prisma migrate diff --from-empty` | 10 bảng, 384 dòng SQL |
+
+Bộ test ứng dụng bao gồm: kiểm thử hợp đồng API (`api_contract_update_test`, `model_alignment_test`), phân trang (`pagination_system_test`, `booking_pagination_cache_test`), xử lý lỗi API (`api_error_test`, `global_error_handling_test`), phân quyền theo vai trò (`role_access_test`), phiên một thiết bị (`single_device_session_test`), check-in/check-out (`walk_in_check_in_test`, `early_checkout_test`), chốt ca (`work_shift_test`, `receptionist_shift_flow_test`) và cập nhật realtime qua SSE (`room_realtime_test`, `sse_client_test`).
+
+## 5.6. Đánh giá an toàn và bảo mật
+
+**Các biện pháp đã có và được kiểm chứng:**
+
+- Mật khẩu băm bcrypt (salt 10); API trả hồ sơ người dùng không bao giờ chứa trường `password` (TC09).
+- Phân quyền theo vai trò ở từng API: khách gọi API của nhân viên, lễ tân gọi API chỉ dành cho quản trị đều bị chặn 403 (TC12–TC14).
+- Token giả mạo hoặc thiếu token bị chặn 401 (TC07, TC08); tài khoản bị vô hiệu hóa không đăng nhập được (TC39).
+- Dữ liệu vào được kiểm tra bằng DTO, trường không khai báo bị từ chối; đăng ký luôn gán vai trò `CUSTOMER` dù client gửi `role = ADMIN` (TC01, TC03).
+- Truy vấn CSDL qua Prisma được tham số hóa, giá trị đầu vào không ghép chuỗi vào câu SQL.
+
+**Các điểm yếu phát hiện khi rà soát mã nguồn:**
+
+- **BUG-01:** token chưa bị thu hồi sau đăng xuất khi chạy không có Redis (mục 5.2).
+- Mã OTP khôi phục mật khẩu đang là giá trị cố định cấu hình qua `DEFAULT_OTP` (mặc định `123456`) phục vụ môi trường demo; khi triển khai thật phải sinh mã ngẫu nhiên.
+- Cơ chế tự tạo/khôi phục các tài khoản mặc định khi đăng nhập và giá trị `JWT_SECRET` dự phòng trong mã nguồn chỉ phù hợp môi trường demo.
+- `POST /notifications/send` và `/notifications/broadcast` chưa giới hạn vai trò bằng `@Roles`.
 
 ---
 
 \newpage
 
-# CHƯƠNG 6: QUẢN LÝ DỰ ÁN VÀ QUY TRÌNH DEVOPS (SCRUM & DEPLOYMENT)
+# CHƯƠNG 6: QUẢN LÝ DỰ ÁN VÀ TRIỂN KHAI
 
-## 6.1. Tiến độ phát triển dự án Agile/Scrum qua 5 Sprints
-Dự án được thực hiện nghiêm túc theo quy trình Agile/Scrum gồm 5 Sprint với các mục tiêu cụ thể:
+## 6.1. Tiến độ phát triển thực tế
 
-### Bảng 6.1: Báo cáo phân bổ công việc theo 5 Sprint phát triển Agile/Scrum
-| Sprint | Thời gian | Mục tiêu trọng tâm của Sprint | Kết quả bàn giao chính | Trạng thái |
-| :---: | :---: | :--- | :--- | :---: |
-| **Sprint 1** | Tuần 1 - 2 | Phân tích yêu cầu (SRS), thiết kế kiến trúc (SAD), thiết kế CSDL (ERD) | Tài liệu SRS, SAD, ERD chuẩn 3NF và Prisma Schema | **Hoàn thành** |
-| **Sprint 2** | Tuần 3 - 4 | Xây dựng Backend core (Auth JWT, Rooms, Room Types, Seed data) | Backend API xác thực, CRUD danh mục phòng, Docker PG | **Hoàn thành** |
-| **Sprint 3** | Tuần 5 - 6 | Xây dựng nghiệp vụ lõi: Đặt phòng, Room Matrix, Check-in/out, Đổi phòng | API Bookings chống trùng phòng, Flutter Room Matrix | **Hoàn thành** |
-| **Sprint 4** | Tuần 7 - 8 | Phân hệ Tài chính, Hóa đơn đa đợt, Quản lý Ca trực, Đối soát tiền két | API Invoices, Payments, Shifts, BLoC Ca trực lễ tân | **Hoàn thành** |
-| **Sprint 5** | Tuần 9 - 10| Dashboard Admin, Biểu đồ FL Chart, Kiểm thử 42 Test Cases, Đóng gói | Dashboard KPI, Biểu đồ doanh thu, Test Report PASS 100% | **Hoàn thành** |
+Tiến độ dưới đây được tổng hợp từ lịch sử Git của hai kho mã nguồn (backend `Hotel-Management`: 51 commit; ứng dụng `hotel_app`: 15 commit).
 
----
+*Bảng 6.1: Tiến độ phát triển theo lịch sử commit*
 
-## 6.2. Cơ cấu phân rã công việc (Work Breakdown Structure - WBS)
-Dự án được phân rã thành 27 User Stories chính, ánh xạ trực tiếp từ 27 Yêu cầu chức năng FR-01 đến FR-27, đảm bảo mọi hạng mục công việc đều có mục tiêu đo lường và bàn giao rõ ràng giữa các thành viên.
+| Vòng lặp | Thời gian (2026) | Backend | Ứng dụng di động |
+| :---: | :---: | :--- | :--- |
+| 1 | 03/09 – 04/09 | Khởi tạo dự án, Prisma schema, dữ liệu mẫu; module xác thực, tải ảnh, JwtAuthGuard + RolesGuard; trạng thái phòng chờ duyệt; đặt phòng với khóa Redis và duyệt đơn; Elasticsearch; chuẩn hóa giờ nhận/trả phòng | Kiến trúc lõi, điều hướng theo vai trò, thư viện component; màn hình đặt phòng, đơn của tôi với lọc trạng thái và hủy đơn |
+| 2 | 05/09 | Gộp vai trò thu ngân vào lễ tân; interceptor chuẩn hóa phản hồi; hóa đơn, sổ thu tiền, yêu cầu thanh toán | Hệ thống hóa đơn cho thu ngân, quản trị và khách hàng |
+| 3 | 07/09 | Module ca trực; quản lý tài khoản đầy đủ, đặt lại mật khẩu, SSE danh sách tài khoản | Tìm phòng, dashboard lễ tân/quản trị, quản lý tài khoản, tầng repository |
+| 4 | 19/09 – 21/09 | Thông báo FCM; thống kê; đồng bộ trạng thái phòng; cron nhắc lịch nhận phòng; xuất báo cáo doanh thu CSV | Hoàn thiện các màn hình, luồng từ chối thanh toán, đồng bộ trạng thái phòng |
+| 5 | 20/10 | — | Viết tài liệu, sơ đồ UML, kiểm thử API trên máy chủ thật, đo hiệu năng |
 
----
+## 6.2. Phân rã công việc (WBS)
 
-## 6.3. Ma trận phân tích và kiểm soát rủi ro kỹ thuật
+Công việc được phân rã theo module, mỗi module ánh xạ tới một nhóm yêu cầu chức năng:
 
-### Bảng 6.2: Ma trận đánh giá và kiểm soát rủi ro kỹ thuật dự án
-| STT | Rủi ro tiềm ẩn | Xác suất | Tác động | Giải pháp phòng ngừa & Xử lý |
+*Bảng 6.2: Phân rã công việc theo module*
+
+| Nhóm công việc | Backend | Ứng dụng | Yêu cầu |
+| :--- | :--- | :--- | :--- |
+| Xác thực, tài khoản | `auth`, `users` | `features/auth`, `features/profile`, `admin/user_management` | FR-01 – FR-03, FR-20, FR-21 |
+| Danh mục phòng, sơ đồ phòng | `room-types`, `rooms`, `elasticsearch` | `customer/home`, `room_search`, `room_detail`, `receptionist/room_matrix` | FR-04 – FR-07, FR-27 |
+| Đặt phòng, lưu trú | `bookings` | `create_booking_modal`, `my_bookings`, `front_desk_today`, `change_room_sheet` | FR-08 – FR-12, FR-24 |
+| Dịch vụ | `services` | `service_order_screen`, `service_catalog_screen` | FR-13, FR-14 |
+| Tài chính, ca trực | `invoices`, `shifts` | `features/cashier`, `shift_close_screen`, `payment_requests_screen` | FR-15, FR-16, FR-25, FR-26 |
+| Báo cáo, thông báo | `analytics`, `notifications`, `mail` | `admin_dashboard`, `reports_screen`, `features/notifications` | FR-17 – FR-19, FR-22, FR-23 |
+| Hạ tầng, triển khai | `prisma`, `redis`, `upload`, Docker, Render | `core/network`, `di`, `core/router` | Yêu cầu phi chức năng |
+
+## 6.3. Phân tích và kiểm soát rủi ro kỹ thuật
+
+*Bảng 6.3: Ma trận rủi ro kỹ thuật*
+
+| STT | Rủi ro | Xác suất | Tác động | Giải pháp |
 | :---: | :--- | :---: | :---: | :--- |
-| **1** | Trùng lịch đặt phòng khi nhiều khách truy cập cùng lúc | Vừa | Rất lớn | Áp dụng thuật toán Interval Overlap kết hợp `prisma.$transaction` khóa dòng cấp độ CSDL. |
-| **2** | Thất thoát tiền mặt hoặc sai lệch khi bàn giao ca trực | Lớn | Lớn | Bắt buộc khai báo tiền đầu ca, kiểm đếm tiền thực tế cuối ca và bắt buộc giải trình chênh lệch. |
-| **3** | Khách gửi mã chuyển khoản giả mạo | Vừa | Lớn | Tách riêng trạng thái `PENDING` (chờ đối soát) và chỉ tính vào hóa đơn khi thu ngân bấm `CONFIRMED`. |
-| **4** | Server bị quá tải khi lượng truy cập tăng đột biến | Thấp | Vừa | Tích hợp Redis Caching cho danh mục phòng và dịch vụ, giảm 65% áp lực truy vấn CSDL. |
-| **5** | Khách quên lịch nhận phòng gây trống phòng lãng phí | Lớn | Vừa | Tích hợp NestJS Cronjob quét tự động mỗi sáng lúc 09:00 gửi Push Notification FCM và email. |
+| 1 | Đặt trùng phòng khi nhiều người đặt cùng lúc | Vừa | Rất lớn | Khóa phân tán theo phòng + kiểm tra giao lịch; đã kiểm chứng bằng kiểm thử đồng thời (mục 5.3) |
+| 2 | Sai lệch tiền mặt khi bàn giao ca | Lớn | Lớn | Khai báo tiền đầu ca, tự tính tiền sổ sách, bắt buộc giải trình chênh lệch |
+| 3 | Khách báo chuyển khoản nhưng tiền chưa về | Vừa | Lớn | Yêu cầu thanh toán ở trạng thái `PENDING`, chỉ tính vào hóa đơn sau khi thu ngân xác nhận |
+| 4 | Máy chủ gói miễn phí ngủ khi không có truy cập, phản hồi chậm ở lần gọi đầu | Lớn | Vừa | Gọi khởi động trước khi demo; nâng cấp gói hoặc dùng dịch vụ giữ máy chủ hoạt động |
+| 5 | Môi trường triển khai thiếu Redis | Đã xảy ra | Vừa | Có chế độ bộ nhớ dự phòng; cần bổ sung Redis để blacklist token và bộ đệm dùng chung (BUG-01) |
+| 6 | Cấu trúc CSDL trên máy chủ lệch với schema | Vừa | Lớn | `prisma db push` khi khởi động và cơ chế tự đồng bộ cấu trúc trong `PrismaService`; lỗi thiếu bảng/cột được báo rõ |
 
----
+## 6.4. Đóng gói Docker và triển khai
 
-## 6.4. Hướng dẫn đóng gói Docker Compose và Triển khai Đám mây
-Hệ thống được đóng gói tự động hóa bằng Docker Compose, giúp việc triển khai trên môi trường phát triển (Localhost) và máy chủ đám mây (Render / VPS Linux) diễn ra trong một câu lệnh duy nhất:
+Môi trường phát triển dùng Docker Compose để khởi chạy toàn bộ hạ tầng (rút gọn từ `docker-compose.yml` của dự án; mật khẩu nên đặt qua biến môi trường):
 
 ```yaml
-# docker-compose.yml
-version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
     container_name: hotel_postgres
-    restart: always
     environment:
-      POSTGRES_USER: hotel_admin
-      POSTGRES_PASSWORD: SecretPassword123!
-      POSTGRES_DB: hotel_management_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: hotel_db
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hotel_db"]
   redis:
     image: redis:7-alpine
     container_name: hotel_redis
-    restart: always
-    ports:
-      - "6379:6379"
-
-  backend:
-    build:
-      context: ./Hotel-Management
-      dockerfile: Dockerfile
-    container_name: hotel_backend_api
-    restart: always
-    ports:
-      - "3000:3000"
-    environment:
-      DATABASE_URL: "postgresql://hotel_admin:SecretPassword123!@postgres:5432/hotel_management_db"
-      REDIS_HOST: "redis"
-      REDIS_PORT: 6379
-      JWT_SECRET: "LuxeGrandHotelSuperSecretJwtKey2026"
-    depends_on:
-      - postgres
-      - redis
-
-volumes:
-  postgres_data:
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["6379:6379"]
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment: ["discovery.type=single-node", "xpack.security.enabled=false"]
+    ports: ["9200:9200"]
+  hotelmanagementbackend:
+    build: { context: ., dockerfile: ./Dockerfile }
+    container_name: hotel_backend
+    ports: ["3000:3000"]
+    environment: { PORT: 3000, NODE_ENV: production }
 ```
 
-> ==============================================================================
-> 📸 **[KHUNG CHÈN ẢNH - HÌNH 6.1]**  
-> **Tên hình:** Ảnh chụp màn hình Triển khai hạ tầng Docker Compose & Dashboard Render Cloud  
-> **Vị trí chụp:** Terminal chạy lệnh `docker compose ps` hoặc Dashboard triển khai dịch vụ trên Render Cloud.  
-> **Hướng dẫn chụp ảnh:** Chụp lại màn hình terminal hiển thị các container Postgres, Redis, Backend đang chạy `Up (healthy)` hoặc bảng điều khiển Render Cloud.  
-> *(Sinh viên chèn ảnh chụp thực tế vào khung này)*  
-> ==============================================================================
-*Hình 6.1: Ảnh chụp màn hình Triển khai hạ tầng Docker Compose & Dashboard Render Cloud*
+Môi trường production chạy trên **Render** theo `render.yaml`: dịch vụ web build từ Dockerfile (`node:20-alpine`), cơ sở dữ liệu PostgreSQL do Render cấp và tự nạp `DATABASE_URL`, `JWT_SECRET` được sinh ngẫu nhiên, múi giờ báo cáo `Asia/Ho_Chi_Minh`. Tài liệu API trực tuyến tại `/api/docs`.
 
----
+![Biểu đồ triển khai](docs/uml_diagrams/deployment_diagram.png)
 
-## 6.5. Quy trình sao lưu và phục hồi cơ sở dữ liệu
-- **Lệnh sao lưu định kỳ (Database Dump):**
+*Hình 6.1: Biểu đồ triển khai hệ thống*
+
+## 6.5. Sao lưu và phục hồi cơ sở dữ liệu
+
+- **Sao lưu:**
   ```bash
-  docker exec -t hotel_postgres pg_dump -U hotel_admin hotel_management_db > backup_hotel_$(date +%Y%m%d_%H%M%S).sql
+  docker exec -t hotel_postgres pg_dump -U postgres hotel_db > backup_hotel_$(date +%Y%m%d_%H%M%S).sql
   ```
-- **Lệnh phục hồi khi có sự cố (Database Restore):**
+- **Phục hồi:**
   ```bash
-  cat backup_hotel_20260921.sql | docker exec -i hotel_postgres psql -U hotel_admin -d hotel_management_db
+  cat backup_hotel_20261020.sql | docker exec -i hotel_postgres psql -U postgres -d hotel_db
   ```
+- Với cơ sở dữ liệu trên Render, dùng tính năng sao lưu của dịch vụ hoặc `pg_dump` với chuỗi kết nối ngoài (external connection string).
 
 ---
 
@@ -1761,31 +1325,36 @@ volumes:
 
 # CHƯƠNG 7: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
 
-## 7.1. Những kết quả đạt được của đồ án
-Sau quá trình nghiên cứu lý thuyết nghiêm túc và tập trung hiện thực hóa sản phẩm, đề tài **"Nghiên cứu và xây dựng hệ thống quản lý khách sạn toàn diện Luxe Grand Hotel trên nền tảng NestJS và Flutter"** đã hoàn thành xuất sắc toàn bộ các mục tiêu đặt ra:
+## 7.1. Kết quả đạt được
 
-1. **Về mặt học thuật và công nghệ:**
-   - Làm chủ và triển khai thành công kiến trúc Backend doanh nghiệp hướng Module với **NestJS**, tích hợp hệ sinh thái công nghệ hàng đầu: **PostgreSQL 16**, **Prisma ORM**, **Redis In-Memory Cache**, **Elasticsearch Engine**, **Firebase Cloud Messaging** và **NestJS Cronjob**.
-   - Phát triển hoàn chỉnh ứng dụng di động đa nền tảng **Flutter (iOS & Android)** theo chuẩn kiến trúc sạch phân lớp hướng tính năng (Feature-first Clean Architecture), áp dụng mô hình quản lý trạng thái luồng sự kiện **BLoC** mượt mà, đạt tốc độ khung hình 60fps.
-   - Ứng dụng thành công thư viện **FL Chart** tạo nên biểu đồ phân tích doanh thu tương tác cao, hiện đại và thẩm mỹ.
+1. **Về công nghệ:**
+   - Xây dựng máy chủ RESTful API bằng NestJS theo kiến trúc module với 11 controller, 95 đường dẫn API, xác thực JWT (refresh token rotation, một thiết bị cho khách hàng) và phân quyền 3 vai trò; tích hợp PostgreSQL/Prisma, Redis, Elasticsearch, FCM, Nodemailer và tác vụ định kỳ.
+   - Phát triển ứng dụng Flutter đa nền tảng theo kiến trúc hướng tính năng với BLoC, đồng bộ trạng thái phòng thời gian thực qua SSE, biểu đồ FL Chart.
+   - Mô hình hóa hệ thống bằng 8 sơ đồ UML (gói, thành phần, triển khai, phân lớp, lớp, tuần tự, use case, luồng BLoC) và 3 sơ đồ hoạt động/trạng thái nghiệp vụ.
+2. **Về nghiệp vụ:**
+   - Số hóa vòng đời lưu trú: tìm phòng, đặt phòng, duyệt đơn, sơ đồ phòng theo tầng, check-in và khách vãng lai, đổi phòng, dịch vụ phòng, quyết toán và check-out (kể cả trả phòng trước hạn).
+   - Kiểm soát dòng tiền bằng sổ thu tiền nhiều đợt và quản lý ca trực có đối soát tiền mặt, bắt buộc giải trình chênh lệch.
+   - Cung cấp dashboard và báo cáo doanh thu, công suất, hiệu suất nhân viên cho quản lý.
+3. **Về kiểm thử:** 38/39 ca kiểm thử API đạt trên máy chủ thật; kiểm thử đồng thời xác nhận không có đặt trùng phòng; 275/275 test ứng dụng đạt; kiểm thử phát hiện và phân tích được một lỗi bảo mật thật.
 
-2. **Về mặt nghiệp vụ thực tiễn:**
-   - Số hóa trọn vẹn và khép kín toàn bộ chu trình lưu trú khách sạn: Tra cứu phòng trống theo ngày, Đặt phòng trực tuyến, Duyệt/Từ chối đơn, Sơ đồ Ma trận phòng theo tầng (Room Matrix 5 màu), Check-in theo lịch và Walk-in tại quầy, Đổi phòng lưu trú linh hoạt, Order dịch vụ phòng và Check-out kiểm kê minibar.
-   - Giải quyết triệt để bài toán quản lý dòng tiền và phòng chống thất thoát tài chính thông qua cơ chế Sổ thu tiền đa đợt (`Multi-Entry Payments`) và phân hệ Quản lý ca trực lễ tân (`WorkShift`) với đối soát chênh lệch tiền két tự động, ràng buộc bắt buộc giải trình.
-   - Cung cấp cho Ban giám đốc công cụ quản trị thông minh với Dashboard 4 thẻ KPI thời gian thực và Báo cáo phân tích doanh thu, tỷ lệ lấp đầy phòng trực quan.
-   - Xây dựng bộ kịch bản kiểm thử toàn diện gồm 42 Test Cases chuẩn IEEE 829, đạt tỷ lệ thành công 100% (PASS).
+## 7.2. Hạn chế
 
-## 7.2. Các mặt hạn chế tồn đọng
-Mặc dù đã đạt được những kết quả rất ấn tượng, đề tài vẫn còn một số điểm có thể cải tiến do giới hạn về mặt thời gian và điều kiện thử nghiệm thực tế:
-- **Cổng thanh toán tự động:** Hiện tại hệ thống vận hành cơ chế thanh toán chuyển khoản quét mã QR và đối soát qua thu ngân quầy, chưa tích hợp Webhook tự động bắt biến động số dư từ các cổng thanh toán trung gian bên thứ ba (như VNPay, MoMo, ZaloPay, PayOS).
-- **Phần cứng khóa cửa thông minh (Smart Door Lock):** Chưa kết nối trực tiếp với hệ thống phần cứng khóa cửa từ thông minh qua giao tiếp Bluetooth Low Energy (BLE) hoặc RFID để khách tự mở cửa phòng bằng điện thoại.
+- **BUG-01:** access token chưa bị thu hồi sau đăng xuất khi máy chủ chạy không có Redis.
+- Máy chủ gói miễn phí cho thời gian phản hồi 0,3–1 giây với các API danh sách phòng; chưa đo trên hạ tầng có Redis và cấu hình mạnh hơn.
+- Backend chưa có unit test / e2e test tự động (Jest, Supertest); kiểm thử API hiện ở mức hộp đen.
+- Tầng truy cập dữ liệu dùng trực tiếp `PrismaService`, chưa tách lớp Repository riêng để dễ viết unit test cho Service.
+- OTP khôi phục mật khẩu đang cố định cho môi trường demo; cron nhắc lịch chạy lúc 01:00 thay vì giờ hành chính.
+- Ứng dụng hiển thị nút “Hủy đơn” cho cả đơn đã xác nhận trong khi API chỉ cho khách tự hủy đơn chờ duyệt (TC31 trả 403).
+- Số tiền lưu kiểu `Float`; nghiệp vụ tài chính nên dùng `Decimal` để tránh sai số làm tròn.
+- Chưa tích hợp cổng thanh toán tự động và khóa cửa thông minh.
 
-## 7.3. Hướng phát triển và mở rộng trong tương lai
-Để đưa hệ thống trở thành một giải pháp phần mềm PMS thương mại hoàn chỉnh, nhóm nghiên cứu đề xuất các hướng phát triển tiếp theo:
-1. **Tích hợp Cổng thanh toán quốc gia & Webhook VietQR:** Tích hợp cổng thanh toán VNPay / VietQR tự động bắt biến động số dư tài khoản ngân hàng qua Webhook thời gian thực để hệ thống tự động duyệt hóa đơn `PAID` tức thì mà không cần thu ngân đối soát thủ công.
-2. **Giải pháp chìa khóa số thông minh (Digital Keyless Entry):** Tích hợp giao tiếp không dây BLE/NFC cho phép khách hàng nhận thẻ phòng số (Digital Key) ngay trên ứng dụng Flutter để tự chạm điện thoại mở khóa cửa phòng.
-3. **Trợ lý ảo AI Concierge (Tích hợp Large Language Model - LLM):** Ứng dụng mô hình ngôn ngữ lớn (như OpenAI GPT / Google Gemini) để xây dựng Chatbot thông minh hỗ trợ giải đáp thắc mắc, tư vấn địa điểm du lịch, ẩm thực xung quanh khách sạn cho khách lưu trú 24/7.
-4. **Phát triển phiên bản Web Portal mở rộng cho Buồng phòng (Housekeeping):** Xây dựng thêm giao diện Web dành riêng cho nhân viên dọn phòng trên máy tính bảng (Tablet) để cập nhật trạng thái phòng sạch/bẩn theo thời gian thực ngay tại tầng.
+## 7.3. Hướng phát triển
+
+1. **Sửa các lỗi đã phát hiện:** khắc phục BUG-01, sinh OTP ngẫu nhiên, chỉnh giờ cron, giới hạn quyền API gửi thông báo, đồng bộ quy tắc hủy đơn giữa ứng dụng và API.
+2. **Nâng cao chất lượng:** tách tầng Repository, bổ sung unit test và e2e test, đưa bộ kiểm thử API vào CI (GitHub Actions); chuyển số tiền sang kiểu `Decimal`.
+3. **Thanh toán tự động:** tích hợp VNPay/VietQR qua webhook để hóa đơn tự chuyển `PAID` khi tiền về tài khoản.
+4. **Trải nghiệm khách:** tự check-in bằng mã QR, chìa khóa số (BLE/NFC), trợ lý ảo hỗ trợ khách 24/7.
+5. **Vận hành:** ứng dụng cho nhân viên buồng phòng cập nhật trạng thái dọn phòng tại tầng; khi quy mô tăng, tách các module tải lớn thành microservice.
 
 ---
 
@@ -1793,13 +1362,16 @@ Mặc dù đã đạt được những kết quả rất ấn tượng, đề t�
 
 # TÀI LIỆU THAM KHẢO
 
-1. **NestJS Official Documentation** (2024), *A progressive Node.js framework for building efficient, reliable and scalable server-side applications*, Truy cập tại: https://docs.nestjs.com/
-2. **Flutter & Dart Documentation** (2024), *Build apps for any screen*, Google Developers, Truy cập tại: https://docs.flutter.dev/
-3. **Prisma Documentation** (2024), *Next-generation ORM for Node.js and TypeScript*, Truy cập tại: https://www.prisma.io/docs
-4. **PostgreSQL Global Development Group** (2024), *PostgreSQL 16 Database System Documentation*, Truy cập tại: https://www.postgresql.org/docs/
-5. **Felix Angelov** (2024), *Bloc State Management Library for Dart & Flutter Documentation*, Truy cập tại: https://bloclibrary.dev/
-6. **Robert C. Martin** (2017), *Clean Architecture: A Craftsman's Guide to Software Structure and Design*, Prentice Hall.
-7. **Martin Fowler** (2002), *Patterns of Enterprise Application Architecture*, Addison-Wesley Professional.
-8. **Alex Xu** (2020), *System Design Interview – An insider's guide*, ByteByteGo Publishing.
-9. **IEEE Computer Society** (1998), *IEEE Recommended Practice for Software Requirements Specifications (IEEE Std 830-1998)*, IEEE Standards Software Engineering Committee.
-10. **IEEE Computer Society** (2008), *IEEE Standard for Software and System Test Documentation (IEEE Std 829-2008)*, IEEE.
+1. NestJS Documentation, https://docs.nestjs.com/
+2. Flutter Documentation, Google, https://docs.flutter.dev/
+3. Prisma ORM Documentation, https://www.prisma.io/docs
+4. PostgreSQL Global Development Group, PostgreSQL 16 Documentation, https://www.postgresql.org/docs/
+5. Felix Angelov, Bloc State Management Library, https://bloclibrary.dev/
+6. Redis Documentation – Distributed Locks with Redis, https://redis.io/docs/
+7. Roy T. Fielding (2000), *Architectural Styles and the Design of Network-based Software Architectures*, Doctoral dissertation, University of California, Irvine.
+8. IETF (2015), *RFC 7519 – JSON Web Token (JWT)*.
+9. Robert C. Martin (2017), *Clean Architecture: A Craftsman's Guide to Software Structure and Design*, Prentice Hall.
+10. Martin Fowler (2002), *Patterns of Enterprise Application Architecture*, Addison-Wesley.
+11. IEEE Computer Society (1998), *IEEE Std 830-1998 – Recommended Practice for Software Requirements Specifications*.
+12. IEEE Computer Society (2008), *IEEE Std 829-2008 – Standard for Software and System Test Documentation*.
+13. Nhóm thực hiện (2026), *Báo cáo Thiết kế UI/UX – Hệ thống quản lý khách sạn toàn diện Luxe Grand Hotel*.
