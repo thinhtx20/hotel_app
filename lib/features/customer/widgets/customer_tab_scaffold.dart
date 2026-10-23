@@ -168,6 +168,9 @@ class CustomerTabScaffold extends StatelessWidget {
               const SizedBox(height: 3),
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Outfit',
                   fontSize: 11,

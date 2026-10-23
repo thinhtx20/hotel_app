@@ -426,7 +426,7 @@ class AppRouter {
                   activeIcon: Icons.bar_chart_rounded,
                 ),
                 StaffTab(
-                  label: 'Vận hành phòng',
+                  label: 'Phòng',
                   icon: Icons.meeting_room_outlined,
                   activeIcon: Icons.meeting_room_rounded,
                   showsPendingRoomsBadge: true,

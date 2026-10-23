@@ -74,7 +74,7 @@ void main() {
     // Verify 5 tabs exist (FE-ROLE-MATRIX §4.1)
     expect(find.text('Tổng quan'), findsWidgets);
     expect(find.text('Báo cáo'), findsOneWidget);
-    expect(find.text('Vận hành phòng'), findsOneWidget);
+    expect(find.text('Phòng'), findsOneWidget);
     expect(find.text('Nhân sự & DV'), findsOneWidget);
     expect(find.text('Hồ sơ'), findsOneWidget);
 
@@ -84,8 +84,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.textContaining('Báo Cáo'), findsWidgets);
 
-    // Tap on 'Vận hành phòng' tab
-    await tester.tap(find.text('Vận hành phòng'));
+    // Tap on 'Phòng' tab
+    await tester.tap(find.text('Phòng'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.textContaining('Vận Hành Phòng'), findsWidgets);
