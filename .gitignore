@@ -92,4 +92,21 @@ desktop.ini
 *.tmp
 *.temp
 *~
-test.docx
+
+# Reports and Office documents
+*.docx
+*.doc
+*.pdf
+*.pptx
+*.ppt
+*.xlsx
+*.xls
+*.rar
+
+# Report files and generated assets
+*Bao_Cao*
+*bao_cao*
+*BAO_CAO*
+So_Do_Kien_Truc*
+/report_assets/
+

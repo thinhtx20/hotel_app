@@ -241,14 +241,14 @@
                   "script": {
                     "type": "text/javascript",
                     "exec": [
-                      "pm.test('TC04 - HTTP 201', function () { pm.response.to.have.status(201); });",
+                      "pm.test('TC04 - HTTP 200', function () { pm.response.to.have.status(200); });",
                       "let json = {};",
                       "try { json = pm.response.json(); } catch (e) {}",
                       "pm.test('TC04 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
                       "pm.test('TC04 - Kiểm tra nghiệp vụ', function () {",
                       "  pm.expect(json.data.user.role).to.eql('ADMIN');",
                       "});",
-                      "if (pm.response.code === 201) {",
+                      "if (pm.response.code === 200) {",
                       "  pm.collectionVariables.set('adminToken', json.data.accessToken);",
                       "}"
                     ]
@@ -285,7 +285,7 @@
                     }
                   }
                 },
-                "description": "Kết quả mong đợi: HTTP 201. Trả về user (role = ADMIN), accessToken và refreshToken (JWT)"
+                "description": "Kết quả mong đợi: HTTP 200. Trả về user (role = ADMIN), accessToken và refreshToken (JWT)"
               }
             },
             {
@@ -296,14 +296,14 @@
                   "script": {
                     "type": "text/javascript",
                     "exec": [
-                      "pm.test('TC05 - HTTP 201', function () { pm.response.to.have.status(201); });",
+                      "pm.test('TC05 - HTTP 200', function () { pm.response.to.have.status(200); });",
                       "let json = {};",
                       "try { json = pm.response.json(); } catch (e) {}",
                       "pm.test('TC05 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
                       "pm.test('TC05 - Kiểm tra nghiệp vụ', function () {",
                       "  pm.expect(json.data.user.role).to.eql('RECEPTIONIST');",
                       "});",
-                      "if (pm.response.code === 201) {",
+                      "if (pm.response.code === 200) {",
                       "  pm.collectionVariables.set('receptionToken', json.data.accessToken);",
                       "}"
                     ]
@@ -340,7 +340,7 @@
                     }
                   }
                 },
-                "description": "Kết quả mong đợi: HTTP 201. Trả về user (role = RECEPTIONIST) và cặp token"
+                "description": "Kết quả mong đợi: HTTP 200. Trả về user (role = RECEPTIONIST) và cặp token"
               }
             },
             {
@@ -537,7 +537,7 @@
                   "script": {
                     "type": "text/javascript",
                     "exec": [
-                      "pm.test('TC10 - HTTP 201', function () { pm.response.to.have.status(201); });",
+                      "pm.test('TC10 - HTTP 200', function () { pm.response.to.have.status(200); });",
                       "let json = {};",
                       "try { json = pm.response.json(); } catch (e) {}",
                       "pm.test('TC10 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });",
@@ -545,7 +545,7 @@
                       "  pm.expect(json.data.accessToken).to.be.a('string');",
                       "  pm.expect(json.data.refreshToken).to.be.a('string');",
                       "});",
-                      "if (pm.response.code === 201) {",
+                      "if (pm.response.code === 200) {",
                       "  pm.collectionVariables.set('customerToken', json.data.accessToken);",
                       "}"
                     ]
@@ -582,7 +582,7 @@
                     }
                   }
                 },
-                "description": "Kết quả mong đợi: HTTP 201. Cấp cặp accessToken + refreshToken mới"
+                "description": "Kết quả mong đợi: HTTP 200. Cấp cặp accessToken + refreshToken mới"
               }
             },
             {
@@ -1967,7 +1967,7 @@
                   "script": {
                     "type": "text/javascript",
                     "exec": [
-                      "pm.test('TC36 - HTTP 201', function () { pm.response.to.have.status(201); });",
+                      "pm.test('TC36 - HTTP 200', function () { pm.response.to.have.status(200); });",
                       "let json = {};",
                       "try { json = pm.response.json(); } catch (e) {}",
                       "pm.test('TC36 - Response JSON có trường success', function () { pm.expect(json).to.have.property('success', true); });"
@@ -2012,7 +2012,7 @@
                     }
                   }
                 },
-                "description": "Kết quả mong đợi: HTTP 201. \"Đăng xuất thành công\"; refresh token bị thu hồi, activeSessionId bị xóa"
+                "description": "Kết quả mong đợi: HTTP 200. \"Đăng xuất thành công\"; refresh token bị thu hồi, activeSessionId bị xóa"
               }
             },
             {
@@ -5207,7 +5207,7 @@
                     }
                   ]
                 },
-                "description": "Doanh thu theo ngày (7/30/90/365 ngày). Quyền: A, R"
+                "description": "Doanh thu theo ngày (1/7/14/30 ngày). Quyền: A, R"
               }
             },
             {

@@ -137,7 +137,7 @@ const ENDPOINT_GROUPS = [
       ['GET', '/analytics/revenue', 'Doanh thu theo năm, biểu đồ 12 tháng', 'A'],
       ['GET', '/analytics/revenue/years', 'Các năm có phát sinh doanh thu', 'A'],
       ['GET', '/analytics/revenue/export', 'Xuất báo cáo doanh thu CSV', 'A'],
-      ['GET', '/analytics/revenue/daily', 'Doanh thu theo ngày (7/30/90/365 ngày)', 'A, R'],
+      ['GET', '/analytics/revenue/daily', 'Doanh thu theo ngày (1/7/14/30 ngày)', 'A, R'],
       ['GET', '/analytics/occupancy-by-type', 'Tỷ lệ lấp đầy theo loại phòng', 'A, R'],
       ['GET', '/analytics/staff-performance', 'Hiệu suất nhân viên', 'A'],
     ],
